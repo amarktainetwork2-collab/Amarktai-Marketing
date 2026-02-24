@@ -335,3 +335,109 @@ def analyze_ab_tests(self):
     finally:
         db.close()
 
+
+
+# ---------------------------------------------------------------------------
+# Daily automation tasks for Power Tools
+# ---------------------------------------------------------------------------
+
+@shared_task(bind=True, name="app.workers.tasks.daily_competitor_refresh")
+def daily_competitor_refresh(self):
+    """Nightly crawl + re-analysis of all active competitor profiles."""
+    print("🕵️  Daily competitor refresh starting…")
+    import asyncio
+    from app.models.tools import CompetitorProfile
+    from app.api.v1.endpoints.tools import _run_competitor_analysis
+
+    db = SessionLocal()
+    try:
+        profiles = db.query(CompetitorProfile).filter(CompetitorProfile.is_active == True).all()
+        for p in profiles:
+            row = db.query(__import__('app.models.user_api_key', fromlist=['UserAPIKey']).UserAPIKey).filter_by(
+                user_id=p.user_id, key_name="HUGGINGFACE_TOKEN", is_active=True
+            ).first()
+            token = row.get_decrypted_key() if row else settings.HUGGINGFACE_TOKEN
+            if token:
+                try:
+                    asyncio.run(_run_competitor_analysis(p.id, token))
+                except Exception as exc:
+                    print(f"❌  Competitor {p.id}: {exc}")
+        print(f"✅  Refreshed {len(profiles)} competitor profiles")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_viral_spark")
+def daily_viral_spark(self):
+    """Generate a fresh Viral Spark report for each active user."""
+    print("⚡  Daily Viral Spark generation…")
+    import asyncio, uuid
+    from app.models.tools import ViralSparkReport
+    from app.models.webapp import WebApp
+    from app.api.v1.endpoints.tools import _run_viral_spark
+
+    db = SessionLocal()
+    try:
+        users = db.query(User).all()
+        for user in users:
+            row = db.query(__import__('app.models.user_api_key', fromlist=['UserAPIKey']).UserAPIKey).filter_by(
+                user_id=user.id, key_name="HUGGINGFACE_TOKEN", is_active=True
+            ).first()
+            token = row.get_decrypted_key() if row else settings.HUGGINGFACE_TOKEN
+            if not token:
+                continue
+            webapp = db.query(WebApp).filter(WebApp.user_id == user.id, WebApp.is_active == True).first()
+            niche = (webapp.category or webapp.name) if webapp else "general marketing"
+            r = ViralSparkReport(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                webapp_id=webapp.id if webapp else None,
+                niche=niche,
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_viral_spark(r.id, token))
+            except Exception as exc:
+                print(f"❌  Viral Spark for {user.id}: {exc}")
+        print("✅  Viral Spark done")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_churn_check")
+def daily_churn_check(self):
+    """Nightly churn risk check for users with connected platforms."""
+    print("🛡️  Daily churn shield check…")
+    import asyncio, uuid
+    from app.models.tools import ChurnShieldReport
+    from app.models.user_api_key import UserIntegration
+    from app.api.v1.endpoints.tools import _run_churn_shield
+
+    db = SessionLocal()
+    try:
+        integrations = db.query(UserIntegration).filter(UserIntegration.is_connected == True).all()
+        for integ in integrations:
+            row = db.query(__import__('app.models.user_api_key', fromlist=['UserAPIKey']).UserAPIKey).filter_by(
+                user_id=integ.user_id, key_name="HUGGINGFACE_TOKEN", is_active=True
+            ).first()
+            token = row.get_decrypted_key() if row else settings.HUGGINGFACE_TOKEN
+            if not token:
+                continue
+            r = ChurnShieldReport(
+                id=str(uuid.uuid4()),
+                user_id=integ.user_id,
+                platform=integ.platform,
+                dropout_patterns=["Automated daily churn check"],
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_churn_shield(r.id, token))
+            except Exception as exc:
+                print(f"❌  Churn check {integ.platform}/{integ.user_id}: {exc}")
+        print("✅  Churn shield done")
+    finally:
+        db.close()

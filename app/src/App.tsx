@@ -22,6 +22,7 @@ const SettingsPage = lazy(() => import('@/app/settings/page'));
 const IntegrationsPage = lazy(() => import('@/app/integrations/page'));
 const EngagementPage = lazy(() => import('@/app/engagement/page'));
 const AdminPage = lazy(() => import('@/app/admin/page'));
+const ToolsPage = lazy(() => import('@/app/tools/page'));
 
 // Demo auth context
 interface DemoAuthContextType {
@@ -109,6 +110,7 @@ function AppRoutes() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="integrations" element={<IntegrationsPage />} />
             <Route path="engagement" element={<EngagementPage />} />
+            <Route path="tools" element={<ToolsPage />} />
             <Route path="admin" element={<AdminPage />} />
           </Route>
           <Route
@@ -152,6 +154,7 @@ function AppRoutes() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="integrations" element={<IntegrationsPage />} />
             <Route path="engagement" element={<EngagementPage />} />
+            <Route path="tools" element={<ToolsPage />} />
             <Route path="admin" element={<AdminPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

@@ -69,6 +69,24 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.analyze_ab_tests",
         "schedule": crontab(hour=3, minute=0),
     },
+
+    # Nightly competitor refresh at 02:00 UTC
+    "daily-competitor-refresh": {
+        "task": "app.workers.tasks.daily_competitor_refresh",
+        "schedule": crontab(hour=2, minute=0),
+    },
+
+    # Daily Viral Spark report at 07:00 UTC (before morning posts)
+    "daily-viral-spark": {
+        "task": "app.workers.tasks.daily_viral_spark",
+        "schedule": crontab(hour=7, minute=0),
+    },
+
+    # Nightly churn check at 01:00 UTC
+    "daily-churn-check": {
+        "task": "app.workers.tasks.daily_churn_check",
+        "schedule": crontab(hour=1, minute=0),
+    },
 }
 
 

@@ -2,7 +2,8 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
-    integrations, engagement, ab_testing, cost_tracking, autonomous, admin
+    integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
+    remix, tools,
 )
 
 api_router = APIRouter()
@@ -24,3 +25,7 @@ api_router.include_router(autonomous.router, prefix="/autonomous", tags=["autono
 
 # Admin
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+# Power Tools (all 10 add-ons)
+api_router.include_router(remix.router, prefix="/remix", tags=["tools"])
+api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
