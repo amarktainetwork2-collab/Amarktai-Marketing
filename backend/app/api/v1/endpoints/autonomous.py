@@ -9,18 +9,12 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.content import Content, ContentStatus
 from app.models.user import User
 from app.models.webapp import WebApp
 
 router = APIRouter()
-
-# Helper function to get current user
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 class BatchApproveRequest(BaseModel):
     content_ids: List[str]

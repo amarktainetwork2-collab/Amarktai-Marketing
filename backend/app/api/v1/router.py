@@ -2,12 +2,12 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
-    integrations, engagement, ab_testing, cost_tracking, autonomous
+    integrations, engagement, ab_testing, cost_tracking, autonomous, admin
 )
 
 api_router = APIRouter()
 
-# Existing routes
+# Core routes
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(webapps.router, prefix="/webapps", tags=["webapps"])
@@ -15,9 +15,12 @@ api_router.include_router(platforms.router, prefix="/platforms", tags=["platform
 api_router.include_router(content.router, prefix="/content", tags=["content"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 
-# New routes for Phase 2 & 3
+# Phase 2 & 3 routes
 api_router.include_router(integrations.router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(engagement.router, prefix="/engagement", tags=["engagement"])
 api_router.include_router(ab_testing.router, prefix="/ab-testing", tags=["ab-testing"])
 api_router.include_router(cost_tracking.router, prefix="/cost-tracking", tags=["cost-tracking"])
 api_router.include_router(autonomous.router, prefix="/autonomous", tags=["autonomous"])
+
+# Admin
+api_router.include_router(admin.router, prefix="/admin", tags=["admin"])

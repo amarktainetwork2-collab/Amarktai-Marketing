@@ -9,17 +9,11 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.engagement import CostTracking
 from app.models.user import User
 
 router = APIRouter()
-
-# Helper function to get current user
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 @router.get("/current")
 async def get_current_costs(

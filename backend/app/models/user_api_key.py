@@ -6,100 +6,115 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
-import json
+import base64
 from cryptography.fernet import Fernet
 from app.core.config import settings
 
-# Initialize encryption
-fernet = Fernet(settings.ENCRYPTION_KEY.encode()[:32].ljust(32, b'0')[:32]) if settings.ENCRYPTION_KEY else None
+
+def _build_fernet() -> Fernet | None:
+    """Build a Fernet cipher from ENCRYPTION_KEY.
+
+    Fernet requires a 32-byte URL-safe base64-encoded key.  We derive one
+    deterministically from whatever string is in settings so that a simple
+    passphrase in .env still works.
+    """
+    raw = settings.ENCRYPTION_KEY
+    if not raw or raw == "your-encryption-key-here-change-in-production":
+        return None
+    # Pad / truncate to exactly 32 bytes then encode as Fernet key
+    padded = raw.encode()[:32].ljust(32, b"\0")
+    key = base64.urlsafe_b64encode(padded)
+    try:
+        return Fernet(key)
+    except Exception:
+        return None
+
+
+_fernet = _build_fernet()
+
 
 class UserAPIKey(Base):
     __tablename__ = "user_api_keys"
-    
+
     id = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    key_name = Column(String, nullable=False)  # e.g., 'groq', 'huggingface', 'leonardo'
+    key_name = Column(String, nullable=False)
     encrypted_key = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True)
-    usage_count = Column(String, default="0")  # Track usage
+    usage_count = Column(String, default="0")
     last_used_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    # Relationships
+
     user = relationship("User", back_populates="api_keys")
-    
+
     @staticmethod
     def encrypt_key(key_value: str) -> str:
-        """Encrypt an API key."""
-        if fernet:
-            return fernet.encrypt(key_value.encode()).decode()
-        return key_value  # Fallback - not recommended for production
-    
+        if _fernet:
+            return _fernet.encrypt(key_value.encode()).decode()
+        return key_value
+
     @staticmethod
     def decrypt_key(encrypted_value: str) -> str:
-        """Decrypt an API key."""
-        if fernet:
-            return fernet.decrypt(encrypted_value.encode()).decode()
+        if _fernet:
+            try:
+                return _fernet.decrypt(encrypted_value.encode()).decode()
+            except Exception:
+                return encrypted_value
         return encrypted_value
-    
+
     def get_decrypted_key(self) -> str:
-        """Get the decrypted API key value."""
         return self.decrypt_key(self.encrypted_key)
 
 
 class UserIntegration(Base):
     """Stores OAuth2 tokens and connection status for social platforms."""
     __tablename__ = "user_integrations"
-    
+
     id = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    platform = Column(String, nullable=False)  # youtube, tiktok, instagram, facebook, twitter, linkedin
-    
-    # OAuth2 tokens (encrypted)
+    platform = Column(String, nullable=False)
+
     encrypted_access_token = Column(Text, nullable=True)
     encrypted_refresh_token = Column(Text, nullable=True)
     token_expires_at = Column(DateTime(timezone=True), nullable=True)
-    
-    # Connection status
+
     is_connected = Column(Boolean, default=False)
     connected_at = Column(DateTime(timezone=True), nullable=True)
     disconnected_at = Column(DateTime(timezone=True), nullable=True)
-    
-    # Platform-specific data
-    platform_user_id = Column(String, nullable=True)  # User's ID on the platform
+
+    platform_user_id = Column(String, nullable=True)
     platform_username = Column(String, nullable=True)
-    platform_data = Column(Text, nullable=True)  # JSON string of additional platform data
-    
-    # Permissions/scopes granted
-    scopes = Column(Text, nullable=True)  # JSON array of granted scopes
-    
-    # Auto-post settings
+    platform_data = Column(Text, nullable=True)
+    scopes = Column(Text, nullable=True)
+
     auto_post_enabled = Column(Boolean, default=False)
     auto_reply_enabled = Column(Boolean, default=False)
-    low_risk_auto_reply = Column(Boolean, default=False)  # Auto-reply to simple comments
-    
+    low_risk_auto_reply = Column(Boolean, default=False)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    # Relationships
+
     user = relationship("User", back_populates="integrations")
-    
-    def get_access_token(self) -> str:
-        """Get decrypted access token."""
-        if self.encrypted_access_token and fernet:
-            return fernet.decrypt(self.encrypted_access_token.encode()).decode()
+
+    def get_access_token(self) -> str | None:
+        if self.encrypted_access_token and _fernet:
+            try:
+                return _fernet.decrypt(self.encrypted_access_token.encode()).decode()
+            except Exception:
+                return self.encrypted_access_token
         return self.encrypted_access_token
-    
-    def get_refresh_token(self) -> str:
-        """Get decrypted refresh token."""
-        if self.encrypted_refresh_token and fernet:
-            return fernet.decrypt(self.encrypted_refresh_token.encode()).decode()
+
+    def get_refresh_token(self) -> str | None:
+        if self.encrypted_refresh_token and _fernet:
+            try:
+                return _fernet.decrypt(self.encrypted_refresh_token.encode()).decode()
+            except Exception:
+                return self.encrypted_refresh_token
         return self.encrypted_refresh_token
-    
+
     @staticmethod
     def encrypt_token(token: str) -> str:
-        """Encrypt a token."""
-        if fernet and token:
-            return fernet.encrypt(token.encode()).decode()
+        if _fernet and token:
+            return _fernet.encrypt(token.encode()).decode()
         return token

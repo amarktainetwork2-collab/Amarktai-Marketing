@@ -10,6 +10,7 @@ from datetime import datetime
 import uuid
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.engagement import EngagementReply, EngagementStatus, EngagementPriority
 from app.models.user import User
 from app.agents.community_agent import CommunityAgent
@@ -49,13 +50,6 @@ class EngagementUpdate(BaseModel):
 class ReplyAction(BaseModel):
     action: str  # approve, reject, edit
     edited_text: Optional[str] = None
-
-# Helper function to get current user
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 @router.get("/queue", response_model=List[EngagementResponse])
 async def get_engagement_queue(

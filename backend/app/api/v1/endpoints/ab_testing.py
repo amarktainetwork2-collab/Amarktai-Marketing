@@ -10,6 +10,7 @@ from datetime import datetime
 import uuid
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.engagement import ABTest
 from app.models.user import User
 
@@ -41,13 +42,6 @@ class ABTestUpdate(BaseModel):
     winning_variant_id: Optional[str] = None
     confidence_level: Optional[float] = None
     improvement_percent: Optional[float] = None
-
-# Helper function to get current user
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 @router.get("/tests", response_model=List[ABTestResponse])
 async def get_ab_tests(

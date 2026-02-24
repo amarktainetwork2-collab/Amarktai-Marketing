@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.user_api_key import UserAPIKey, UserIntegration
 from app.models.user import User
 from app.core.config import settings

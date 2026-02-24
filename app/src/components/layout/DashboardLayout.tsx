@@ -17,7 +17,8 @@ import {
   User,
   Key,
   MessageSquare,
-  FlaskConical
+  FlaskConical,
+  ShieldCheck,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,7 @@ const navigation = [
   { name: 'Integrations', href: '/dashboard/integrations', icon: Key },
   { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Admin', href: '/dashboard/admin', icon: ShieldCheck },
 ];
 
 function DemoUserProfile() {

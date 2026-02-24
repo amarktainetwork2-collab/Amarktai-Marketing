@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "Amarktai Marketing"
     DEBUG: bool = False
+    FRONTEND_URL: str = "http://localhost:3000"
+    ADMIN_USER_IDS: str = ""  # comma-separated list of admin user IDs
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/amarktai"
