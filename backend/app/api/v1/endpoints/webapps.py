@@ -5,29 +5,31 @@ import uuid
 
 from app.db.base import get_db
 from app.models.webapp import WebApp as WebAppModel
+from app.models.user import User
 from app.schemas.webapp import WebApp, WebAppCreate, WebAppUpdate
+from app.api.deps import get_current_user
 
 router = APIRouter()
 
 @router.get("/", response_model=List[WebApp])
 async def get_webapps(
-    user_id: str = "user-1",  # TODO: Get from auth
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Get all web apps for the current user."""
-    webapps = db.query(WebAppModel).filter(WebAppModel.user_id == user_id).all()
+    webapps = db.query(WebAppModel).filter(WebAppModel.user_id == current_user.id).all()
     return webapps
 
 @router.get("/{webapp_id}", response_model=WebApp)
 async def get_webapp(
     webapp_id: str,
-    user_id: str = "user-1",  # TODO: Get from auth
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Get a specific web app by ID."""
     webapp = db.query(WebAppModel).filter(
         WebAppModel.id == webapp_id,
-        WebAppModel.user_id == user_id
+        WebAppModel.user_id == current_user.id,
     ).first()
     if not webapp:
         raise HTTPException(status_code=404, detail="Web app not found")
@@ -36,13 +38,13 @@ async def get_webapp(
 @router.post("/", response_model=WebApp, status_code=status.HTTP_201_CREATED)
 async def create_webapp(
     webapp: WebAppCreate,
-    user_id: str = "user-1",  # TODO: Get from auth
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Create a new web app."""
     db_webapp = WebAppModel(
         id=str(uuid.uuid4()),
-        user_id=user_id,
+        user_id=current_user.id,
         **webapp.model_dump()
     )
     db.add(db_webapp)
@@ -54,21 +56,21 @@ async def create_webapp(
 async def update_webapp(
     webapp_id: str,
     webapp_update: WebAppUpdate,
-    user_id: str = "user-1",  # TODO: Get from auth
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Update a web app."""
     db_webapp = db.query(WebAppModel).filter(
         WebAppModel.id == webapp_id,
-        WebAppModel.user_id == user_id
+        WebAppModel.user_id == current_user.id,
     ).first()
     if not db_webapp:
         raise HTTPException(status_code=404, detail="Web app not found")
-    
+
     update_data = webapp_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_webapp, field, value)
-    
+
     db.commit()
     db.refresh(db_webapp)
     return db_webapp
@@ -76,17 +78,17 @@ async def update_webapp(
 @router.delete("/{webapp_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_webapp(
     webapp_id: str,
-    user_id: str = "user-1",  # TODO: Get from auth
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Delete a web app."""
     db_webapp = db.query(WebAppModel).filter(
         WebAppModel.id == webapp_id,
-        WebAppModel.user_id == user_id
+        WebAppModel.user_id == current_user.id,
     ).first()
     if not db_webapp:
         raise HTTPException(status_code=404, detail="Web app not found")
-    
+
     db.delete(db_webapp)
     db.commit()
     return None
