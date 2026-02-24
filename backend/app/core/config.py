@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Clerk Auth
     CLERK_SECRET_KEY: str = ""
     CLERK_PUBLISHABLE_KEY: str = ""
+    CLERK_WEBHOOK_SECRET: str = ""  # From Clerk Dashboard → Webhooks → Signing Secret
     
     # Encryption (for API keys and tokens)
     ENCRYPTION_KEY: str = "your-encryption-key-here-change-in-production"
