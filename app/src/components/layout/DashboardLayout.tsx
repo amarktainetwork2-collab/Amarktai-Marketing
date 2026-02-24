@@ -21,6 +21,7 @@ import {
   Wrench,
   Users,
   FileText,
+  UsersRound,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,7 @@ const navigation = [
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
   { name: 'Leads', href: '/dashboard/leads', icon: Users },
   { name: 'Blog Generator', href: '/dashboard/blog', icon: FileText },
+  { name: 'Communities', href: '/dashboard/groups', icon: UsersRound },
   { name: 'Integrations', href: '/dashboard/integrations', icon: Key },
   { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare },
   { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench },

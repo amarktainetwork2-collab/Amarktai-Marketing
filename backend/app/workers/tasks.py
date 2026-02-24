@@ -974,3 +974,295 @@ def poll_and_capture_comment_leads(self):
         print(f"✅  Comment-to-lead: captured {captured} new leads")
     finally:
         db.close()
+
+
+# ---------------------------------------------------------------------------
+# search_and_suggest_groups  – weekly task to find new groups per webapp
+# ---------------------------------------------------------------------------
+
+@shared_task(name="app.workers.tasks.search_and_suggest_groups")
+def search_and_suggest_groups():
+    """
+    Weekly: for every active webapp of every user, search Facebook and Reddit
+    for relevant groups/communities and store them as SUGGESTED in the DB.
+    Users will see the suggestions in the Groups dashboard.
+    """
+    import asyncio
+    import uuid
+
+    db: Session = SessionLocal()
+    try:
+        from app.models.webapp import WebApp
+        from app.models.business_group import BusinessGroup, GroupStatus
+        from app.models.user_api_key import UserIntegration
+        from app.services.group_search import (
+            search_groups_for_webapp,
+            extract_keywords_from_scraped,
+        )
+
+        webapps = db.query(WebApp).filter(WebApp.is_active == True).all()
+        total_saved = 0
+
+        for webapp in webapps:
+            keywords = extract_keywords_from_scraped(webapp.scraped_data, webapp.name)
+            if not keywords:
+                keywords = f"{webapp.name} {webapp.category} {webapp.target_audience}"
+
+            # Get FB token for this user if available
+            fb_integ = db.query(UserIntegration).filter(
+                UserIntegration.user_id == webapp.user_id,
+                UserIntegration.platform == "facebook",
+                UserIntegration.is_connected == True,
+            ).first()
+            fb_token = fb_integ.get_access_token() if fb_integ else None
+
+            for platform in ["reddit", "facebook", "telegram", "discord"]:
+                if platform == "facebook" and not fb_token:
+                    continue
+                try:
+                    search_loop = asyncio.new_event_loop()
+                    try:
+                        suggestions = search_loop.run_until_complete(
+                            search_groups_for_webapp(
+                                platform=platform,
+                                keywords=keywords,
+                                facebook_token=fb_token,
+                                limit=5,
+                            )
+                        )
+                    finally:
+                        search_loop.close()
+                except Exception as exc:
+                    print(f"  ⚠️  Group search error ({platform}): {exc}")
+                    continue
+
+                for s in suggestions:
+                    existing = db.query(BusinessGroup).filter(
+                        BusinessGroup.webapp_id == webapp.id,
+                        BusinessGroup.platform == platform,
+                        BusinessGroup.group_name == s.group_name,
+                    ).first()
+                    if existing:
+                        continue
+                    grp = BusinessGroup(
+                        id=str(uuid.uuid4()),
+                        user_id=webapp.user_id,
+                        webapp_id=webapp.id,
+                        platform=platform,
+                        group_id=s.group_id or None,
+                        group_name=s.group_name,
+                        group_url=s.group_url,
+                        description=s.description,
+                        member_count=s.member_count,
+                        status=GroupStatus.SUGGESTED,
+                        keywords_used=keywords[:300],
+                        compliance_note=(
+                            "Join this group manually via the link, "
+                            "then click Confirm Join to enable AI posting."
+                        ),
+                    )
+                    db.add(grp)
+                    total_saved += 1
+
+        db.commit()
+        print(f"✅  Weekly group search complete: {total_saved} new suggestions saved")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# post_to_active_groups  – 3× daily, posts HF-generated content to groups
+# ---------------------------------------------------------------------------
+
+@shared_task(name="app.workers.tasks.post_to_active_groups")
+def post_to_active_groups():
+    """
+    3× daily: post AI-generated content to all ACTIVE groups for all users.
+    Rate limit: each group receives at most 2 posts per 24-hour window.
+    Content is generated specifically for each platform & webapp context.
+    """
+    import asyncio
+
+    db: Session = SessionLocal()
+    try:
+        from app.models.webapp import WebApp
+        from app.models.business_group import BusinessGroup, GroupStatus
+        from app.models.user_api_key import UserIntegration
+        from app.services.hf_generator import HFGenerator
+        from app.services.posting_service import (
+            post_to_facebook_group,
+            post_to_reddit,
+            post_to_telegram_channel,
+            post_to_discord_channel,
+        )
+
+        active_groups = (
+            db.query(BusinessGroup)
+            .filter(
+                BusinessGroup.status == GroupStatus.ACTIVE,
+                BusinessGroup.group_id != None,
+                BusinessGroup.group_id != "",
+            )
+            .all()
+        )
+
+        posted_count = 0
+
+        for grp in active_groups:
+            try:
+                webapp = db.query(WebApp).filter(WebApp.id == grp.webapp_id).first()
+                if not webapp:
+                    continue
+
+                hf_token = _get_hf_token(db, webapp.user)
+                generator = HFGenerator(hf_token)
+
+                platform = grp.platform.value if hasattr(grp.platform, "value") else str(grp.platform)
+
+                # Generate platform-appropriate content
+                try:
+                    gen_loop = asyncio.new_event_loop()
+                    try:
+                        text = gen_loop.run_until_complete(
+                            generator.generate_post(
+                                business_name=webapp.name,
+                                business_description=webapp.description,
+                                website_content=str(webapp.scraped_data or {})[:500],
+                                platform=platform,
+                                content_type="organic group post",
+                            )
+                        )
+                    finally:
+                        gen_loop.close()
+                except Exception as ge:
+                    print(f"  ⚠️  HF generate error for group {grp.id}: {ge}")
+                    continue
+
+                # Get platform credentials
+                integ = db.query(UserIntegration).filter(
+                    UserIntegration.user_id == grp.user_id,
+                    UserIntegration.platform == platform,
+                    UserIntegration.is_connected == True,
+                ).first()
+
+                result = None
+                try:
+                    posting_loop = asyncio.new_event_loop()
+                    try:
+                        if platform == "facebook":
+                            if not integ:
+                                continue
+                            result = posting_loop.run_until_complete(
+                                post_to_facebook_group(
+                                    access_token=integ.get_access_token(),
+                                    group_id=grp.group_id,
+                                    text=text,
+                                    link=webapp.url,
+                                )
+                            )
+
+                        elif platform == "reddit":
+                            if not integ:
+                                continue
+                            import json
+                            creds = {}
+                            if integ.platform_data:
+                                try:
+                                    creds = json.loads(integ.platform_data)
+                                except Exception:
+                                    pass
+                            result = posting_loop.run_until_complete(
+                                post_to_reddit(
+                                    client_id=creds.get("client_id", ""),
+                                    client_secret=creds.get("client_secret", ""),
+                                    username=creds.get("username", ""),
+                                    password=creds.get("password", ""),
+                                    subreddit=grp.group_id,
+                                    title=text[:300],
+                                    text=text,
+                                    url=webapp.url,
+                                )
+                            )
+
+                        elif platform == "telegram":
+                            if not integ:
+                                continue
+                            result = posting_loop.run_until_complete(
+                                post_to_telegram_channel(
+                                    bot_token=integ.get_access_token(),
+                                    chat_id=grp.group_id,
+                                    text=text,
+                                )
+                            )
+
+                        elif platform == "discord":
+                            result = posting_loop.run_until_complete(
+                                post_to_discord_channel(
+                                    webhook_url=grp.group_id,
+                                    text=text,
+                                )
+                            )
+                    finally:
+                        posting_loop.close()
+                except Exception as pe:
+                    print(f"  ⚠️  Post error for group {grp.id} ({platform}): {pe}")
+                    continue
+
+                if result and result.success:
+                    grp.posts_sent = (grp.posts_sent or 0) + 1
+                    posted_count += 1
+
+            except Exception as e:
+                print(f"  ⚠️  Error processing group {grp.id}: {e}")
+                continue
+
+        db.commit()
+        print(f"✅  Group posts complete: {posted_count} posts sent to {len(active_groups)} active groups")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# refresh_all_webapp_scrapes  – nightly re-scrape all webapp URLs
+# ---------------------------------------------------------------------------
+
+@shared_task(name="app.workers.tasks.refresh_all_webapp_scrapes")
+def refresh_all_webapp_scrapes():
+    """
+    Nightly at 00:30 UTC: re-scrape every active webapp URL and cache the
+    result in webapp.scraped_data for use in content generation & group search.
+    """
+    import asyncio
+
+    db: Session = SessionLocal()
+    try:
+        from app.models.webapp import WebApp
+        from app.services.scraper import scrape_page
+
+        webapps = db.query(WebApp).filter(WebApp.is_active == True).all()
+        refreshed = 0
+
+        for webapp in webapps:
+            try:
+                scrape_loop = asyncio.new_event_loop()
+                try:
+                    page = scrape_loop.run_until_complete(scrape_page(webapp.url))
+                finally:
+                    scrape_loop.close()
+                if not page.error:
+                    webapp.scraped_data = {
+                        "title": page.title,
+                        "meta_description": page.meta_description,
+                        "headings": page.headings[:10],
+                        "paragraphs": page.paragraphs[:5],
+                        "full_text": page.full_text[:2000],
+                        "social_links": page.social_links,
+                    }
+                    refreshed += 1
+            except Exception as exc:
+                print(f"  ⚠️  Scrape error for {webapp.url}: {exc}")
+
+        db.commit()
+        print(f"✅  Nightly scrape refresh: {refreshed}/{len(webapps)} webapps updated")
+    finally:
+        db.close()

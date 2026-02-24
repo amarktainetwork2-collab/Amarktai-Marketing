@@ -135,6 +135,32 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.poll_and_capture_comment_leads",
         "schedule": crontab(minute=0, hour="*/2"),
     },
+
+    # Weekly group search – Sunday at 03:30 UTC (fresh suggestions each week)
+    "weekly-group-search": {
+        "task": "app.workers.tasks.search_and_suggest_groups",
+        "schedule": crontab(hour=3, minute=30, day_of_week=0),
+    },
+
+    # Post to active groups 3× daily (offset from main content posts)
+    "morning-group-posts": {
+        "task": "app.workers.tasks.post_to_active_groups",
+        "schedule": crontab(hour=8, minute=30),
+    },
+    "midday-group-posts": {
+        "task": "app.workers.tasks.post_to_active_groups",
+        "schedule": crontab(hour=13, minute=30),
+    },
+    "evening-group-posts": {
+        "task": "app.workers.tasks.post_to_active_groups",
+        "schedule": crontab(hour=18, minute=30),
+    },
+
+    # Nightly scrape refresh – re-scrape all webapp URLs at 00:30 UTC
+    "nightly-scrape-refresh": {
+        "task": "app.workers.tasks.refresh_all_webapp_scrapes",
+        "schedule": crontab(hour=0, minute=30),
+    },
 }
 
 

@@ -4,7 +4,7 @@ from typing import List
 import uuid
 
 from app.db.base import get_db
-from app.models.webapp import WebApp as WebAppModel
+from app.models.webapp import WebApp as WebAppModel, MAX_BUSINESSES_PER_USER
 from app.models.user import User
 from app.schemas.webapp import WebApp, WebAppCreate, WebAppUpdate
 from app.api.deps import get_current_user
@@ -41,7 +41,16 @@ async def create_webapp(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Create a new web app."""
+    """Create a new web app / business (max 20 per user)."""
+    # Enforce maximum businesses per user
+    existing_count = db.query(WebAppModel).filter(
+        WebAppModel.user_id == current_user.id,
+    ).count()
+    if existing_count >= MAX_BUSINESSES_PER_USER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Maximum of {MAX_BUSINESSES_PER_USER} businesses per user reached.",
+        )
     db_webapp = WebAppModel(
         id=str(uuid.uuid4()),
         user_id=current_user.id,

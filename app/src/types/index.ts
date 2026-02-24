@@ -144,3 +144,23 @@ export interface PricingPlan {
   };
   highlighted?: boolean;
 }
+
+export interface BusinessGroup {
+  id: string;
+  webappId: string;
+  platform: 'facebook' | 'reddit' | 'telegram' | 'discord' | 'linkedin';
+  groupId?: string;
+  groupName: string;
+  groupUrl?: string;
+  description?: string;
+  status: 'suggested' | 'joined' | 'active' | 'paused' | 'removed';
+  memberCount: number;
+  postsSent: number;
+  totalViews: number;
+  totalEngagements: number;
+  totalLeads: number;
+  avgInteractionRate: number;
+  keywordsUsed?: string;
+  complianceNote?: string;
+  createdAt: string;
+}

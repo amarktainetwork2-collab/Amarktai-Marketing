@@ -883,3 +883,167 @@ async def post_snapchat(
         )
     except Exception as exc:
         return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# GROUP / COMMUNITY POSTING
+# --------------------------------------------------------------------------- #
+
+async def post_to_facebook_group(
+    access_token: str,
+    group_id: str,
+    text: str,
+    link: str | None = None,
+) -> PostResult:
+    """
+    Post a message to a Facebook Group.
+    Requires a user access token that has joined the group.
+    """
+    try:
+        # 63,206 characters is the Facebook Graph API message field limit
+        body: dict = {"message": text[:63206]}
+        if link:
+            body["link"] = link
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                f"https://graph.facebook.com/v18.0/{group_id}/feed",
+                data={**body, "access_token": access_token},
+            )
+            resp.raise_for_status()
+            post_id = resp.json().get("id", "")
+        return PostResult(
+            success=True,
+            post_id=post_id,
+            url=f"https://www.facebook.com/groups/{group_id}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+async def post_to_reddit(
+    client_id: str,
+    client_secret: str,
+    username: str,
+    password: str,
+    subreddit: str,
+    title: str,
+    text: str,
+    url: str | None = None,
+) -> PostResult:
+    """
+    Submit a post to a Reddit subreddit.
+    Uses Reddit's OAuth2 password flow.
+    """
+    try:
+        auth = httpx.BasicAuth(client_id, client_secret)
+        token_data = {
+            "grant_type": "password",
+            "username": username,
+            "password": password,
+        }
+        headers = {"User-Agent": "AmarktaiBot/1.0"}
+        async with httpx.AsyncClient(timeout=20, headers=headers) as client:
+            token_resp = await client.post(
+                "https://www.reddit.com/api/v1/access_token",
+                data=token_data,
+                auth=auth,
+            )
+            token_resp.raise_for_status()
+            access_token = token_resp.json()["access_token"]
+
+            kind = "link" if url else "self"
+            post_data: dict = {
+                "sr": subreddit,
+                "kind": kind,
+                "title": title[:300],
+                "resubmit": True,
+                "nsfw": False,
+            }
+            if url:
+                post_data["url"] = url
+            else:
+                post_data["text"] = text[:40000]
+
+            oauth_headers = {
+                **headers,
+                "Authorization": f"bearer {access_token}",
+            }
+            submit_resp = await client.post(
+                "https://oauth.reddit.com/api/submit",
+                data=post_data,
+                headers=oauth_headers,
+            )
+            submit_resp.raise_for_status()
+            submit_json = submit_resp.json()
+            # Reddit's legacy /api/submit returns a jQuery-style response array.
+            # The permalink is at index [17][3][0] in the jquery array.
+            permalink = (
+                submit_json.get("jquery", [[]] * 18)[17][3][0]
+                if "jquery" in submit_json
+                else ""
+            )
+        return PostResult(
+            success=True,
+            post_id=permalink,
+            url=f"https://www.reddit.com{permalink}" if permalink else f"https://www.reddit.com/r/{subreddit}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+async def post_to_telegram_channel(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+) -> PostResult:
+    """
+    Send a message to a Telegram channel or group via the Bot API.
+    `chat_id` can be a numeric ID (e.g. -100xxxxxxxxxx) or a @username.
+    """
+    try:
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        body = {
+            "chat_id": chat_id,
+            "text": text[:4096],
+            "parse_mode": "HTML",
+            "disable_web_page_preview": False,
+        }
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(url, json=body)
+            resp.raise_for_status()
+            msg_id = resp.json().get("result", {}).get("message_id", "")
+        return PostResult(
+            success=True,
+            post_id=str(msg_id),
+            url=f"https://t.me/{chat_id.lstrip('@')}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+async def post_to_discord_channel(
+    webhook_url: str,
+    text: str,
+    username: str = "Amarktai",
+) -> PostResult:
+    """
+    Send a message to a Discord channel via an incoming webhook.
+    `webhook_url` is the full Discord webhook URL for the channel.
+    """
+    try:
+        body = {
+            "content": text[:2000],
+            "username": username[:80],
+        }
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(webhook_url, json=body)
+            # Discord returns 204 No Content on success
+            if resp.status_code not in (200, 204):
+                resp.raise_for_status()
+        return PostResult(
+            success=True,
+            post_id="",
+            url=webhook_url.split("/messages")[0],
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))

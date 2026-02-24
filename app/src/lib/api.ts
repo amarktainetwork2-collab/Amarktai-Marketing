@@ -494,3 +494,96 @@ export const contentBatchApi = {
     return apiFetch('/content/generate-all', { method: 'POST' });
   },
 };
+
+// ─── Groups / Communities API ─────────────────────────────────────────────────
+
+export interface BusinessGroup {
+  id: string;
+  webappId: string;
+  platform: 'facebook' | 'reddit' | 'telegram' | 'discord' | 'linkedin';
+  groupId?: string;
+  groupName: string;
+  groupUrl?: string;
+  description?: string;
+  status: 'suggested' | 'joined' | 'active' | 'paused' | 'removed';
+  memberCount: number;
+  postsSent: number;
+  totalViews: number;
+  totalEngagements: number;
+  totalLeads: number;
+  avgInteractionRate: number;
+  keywordsUsed?: string;
+  complianceNote?: string;
+  createdAt: string;
+}
+
+function mapGroup(d: Record<string, unknown>): BusinessGroup {
+  return {
+    id: d.id as string,
+    webappId: d.webapp_id as string,
+    platform: d.platform as BusinessGroup['platform'],
+    groupId: d.group_id as string | undefined,
+    groupName: d.group_name as string,
+    groupUrl: d.group_url as string | undefined,
+    description: d.description as string | undefined,
+    status: d.status as BusinessGroup['status'],
+    memberCount: (d.member_count as number) || 0,
+    postsSent: (d.posts_sent as number) || 0,
+    totalViews: (d.total_views as number) || 0,
+    totalEngagements: (d.total_engagements as number) || 0,
+    totalLeads: (d.total_leads as number) || 0,
+    avgInteractionRate: (d.avg_interaction_rate as number) || 0,
+    keywordsUsed: d.keywords_used as string | undefined,
+    complianceNote: d.compliance_note as string | undefined,
+    createdAt: d.created_at as string,
+  };
+}
+
+export const groupsApi = {
+  list: async (webappId?: string, platform?: string, status?: string): Promise<BusinessGroup[]> => {
+    const params = new URLSearchParams();
+    if (webappId) params.set('webapp_id', webappId);
+    if (platform) params.set('platform', platform);
+    if (status) params.set('status_filter', status);
+    const qs = params.toString();
+    const data = await apiFetch<Record<string, unknown>[]>(`/groups${qs ? '?' + qs : ''}`);
+    return data.map(mapGroup);
+  },
+
+  search: async (webappId: string, platform: string): Promise<{ found: number; saved: number; keywords_used: string }> => {
+    return apiFetch('/groups/search', {
+      method: 'POST',
+      body: JSON.stringify({ webapp_id: webappId, platform }),
+    });
+  },
+
+  confirmJoin: async (groupId: string, platformGroupId: string): Promise<BusinessGroup> => {
+    const data = await apiFetch<Record<string, unknown>>(`/groups/${groupId}/confirm-join`, {
+      method: 'POST',
+      body: JSON.stringify({ group_id: platformGroupId }),
+    });
+    return mapGroup(data);
+  },
+
+  updateStatus: async (groupId: string, newStatus: string): Promise<{ id: string; status: string }> => {
+    return apiFetch(`/groups/${groupId}/status?new_status=${newStatus}`, { method: 'PATCH' });
+  },
+
+  post: async (groupId: string, text: string, link?: string): Promise<{ success: boolean; post_id: string; url: string }> => {
+    return apiFetch(`/groups/${groupId}/post`, {
+      method: 'POST',
+      body: JSON.stringify({ text, link }),
+    });
+  },
+
+  delete: async (groupId: string): Promise<void> => {
+    await apiFetch<void>(`/groups/${groupId}`, { method: 'DELETE' });
+  },
+
+  stats: async (): Promise<{
+    total: number; active: number; suggested: number; joined: number;
+    total_posts_sent: number; total_leads: number; by_platform: Record<string, { count: number; active: number; posts: number }>;
+  }> => {
+    return apiFetch('/groups/stats/summary');
+  },
+};
