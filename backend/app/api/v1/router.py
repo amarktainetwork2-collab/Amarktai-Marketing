@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
-    remix, tools,
+    remix, tools, leads,
 )
 
 api_router = APIRouter()
@@ -15,6 +15,7 @@ api_router.include_router(webapps.router, prefix="/webapps", tags=["webapps"])
 api_router.include_router(platforms.router, prefix="/platforms", tags=["platforms"])
 api_router.include_router(content.router, prefix="/content", tags=["content"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
 
 # Phase 2 & 3 routes
 api_router.include_router(integrations.router, prefix="/integrations", tags=["integrations"])

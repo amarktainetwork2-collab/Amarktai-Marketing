@@ -91,15 +91,32 @@ class Settings(BaseSettings):
     # LinkedIn
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
-    
-    # ==================== TREND DATA SOURCES ====================
-    # Google Trends
-    GOOGLE_TRENDS_API_KEY: str = ""
-    
-    # Reddit (for trend analysis)
+
+    # Pinterest
+    PINTEREST_CLIENT_ID: str = ""
+    PINTEREST_CLIENT_SECRET: str = ""
+
+    # Reddit (also used for trend analysis)
     REDDIT_CLIENT_ID: str = ""
     REDDIT_CLIENT_SECRET: str = ""
     REDDIT_USER_AGENT: str = "AmarktaiBot/1.0"
+
+    # Bluesky / AT Protocol
+    BLUESKY_CLIENT_ID: str = ""
+    BLUESKY_IDENTIFIER: str = ""  # handle e.g. user.bsky.social
+    BLUESKY_APP_PASSWORD: str = ""
+
+    # Telegram
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CHANNEL_ID: str = ""  # @channel or numeric chat_id
+
+    # Snapchat
+    SNAPCHAT_CLIENT_ID: str = ""
+    SNAPCHAT_CLIENT_SECRET: str = ""
+
+    # ==================== TREND DATA SOURCES ====================
+    # Google Trends
+    GOOGLE_TRENDS_API_KEY: str = ""
     
     # News APIs (for content ideas)
     NEWSAPI_KEY: str = ""

@@ -67,6 +67,42 @@ _PLATFORM_HINTS: dict[str, dict[str, str]] = {
         "length": "400-600 characters",
         "hashtag_count": "3-5",
     },
+    "pinterest": {
+        "format": "Pinterest pin description",
+        "caption_hint": "inspiring, keyword-rich description that tells a visual story with a clear CTA",
+        "length": "150-300 characters",
+        "hashtag_count": "5-10",
+    },
+    "reddit": {
+        "format": "Reddit post title + body",
+        "caption_hint": "engaging, value-first post that fits subreddit culture without being salesy",
+        "length": "200-500 characters",
+        "hashtag_count": "0",
+    },
+    "bluesky": {
+        "format": "Bluesky skeet / post",
+        "caption_hint": "conversational, thoughtful post similar to early Twitter style",
+        "length": "100-280 characters",
+        "hashtag_count": "2-4",
+    },
+    "threads": {
+        "format": "Threads post",
+        "caption_hint": "conversational, engaging post that sparks discussion",
+        "length": "150-300 characters",
+        "hashtag_count": "3-5",
+    },
+    "telegram": {
+        "format": "Telegram channel message",
+        "caption_hint": "informative, value-packed message with a clear link or CTA for the channel audience",
+        "length": "200-400 characters",
+        "hashtag_count": "2-4",
+    },
+    "snapchat": {
+        "format": "Snapchat Story caption",
+        "caption_hint": "short, punchy, visual caption with energy and urgency — Snap-native style",
+        "length": "50-150 characters",
+        "hashtag_count": "2-4",
+    },
 }
 
 

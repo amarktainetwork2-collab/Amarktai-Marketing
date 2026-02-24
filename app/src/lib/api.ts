@@ -12,6 +12,8 @@ import type {
   Content,
   AnalyticsSummary,
   Platform,
+  Lead,
+  LeadStats,
 } from '@/types';
 
 // ─── Base helpers ────────────────────────────────────────────────────────────
@@ -269,5 +271,127 @@ export const analyticsApi = {
     platform: Platform
   ): Promise<AnalyticsSummary['platformBreakdown'][Platform]> => {
     return apiFetch(`/analytics/platform/${platform}`);
+  },
+};
+
+// ─── Leads ───────────────────────────────────────────────────────────────────
+
+function mapLead(raw: Record<string, unknown>): Lead {
+  const c = toCamel(raw);
+  return {
+    id: c.id as string,
+    name: c.name as string | undefined,
+    email: c.email as string,
+    phone: c.phone as string | undefined,
+    company: c.company as string | undefined,
+    sourcePlatform: c.sourcePlatform as Platform | undefined,
+    utmSource: c.utmSource as string | undefined,
+    utmMedium: c.utmMedium as string | undefined,
+    utmCampaign: c.utmCampaign as string | undefined,
+    qualifiers: c.qualifiers as Record<string, string> | undefined,
+    leadScore: (c.leadScore as number) ?? 0,
+    isQualified: (c.isQualified as boolean) ?? false,
+    status: (c.status as Lead['status']) ?? 'new',
+    notes: c.notes as string | undefined,
+    createdAt: c.createdAt as string,
+  };
+}
+
+export const leadsApi = {
+  getAll: async (params?: { status?: string; platform?: string; isQualified?: boolean }): Promise<Lead[]> => {
+    const qs = new URLSearchParams();
+    if (params?.status) qs.set('status', params.status);
+    if (params?.platform) qs.set('platform', params.platform);
+    if (params?.isQualified !== undefined) qs.set('is_qualified', String(params.isQualified));
+    const query = qs.toString() ? `?${qs.toString()}` : '';
+    const data = await apiFetch<Record<string, unknown>[]>(`/leads/${query}`);
+    return data.map(mapLead);
+  },
+
+  getStats: async (): Promise<LeadStats> => {
+    const data = await apiFetch<Record<string, unknown>>('/leads/stats');
+    const c = toCamel(data);
+    return {
+      total: c.total as number,
+      qualified: c.qualified as number,
+      converted: c.converted as number,
+      qualificationRate: c.qualificationRate as number,
+      conversionRate: c.conversionRate as number,
+      byPlatform: c.byPlatform as Record<string, number>,
+    };
+  },
+
+  update: async (id: string, update: Partial<Lead>): Promise<Lead> => {
+    const data = await apiFetch<Record<string, unknown>>(`/leads/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: update.status,
+        notes: update.notes,
+        is_qualified: update.isQualified,
+        lead_score: update.leadScore,
+      }),
+    });
+    return mapLead(data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiFetch<void>(`/leads/${id}`, { method: 'DELETE' });
+  },
+
+  generateUtmLink: async (params: {
+    base_url: string;
+    campaign: string;
+    platform: string;
+    content_id?: string;
+  }): Promise<{ utm_url: string; params: Record<string, string> }> => {
+    return apiFetch('/leads/utm/generate', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
+  exportCsv: (): void => {
+    window.location.href = `${BASE}/leads/export/csv`;
+  },
+};
+
+// ─── Integrations (platform OAuth) ───────────────────────────────────────────
+
+export const integrationsApi = {
+  getApiKeys: async (): Promise<{ id: string; key_name: string; is_active: boolean; created_at: string }[]> => {
+    return apiFetch('/integrations/api-keys');
+  },
+
+  saveApiKey: async (key_name: string, key_value: string): Promise<void> => {
+    await apiFetch('/integrations/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({ key_name, key_value }),
+    });
+  },
+
+  deleteApiKey: async (id: string): Promise<void> => {
+    await apiFetch(`/integrations/api-keys/${id}`, { method: 'DELETE' });
+  },
+
+  getPlatforms: async () => {
+    return apiFetch<Record<string, unknown>[]>('/integrations/platforms');
+  },
+
+  getConnectUrl: async (platform: Platform): Promise<{ auth_url: string }> => {
+    return apiFetch(`/integrations/platforms/${platform}/connect`);
+  },
+
+  disconnectPlatform: async (platform: Platform): Promise<void> => {
+    await apiFetch(`/integrations/platforms/${platform}/disconnect`, { method: 'POST' });
+  },
+
+  updatePlatformSettings: async (
+    platform: Platform,
+    settings: { auto_post_enabled?: boolean; auto_reply_enabled?: boolean }
+  ): Promise<void> => {
+    await apiFetch(`/integrations/platforms/${platform}`, {
+      method: 'PATCH',
+      body: JSON.stringify(settings),
+    });
   },
 };

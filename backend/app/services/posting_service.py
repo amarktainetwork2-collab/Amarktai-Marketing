@@ -432,6 +432,12 @@ async def post_to_platform(
     linkedin:  access_token, person_urn
     tiktok:    access_token
     youtube:   access_token
+    pinterest: access_token, board_id
+    reddit:    access_token, subreddit
+    bluesky:   identifier, app_password
+    threads:   access_token, threads_user_id
+    telegram:  bot_token, chat_id
+    snapchat:  access_token, ad_account_id
     """
     hashtag_text = " ".join(f"#{h}" for h in hashtags)
     full_caption = f"{caption}\n\n{hashtag_text}".strip()
@@ -498,6 +504,60 @@ async def post_to_platform(
                 hashtags=hashtags,
             )
 
+        if platform == "pinterest":
+            return await post_pinterest(
+                access_token=credentials["access_token"],
+                board_id=credentials["board_id"],
+                title=title,
+                description=full_caption,
+                image_url=media_urls[0] if media_urls else None,
+                link=webapp_url or None,
+            )
+
+        if platform == "reddit":
+            return await post_reddit(
+                access_token=credentials["access_token"],
+                subreddit=credentials["subreddit"],
+                title=title,
+                text=full_caption,
+                link=webapp_url or None,
+            )
+
+        if platform == "bluesky":
+            return await post_bluesky(
+                identifier=credentials["identifier"],
+                app_password=credentials["app_password"],
+                text=full_caption,
+                image_url=media_urls[0] if media_urls else None,
+            )
+
+        if platform == "threads":
+            return await post_threads(
+                access_token=credentials["access_token"],
+                threads_user_id=credentials["threads_user_id"],
+                text=full_caption,
+                image_url=media_urls[0] if media_urls else None,
+            )
+
+        if platform == "telegram":
+            return await post_telegram(
+                bot_token=credentials["bot_token"],
+                chat_id=credentials["chat_id"],
+                text=full_caption,
+                image_url=media_urls[0] if media_urls else None,
+            )
+
+        if platform == "snapchat":
+            media_url = media_urls[0] if media_urls else None
+            if not media_url:
+                return PostResult(success=False, error="Snapchat requires a media URL")
+            return await post_snapchat(
+                access_token=credentials["access_token"],
+                ad_account_id=credentials["ad_account_id"],
+                title=title,
+                media_url=media_url,
+            )
+
         return PostResult(success=False, error=f"Unknown platform: {platform}")
 
     except KeyError as exc:
@@ -505,3 +565,321 @@ async def post_to_platform(
             success=False,
             error=f"Missing credential for {platform}: {exc}",
         )
+
+
+# --------------------------------------------------------------------------- #
+# Pinterest
+# --------------------------------------------------------------------------- #
+
+async def post_pinterest(
+    access_token: str,
+    board_id: str,
+    title: str,
+    description: str,
+    image_url: str | None = None,
+    link: str | None = None,
+) -> PostResult:
+    """Create a Pin on Pinterest using the Pinterest API v5."""
+    try:
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+        body: dict[str, Any] = {
+            "board_id": board_id,
+            "title": title[:100],
+            "description": description[:500],
+        }
+        if link:
+            body["link"] = link
+        if image_url:
+            body["media_source"] = {"source_type": "image_url", "url": image_url}
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                "https://api.pinterest.com/v5/pins",
+                json=body,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            pin_id = resp.json().get("id", "")
+
+        return PostResult(
+            success=True,
+            post_id=str(pin_id),
+            url=f"https://www.pinterest.com/pin/{pin_id}/",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# Reddit
+# --------------------------------------------------------------------------- #
+
+async def post_reddit(
+    access_token: str,
+    subreddit: str,
+    title: str,
+    text: str,
+    link: str | None = None,
+) -> PostResult:
+    """Submit a post to a subreddit using the Reddit OAuth2 API."""
+    try:
+        headers = {
+            "Authorization": f"bearer {access_token}",
+            "User-Agent": "AmarktaiBot/1.0",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        if link:
+            data = {
+                "kind": "link",
+                "sr": subreddit.lstrip("r/"),
+                "title": title[:300],
+                "url": link,
+                "resubmit": "true",
+            }
+        else:
+            data = {
+                "kind": "self",
+                "sr": subreddit.lstrip("r/"),
+                "title": title[:300],
+                "text": text[:40000],
+            }
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                "https://oauth.reddit.com/api/submit",
+                data=data,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            resp_json = resp.json()
+            post_id = resp_json.get("data", {}).get("id", "")
+            post_url = resp_json.get("data", {}).get("url", "")
+
+        return PostResult(
+            success=True,
+            post_id=str(post_id),
+            url=post_url or f"https://www.reddit.com/r/{subreddit}/",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# Bluesky (AT Protocol)
+# --------------------------------------------------------------------------- #
+
+async def post_bluesky(
+    identifier: str,
+    app_password: str,
+    text: str,
+    image_url: str | None = None,
+) -> PostResult:
+    """Post to Bluesky via the AT Protocol HTTP API."""
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            # Authenticate
+            auth_resp = await client.post(
+                "https://bsky.social/xrpc/com.atproto.server.createSession",
+                json={"identifier": identifier, "password": app_password},
+            )
+            auth_resp.raise_for_status()
+            session = auth_resp.json()
+            access_jwt = session["accessJwt"]
+            did = session["did"]
+
+            headers = {"Authorization": f"Bearer {access_jwt}"}
+
+            post_body: dict[str, Any] = {
+                "$type": "app.bsky.feed.post",
+                "text": text[:300],
+                "createdAt": json.dumps(None).replace("null", "") or
+                    __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+            }
+            import datetime as _dt
+            post_body["createdAt"] = _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+            # Upload image blob if provided
+            if image_url:
+                img_resp = await client.get(image_url)
+                if img_resp.is_success:
+                    blob_resp = await client.post(
+                        "https://bsky.social/xrpc/com.atproto.repo.uploadBlob",
+                        content=img_resp.content,
+                        headers={**headers, "Content-Type": "image/jpeg"},
+                    )
+                    if blob_resp.is_success:
+                        blob = blob_resp.json().get("blob", {})
+                        post_body["embed"] = {
+                            "$type": "app.bsky.embed.images",
+                            "images": [{"image": blob, "alt": text[:300]}],
+                        }
+
+            create_resp = await client.post(
+                "https://bsky.social/xrpc/com.atproto.repo.createRecord",
+                json={
+                    "repo": did,
+                    "collection": "app.bsky.feed.post",
+                    "record": post_body,
+                },
+                headers=headers,
+            )
+            create_resp.raise_for_status()
+            uri = create_resp.json().get("uri", "")
+            rkey = uri.split("/")[-1] if uri else ""
+
+        return PostResult(
+            success=True,
+            post_id=uri,
+            url=f"https://bsky.app/profile/{identifier}/post/{rkey}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# Threads (Meta)
+# --------------------------------------------------------------------------- #
+
+async def post_threads(
+    access_token: str,
+    threads_user_id: str,
+    text: str,
+    image_url: str | None = None,
+) -> PostResult:
+    """Post to Threads via the Threads API (Meta Graph API)."""
+    try:
+        base = "https://graph.threads.net/v1.0"
+
+        # Step 1 – create media container
+        container_params: dict[str, Any] = {
+            "text": text[:500],
+            "access_token": access_token,
+        }
+        if image_url:
+            container_params["image_url"] = image_url
+            container_params["media_type"] = "IMAGE"
+        else:
+            container_params["media_type"] = "TEXT"
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            r1 = await client.post(
+                f"{base}/{threads_user_id}/threads",
+                data=container_params,
+            )
+            r1.raise_for_status()
+            creation_id = r1.json().get("id", "")
+
+            # Step 2 – publish
+            r2 = await client.post(
+                f"{base}/{threads_user_id}/threads_publish",
+                data={"creation_id": creation_id, "access_token": access_token},
+            )
+            r2.raise_for_status()
+            media_id = r2.json().get("id", "")
+
+        return PostResult(
+            success=True,
+            post_id=str(media_id),
+            url=f"https://www.threads.net/t/{media_id}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# Telegram
+# --------------------------------------------------------------------------- #
+
+async def post_telegram(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    image_url: str | None = None,
+    parse_mode: str = "HTML",
+) -> PostResult:
+    """Send a message (or photo) to a Telegram channel/group via Bot API."""
+    try:
+        base = f"https://api.telegram.org/bot{bot_token}"
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            if image_url:
+                resp = await client.post(
+                    f"{base}/sendPhoto",
+                    json={
+                        "chat_id": chat_id,
+                        "photo": image_url,
+                        "caption": text[:1024],
+                        "parse_mode": parse_mode,
+                    },
+                )
+            else:
+                resp = await client.post(
+                    f"{base}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": text[:4096],
+                        "parse_mode": parse_mode,
+                        "disable_web_page_preview": False,
+                    },
+                )
+            resp.raise_for_status()
+            message_id = str(resp.json().get("result", {}).get("message_id", ""))
+
+        return PostResult(
+            success=True,
+            post_id=message_id,
+            url=f"https://t.me/{str(chat_id).lstrip('@')}/{message_id}",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))
+
+
+# --------------------------------------------------------------------------- #
+# Snapchat (Snap Marketing API – organic story via Creative API)
+# --------------------------------------------------------------------------- #
+
+async def post_snapchat(
+    access_token: str,
+    ad_account_id: str,
+    title: str,
+    media_url: str,
+) -> PostResult:
+    """
+    Create a Snap Ad creative via the Snap Marketing API.
+    Requires media_url (image or video) and an Ad Account ID.
+    """
+    try:
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+        body = {
+            "creatives": [
+                {
+                    "name": title[:75],
+                    "ad_account_id": ad_account_id,
+                    "type": "SNAP_AD",
+                    "top_snap_media_id": media_url,
+                    "top_snap_crop_position": "MIDDLE",
+                }
+            ]
+        }
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                "https://adsapi.snapchat.com/v1/creatives",
+                json=body,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            creative_id = resp.json().get("creatives", [{}])[0].get("creative", {}).get("id", "")
+
+        return PostResult(
+            success=True,
+            post_id=str(creative_id),
+            url="https://ads.snapchat.com/",
+        )
+    except Exception as exc:
+        return PostResult(success=False, error=str(exc))

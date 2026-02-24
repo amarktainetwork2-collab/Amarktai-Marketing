@@ -24,7 +24,19 @@ export interface WebApp {
   updatedAt: string;
 }
 
-export type Platform = 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'twitter' | 'linkedin';
+export type Platform =
+  | 'youtube'
+  | 'tiktok'
+  | 'instagram'
+  | 'facebook'
+  | 'twitter'
+  | 'linkedin'
+  | 'pinterest'
+  | 'reddit'
+  | 'bluesky'
+  | 'threads'
+  | 'telegram'
+  | 'snapchat';
 
 export interface PlatformConnection {
   id: string;
@@ -88,6 +100,33 @@ export interface DailyStat {
   posts: number;
   views: number;
   engagement: number;
+}
+
+export interface Lead {
+  id: string;
+  name?: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  sourcePlatform?: Platform;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  qualifiers?: Record<string, string>;
+  leadScore: number;
+  isQualified: boolean;
+  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface LeadStats {
+  total: number;
+  qualified: number;
+  converted: number;
+  qualificationRate: number;
+  conversionRate: number;
+  byPlatform: Record<string, number>;
 }
 
 export interface PricingPlan {

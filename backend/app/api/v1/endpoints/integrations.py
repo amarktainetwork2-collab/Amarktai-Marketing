@@ -45,15 +45,6 @@ class IntegrationUpdate(BaseModel):
     auto_reply_enabled: bool = None
     low_risk_auto_reply: bool = None
 
-# Helper function to get current user (placeholder - integrate with Clerk)
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    # In production, verify Clerk JWT and get user
-    # For now, return a mock user
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
-
 # API Keys Endpoints
 @router.get("/api-keys", response_model=List[APIKeyResponse])
 async def get_api_keys(
@@ -157,7 +148,10 @@ async def get_integrations(
     current_user: User = Depends(get_current_user)
 ):
     """Get status of all platform integrations."""
-    platforms = ["youtube", "tiktok", "instagram", "facebook", "twitter", "linkedin"]
+    platforms = [
+        "youtube", "tiktok", "instagram", "facebook", "twitter", "linkedin",
+        "pinterest", "reddit", "bluesky", "threads", "telegram", "snapchat",
+    ]
     
     integrations = db.query(UserIntegration).filter(
         UserIntegration.user_id == current_user.id
@@ -217,7 +211,37 @@ async def connect_platform(
             "auth_url": "https://www.tiktok.com/auth/authorize",
             "client_id": settings.TIKTOK_CLIENT_KEY,
             "scope": "video.upload video.list"
-        }
+        },
+        "pinterest": {
+            "auth_url": "https://www.pinterest.com/oauth/",
+            "client_id": settings.PINTEREST_CLIENT_ID,
+            "scope": "boards:read pins:read pins:write"
+        },
+        "reddit": {
+            "auth_url": "https://www.reddit.com/api/v1/authorize",
+            "client_id": settings.REDDIT_CLIENT_ID,
+            "scope": "identity submit read"
+        },
+        "bluesky": {
+            "auth_url": "https://bsky.social/oauth/authorize",
+            "client_id": settings.BLUESKY_CLIENT_ID,
+            "scope": "atproto"
+        },
+        "threads": {
+            "auth_url": "https://www.threads.net/oauth/authorize",
+            "client_id": settings.META_APP_ID,
+            "scope": "threads_basic threads_content_publish"
+        },
+        "telegram": {
+            "auth_url": "https://oauth.telegram.org/auth",
+            "client_id": settings.TELEGRAM_BOT_TOKEN,
+            "scope": "messages"
+        },
+        "snapchat": {
+            "auth_url": "https://accounts.snapchat.com/accounts/oauth2/auth",
+            "client_id": settings.SNAPCHAT_CLIENT_ID,
+            "scope": "snapchat-marketing-api"
+        },
     }
     
     config = platform_configs.get(platform)
@@ -335,19 +359,3 @@ async def oauth_callback(
     
     return {"message": "Connected successfully", "platform": platform}
 
-# Get user's API keys for agent use (internal endpoint)
-@router.get("/api-keys/internal/{user_id}")
-async def get_user_api_keys_internal(
-    user_id: str,
-    db: Session = Depends(get_db)
-):
-    """Get decrypted API keys for a user (for internal agent use)."""
-    keys = db.query(UserAPIKey).filter(
-        UserAPIKey.user_id == user_id,
-        UserAPIKey.is_active == True
-    ).all()
-    
-    return {
-        key.key_name: key.get_decrypted_key()
-        for key in keys
-    }

@@ -14,6 +14,7 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta
 
+import httpx
 from celery import shared_task
 from sqlalchemy.orm import Session
 
@@ -255,12 +256,127 @@ def _post_single_item(db: Session, item: Content) -> None:
 
 @shared_task(bind=True, name="app.workers.tasks.sync_platform_analytics")
 def sync_platform_analytics(self):
-    """Pull view/like/comment counts for posted content."""
+    """Pull view/like/comment counts for recently posted content."""
     print("📊 Syncing platform analytics…")
-    # Platform-specific analytics sync would go here.
-    # Each platform has its own analytics API endpoint.
-    # For now we log a placeholder – extend per platform as needed.
-    print("✅ Analytics sync complete (placeholder)")
+    db = SessionLocal()
+    try:
+        from app.models.user_api_key import UserIntegration
+
+        # Get all content posted in the last 7 days
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        posted_items = (
+            db.query(Content)
+            .filter(
+                Content.status == "posted",
+                Content.posted_at >= cutoff,
+                Content.platform_post_id != None,
+            )
+            .all()
+        )
+
+        for item in posted_items:
+            try:
+                _sync_content_analytics(db, item)
+            except Exception as exc:
+                print(f"⚠️  Analytics sync failed for {item.id}: {exc}")
+
+        db.commit()
+        print(f"✅ Analytics sync complete ({len(posted_items)} items checked)")
+    finally:
+        db.close()
+
+
+def _sync_content_analytics(db: Session, item: Content) -> None:
+    """Fetch updated metrics for a single posted content item."""
+    creds = _get_platform_credentials(db, item.user_id, item.platform)
+    if not creds:
+        return
+
+    metrics: dict = {}
+
+    try:
+        if item.platform == "twitter" and creds.get("api_key"):
+            # Twitter v2 tweet metrics
+            import tweepy  # type: ignore
+            client = tweepy.Client(
+                consumer_key=creds["api_key"],
+                consumer_secret=creds["api_secret"],
+                access_token=creds["access_token"],
+                access_token_secret=creds["access_token_secret"],
+            )
+            response = client.get_tweet(
+                item.platform_post_id,
+                tweet_fields=["public_metrics"],
+            )
+            if response.data:
+                m = response.data.public_metrics or {}
+                metrics = {
+                    "views": m.get("impression_count", 0),
+                    "likes": m.get("like_count", 0),
+                    "comments": m.get("reply_count", 0),
+                    "shares": m.get("retweet_count", 0),
+                }
+
+        elif item.platform in ("facebook", "instagram") and creds.get("page_access_token"):
+            # Facebook/Instagram Graph API post insights
+            token = creds.get("page_access_token") or creds.get("access_token")
+            async def _fb_fetch():
+                async with httpx.AsyncClient(timeout=15) as c:
+                    r = await c.get(
+                        f"https://graph.facebook.com/v18.0/{item.platform_post_id}",
+                        params={
+                            "fields": "likes.summary(true),comments.summary(true),shares",
+                            "access_token": token,
+                        },
+                    )
+                    return r.json() if r.is_success else {}
+            data = asyncio.run(_fb_fetch())
+            metrics = {
+                "likes": data.get("likes", {}).get("summary", {}).get("total_count", 0),
+                "comments": data.get("comments", {}).get("summary", {}).get("total_count", 0),
+                "shares": data.get("shares", {}).get("count", 0),
+            }
+
+        elif item.platform == "youtube" and creds.get("access_token"):
+            # YouTube Data API v3
+            async def _yt_fetch():
+                async with httpx.AsyncClient(timeout=15) as c:
+                    r = await c.get(
+                        "https://www.googleapis.com/youtube/v3/videos",
+                        params={
+                            "part": "statistics",
+                            "id": item.platform_post_id,
+                            "access_token": creds["access_token"],
+                        },
+                    )
+                    return r.json() if r.is_success else {}
+            data = asyncio.run(_yt_fetch())
+            items_data = data.get("items", [])
+            if items_data:
+                s = items_data[0].get("statistics", {})
+                metrics = {
+                    "views": int(s.get("viewCount", 0)),
+                    "likes": int(s.get("likeCount", 0)),
+                    "comments": int(s.get("commentCount", 0)),
+                }
+
+    except Exception as exc:
+        print(f"⚠️  Platform API error for {item.platform}/{item.platform_post_id}: {exc}")
+        return
+
+    if metrics:
+        if metrics.get("views") is not None:
+            item.views = metrics["views"]
+        if metrics.get("likes") is not None:
+            item.likes = metrics["likes"]
+        if metrics.get("comments") is not None:
+            item.comments = metrics["comments"]
+        if metrics.get("shares") is not None:
+            item.shares = metrics["shares"]
+        total = (item.views or 0)
+        clicks = item.clicks or 0
+        item.ctr = round((clicks / total) * 100, 2) if total > 0 else 0.0
+        print(f"📈  Updated analytics for {item.id} ({item.platform}): views={item.views}")
 
 
 # ---------------------------------------------------------------------------

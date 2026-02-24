@@ -17,9 +17,9 @@ import {
   User,
   Key,
   MessageSquare,
-  FlaskConical,
   ShieldCheck,
   Wrench,
+  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ const navigation = [
   { name: 'Review & Optimize', href: '/dashboard/approval', icon: Zap, badge: 5 },
   { name: 'Smart Scheduler', href: '/dashboard/scheduler', icon: Clock },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Leads', href: '/dashboard/leads', icon: Users },
   { name: 'Integrations', href: '/dashboard/integrations', icon: Key },
   { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare },
   { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench },
