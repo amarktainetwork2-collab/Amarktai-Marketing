@@ -28,8 +28,8 @@ export default function LandingPage() {
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      title: '6 Platforms, One Dashboard',
-      description: 'Manage YouTube, TikTok, Instagram, Facebook, X, and LinkedIn from a single interface.',
+      title: '12 Platforms, One Dashboard',
+      description: 'Manage YouTube, TikTok, Instagram, Facebook, X, LinkedIn, Pinterest, Reddit, Bluesky, Threads, Telegram and Snapchat from one place.',
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
@@ -45,6 +45,16 @@ export default function LandingPage() {
       icon: <Rocket className="w-6 h-6" />,
       title: 'Self-Optimizing',
       description: 'AI learns from performance data to continuously improve your content strategy over time.',
+    },
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: 'Lead Capture & Scoring',
+      description: 'Auto-capture leads from social comments and UTM links. HF AI scores every lead 0-100 for prioritization.',
+    },
+    {
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: 'SEO Blog Generator',
+      description: 'Generate long-form SEO blog posts with HuggingFace to drive organic Google traffic and leads — then remix them into social posts.',
     },
   ];
 
@@ -65,17 +75,22 @@ export default function LandingPage() {
     {
       step: '01',
       title: 'Connect Your Apps',
-      description: 'Add your web apps, connect social accounts and enter your HuggingFace API key in minutes.',
+      description: 'Add your web apps, connect 12 social accounts and enter your HuggingFace API key in minutes.',
     },
     {
       step: '02',
-      title: 'AI Generates Content',
-      description: 'Every morning, midday and evening our AI creates platform-optimised posts and power tool reports.',
+      title: 'AI Generates Everything',
+      description: 'Every morning, midday and evening our AI creates platform-optimised posts, SEO blog posts, and power tool reports.',
     },
     {
       step: '03',
       title: 'Approve & Publish',
       description: 'Review content with one click. Approved posts go live automatically across all connected platforms.',
+    },
+    {
+      step: '04',
+      title: 'Leads Flow In',
+      description: 'UTM-tracked links, comment-to-lead capture, and AI-scored leads fill your pipeline daily on autopilot.',
     },
   ];
 
@@ -175,8 +190,8 @@ export default function LandingPage() {
                 </span>
               </h1>
               <p className="text-xl text-gray-600 max-w-lg">
-                Promote your web apps across 6 platforms daily with zero manual effort. 
-                AI generates content, you approve with one click.
+                Promote your web apps across 12 platforms daily with zero manual effort. 
+                AI generates content, captures leads, and writes SEO blog posts — you approve with one click.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/register">
@@ -245,33 +260,25 @@ export default function LandingPage() {
       {/* Platform Logos */}
       <section className="py-12 bg-gray-50 border-y">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-500 mb-8">Works with all major platforms</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Youtube className="w-8 h-8" />
-              <span className="font-semibold">YouTube</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Music className="w-8 h-8" />
-              <span className="font-semibold">TikTok</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Instagram className="w-8 h-8" />
-              <span className="font-semibold">Instagram</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Facebook className="w-8 h-8" />
-              <span className="font-semibold">Facebook</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Twitter className="w-8 h-8" />
-              <span className="font-semibold">X</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Linkedin className="w-8 h-8" />
-              <span className="font-semibold">LinkedIn</span>
-            </div>
+          <p className="text-center text-gray-500 mb-8">Works with all 12 major platforms</p>
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10">
+            {[
+              { icon: Youtube, label: 'YouTube' },
+              { icon: Music, label: 'TikTok' },
+              { icon: Instagram, label: 'Instagram' },
+              { icon: Facebook, label: 'Facebook' },
+              { icon: Twitter, label: 'X / Twitter' },
+              { icon: Linkedin, label: 'LinkedIn' },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center space-x-2 text-gray-400">
+                <Icon className="w-7 h-7" />
+                <span className="font-semibold text-sm">{label}</span>
+              </div>
+            ))}
           </div>
+          <p className="text-center text-gray-400 text-sm mt-4">
+            + Pinterest · Reddit · Bluesky · Threads · Telegram · Snapchat
+          </p>
         </div>
       </section>
 

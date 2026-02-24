@@ -118,8 +118,26 @@ async def capture_lead(payload: LeadCapture, db: Session = Depends(get_db)):
     # Determine source platform from utm_source
     source_platform = payload.utm_source or None
 
-    # Simple lead score based on qualifiers
+    # Simple rule-based lead score + optional HF sentiment boost
     score = _calculate_lead_score(payload.qualifiers or {})
+
+    # If qualifiers contain text, try HF scoring (fire-and-forget enrichment)
+    qualifier_text = " ".join(str(v) for v in (payload.qualifiers or {}).values() if v)
+    if qualifier_text and len(qualifier_text) > 10:
+        try:
+            from app.models.user_api_key import UserAPIKey
+            from app.core.config import settings as app_settings
+            from app.services.hf_generator import HuggingFaceGenerator
+            hf_row = db.query(UserAPIKey).filter_by(
+                user_id=payload.user_id, key_name="HUGGINGFACE_TOKEN", is_active=True
+            ).first()
+            hf_token = hf_row.get_decrypted_key() if hf_row else app_settings.HUGGINGFACE_TOKEN
+            if hf_token:
+                import asyncio
+                generator = HuggingFaceGenerator(hf_token)
+                score = asyncio.run(generator.score_lead_intelligence(qualifier_text, score))
+        except Exception:
+            pass  # Use rule-based score on failure
 
     lead = Lead(
         id=str(uuid.uuid4()),

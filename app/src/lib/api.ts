@@ -395,3 +395,102 @@ export const integrationsApi = {
     });
   },
 };
+
+// ─── Blog Posts ────────────────────────────────────────────────────────────────
+
+export interface BlogPost {
+  id: string;
+  webappId?: string;
+  title: string;
+  slug?: string;
+  metaDescription?: string;
+  sections: { heading: string; content: string }[];
+  targetKeywords: string[];
+  ctaText?: string;
+  ctaUrl?: string;
+  readingTimeMins?: string;
+  customTopic?: string;
+  status: string;
+  isPublished: boolean;
+  publishedUrl?: string;
+  createdAt: string;
+}
+
+function mapBlogPost(raw: Record<string, unknown>): BlogPost {
+  const c = toCamel(raw);
+  return {
+    id: c.id as string,
+    webappId: c.webappId as string | undefined,
+    title: c.title as string,
+    slug: c.slug as string | undefined,
+    metaDescription: c.metaDescription as string | undefined,
+    sections: (c.sections as { heading: string; content: string }[]) ?? [],
+    targetKeywords: (c.targetKeywords as string[]) ?? [],
+    ctaText: c.ctaText as string | undefined,
+    ctaUrl: c.ctaUrl as string | undefined,
+    readingTimeMins: c.readingTimeMins as string | undefined,
+    customTopic: c.customTopic as string | undefined,
+    status: (c.status as string) ?? 'draft',
+    isPublished: (c.isPublished as boolean) ?? false,
+    publishedUrl: c.publishedUrl as string | undefined,
+    createdAt: c.createdAt as string,
+  };
+}
+
+export const blogApi = {
+  generate: async (params: {
+    webapp_id: string;
+    custom_topic?: string;
+    custom_keywords?: string[];
+  }): Promise<BlogPost> => {
+    const data = await apiFetch<Record<string, unknown>>('/blog/generate', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+    return mapBlogPost(data);
+  },
+
+  getAll: async (): Promise<BlogPost[]> => {
+    const data = await apiFetch<Record<string, unknown>[]>('/blog/');
+    return data.map(mapBlogPost);
+  },
+
+  getById: async (id: string): Promise<BlogPost | null> => {
+    try {
+      const data = await apiFetch<Record<string, unknown>>(`/blog/${id}`);
+      return mapBlogPost(data);
+    } catch {
+      return null;
+    }
+  },
+
+  update: async (id: string, update: Partial<BlogPost>): Promise<BlogPost> => {
+    const data = await apiFetch<Record<string, unknown>>(`/blog/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        title: update.title,
+        meta_description: update.metaDescription,
+        status: update.status,
+        is_published: update.isPublished,
+        published_url: update.publishedUrl,
+      }),
+    });
+    return mapBlogPost(data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiFetch<void>(`/blog/${id}`, { method: 'DELETE' });
+  },
+
+  remixToSocial: async (id: string): Promise<{ message: string; platforms: string[] }> => {
+    return apiFetch(`/blog/${id}/remix-to-social`, { method: 'POST' });
+  },
+};
+
+// ─── Content batch generate-all ───────────────────────────────────────────────
+
+export const contentBatchApi = {
+  generateAll: async (): Promise<{ message: string; count: number; platforms: string[] }> => {
+    return apiFetch('/content/generate-all', { method: 'POST' });
+  },
+};

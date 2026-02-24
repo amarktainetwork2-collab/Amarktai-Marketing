@@ -87,6 +87,54 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.daily_churn_check",
         "schedule": crontab(hour=1, minute=0),
     },
+
+    # Feedback Alchemy at 04:00 UTC (after analytics sync)
+    "daily-feedback-alchemy": {
+        "task": "app.workers.tasks.daily_feedback_alchemy",
+        "schedule": crontab(hour=4, minute=0),
+    },
+
+    # SEO Mirage for yesterday's posts at 05:00 UTC
+    "daily-seo-mirage": {
+        "task": "app.workers.tasks.daily_seo_mirage",
+        "schedule": crontab(hour=5, minute=0),
+    },
+
+    # Auto-repurpose top content at 06:00 UTC (before morning posts)
+    "auto-repurpose-top-content": {
+        "task": "app.workers.tasks.auto_repurpose_top_content",
+        "schedule": crontab(hour=6, minute=0),
+    },
+
+    # Harmony Pricer at 09:00 UTC
+    "daily-harmony-pricer": {
+        "task": "app.workers.tasks.daily_harmony_pricer",
+        "schedule": crontab(hour=9, minute=0),
+    },
+
+    # Echo Amplifier at 10:00 UTC
+    "daily-echo-amplifier": {
+        "task": "app.workers.tasks.daily_echo_amplifier",
+        "schedule": crontab(hour=10, minute=0),
+    },
+
+    # Audience Mapper at 14:00 UTC
+    "daily-audience-mapper": {
+        "task": "app.workers.tasks.daily_audience_mapper",
+        "schedule": crontab(hour=14, minute=0),
+    },
+
+    # Ad Alchemy at 15:00 UTC
+    "daily-ad-alchemy": {
+        "task": "app.workers.tasks.daily_ad_alchemy",
+        "schedule": crontab(hour=15, minute=0),
+    },
+
+    # Comment-to-lead scan every 2 hours
+    "poll-comment-leads": {
+        "task": "app.workers.tasks.poll_and_capture_comment_leads",
+        "schedule": crontab(minute=0, hour="*/2"),
+    },
 }
 
 

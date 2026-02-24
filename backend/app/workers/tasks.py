@@ -110,6 +110,7 @@ def run_content_generation_and_post(self, window: str = "morning"):
 def _generate_for_user(db: Session, user: User, window: str) -> None:
     """Generate content for one user and persist to DB."""
     from app.services.hf_generator import HuggingFaceGenerator
+    from app.services.scraper import scrape_page
     from app.models.user_api_key import UserIntegration
 
     hf_token = _get_hf_token(db, user)
@@ -141,10 +142,19 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
     generator = HuggingFaceGenerator(hf_token)
 
     for webapp in webapps[:1]:  # 1 webapp per cycle to stay within HF free limits
+        # Enrich webapp data by scraping live website copy
+        live_description = webapp.description or ""
+        try:
+            scraped = asyncio.run(scrape_page(str(webapp.url), timeout=15))
+            if scraped and not scraped.error and scraped.full_text:
+                live_description = scraped.full_text[:1200]
+        except Exception as exc:
+            print(f"⚠️  Scrape failed for {webapp.url}: {exc}")
+
         webapp_data = {
             "name": webapp.name,
             "url": str(webapp.url),
-            "description": webapp.description,
+            "description": live_description or webapp.description,
             "category": webapp.category,
             "target_audience": webapp.target_audience,
             "key_features": webapp.key_features or [],
@@ -555,5 +565,412 @@ def daily_churn_check(self):
             except Exception as exc:
                 print(f"❌  Churn check {integ.platform}/{integ.user_id}: {exc}")
         print("✅  Churn shield done")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Daily power tool tasks for the remaining 6 tools
+# ---------------------------------------------------------------------------
+
+def _get_user_hf_token(db: Session, user_id: str) -> str | None:
+    """Helper: get HF token for any user_id (not a User object)."""
+    from app.models.user_api_key import UserAPIKey
+    row = db.query(UserAPIKey).filter_by(
+        user_id=user_id, key_name="HUGGINGFACE_TOKEN", is_active=True
+    ).first()
+    return row.get_decrypted_key() if row else settings.HUGGINGFACE_TOKEN or None
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_feedback_alchemy")
+def daily_feedback_alchemy(self):
+    """Process latest engagement replies as feedback and generate marketing insights."""
+    print("⚗️  Daily Feedback Alchemy starting…")
+    from app.models.tools import FeedbackAnalysis
+    from app.models.engagement import EngagementReply
+    from app.api.v1.endpoints.tools import _run_feedback_analysis
+
+    db = SessionLocal()
+    try:
+        users = db.query(User).all()
+        for user in users:
+            token = _get_user_hf_token(db, user.id)
+            if not token:
+                continue
+            # Collect last 20 engagement texts as feedback
+            replies = (
+                db.query(EngagementReply)
+                .filter(EngagementReply.user_id == user.id)
+                .order_by(EngagementReply.created_at.desc())
+                .limit(20)
+                .all()
+            )
+            if not replies:
+                continue
+            feedback_texts = [r.original_text for r in replies if r.original_text]
+            webapp = db.query(WebApp).filter(WebApp.user_id == user.id, WebApp.is_active == True).first()
+            r = FeedbackAnalysis(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                webapp_id=webapp.id if webapp else None,
+                source="social",
+                raw_feedback=feedback_texts,
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_feedback_analysis(r.id, token))
+            except Exception as exc:
+                print(f"❌  Feedback alchemy {user.id}: {exc}")
+        print("✅  Feedback Alchemy done")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_seo_mirage")
+def daily_seo_mirage(self):
+    """Generate SEO mirage reports for recently posted content."""
+    print("🔮  Daily SEO Mirage starting…")
+    from app.models.tools import SeoMirageReport
+    from app.models.content import Content as ContentModel, ContentStatus
+    from app.api.v1.endpoints.tools import _run_seo_mirage
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(hours=24)
+        recent_posts = (
+            db.query(ContentModel)
+            .filter(
+                ContentModel.status == ContentStatus.POSTED,
+                ContentModel.posted_at >= cutoff,
+            )
+            .all()
+        )
+        for item in recent_posts:
+            token = _get_user_hf_token(db, item.user_id)
+            if not token:
+                continue
+            r = SeoMirageReport(
+                id=str(uuid.uuid4()),
+                user_id=item.user_id,
+                content_id=item.id,
+                input_text=item.caption,
+                platform=item.platform,
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_seo_mirage(r.id, token))
+            except Exception as exc:
+                print(f"❌  SEO Mirage {item.id}: {exc}")
+        print(f"✅  SEO Mirage done ({len(recent_posts)} posts)")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_harmony_pricer")
+def daily_harmony_pricer(self):
+    """Run dynamic pricing analysis for users with webapps."""
+    print("💰  Daily Harmony Pricer starting…")
+    from app.models.tools import HarmonyPricerReport
+    from app.api.v1.endpoints.tools import _run_harmony_pricer
+
+    db = SessionLocal()
+    try:
+        webapps = db.query(WebApp).filter(WebApp.is_active == True).all()
+        for webapp in webapps:
+            token = _get_user_hf_token(db, webapp.user_id)
+            if not token:
+                continue
+            r = HarmonyPricerReport(
+                id=str(uuid.uuid4()),
+                user_id=webapp.user_id,
+                product_name=webapp.name,
+                current_price="0.00",
+                platform="social",
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_harmony_pricer(r.id, token))
+            except Exception as exc:
+                print(f"❌  Harmony Pricer {webapp.id}: {exc}")
+        print("✅  Harmony Pricer done")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_echo_amplifier")
+def daily_echo_amplifier(self):
+    """Amplify the most-engaged recent comments/mentions into social threads."""
+    print("📣  Daily Echo Amplifier starting…")
+    from app.models.tools import EchoAmplification
+    from app.models.engagement import EngagementReply
+    from app.api.v1.endpoints.tools import _run_echo_amplifier
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(hours=24)
+        high_value = (
+            db.query(EngagementReply)
+            .filter(EngagementReply.created_at >= cutoff)
+            .order_by(EngagementReply.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        for eng in high_value:
+            token = _get_user_hf_token(db, eng.user_id)
+            if not token:
+                continue
+            r = EchoAmplification(
+                id=str(uuid.uuid4()),
+                user_id=eng.user_id,
+                trigger_text=eng.original_text,
+                trigger_source=eng.engagement_type or "comment",
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_echo_amplifier(r.id, token))
+            except Exception as exc:
+                print(f"❌  Echo Amplifier {eng.id}: {exc}")
+        print("✅  Echo Amplifier done")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_audience_mapper")
+def daily_audience_mapper(self):
+    """Refresh audience psychographic maps for each active webapp."""
+    print("🗺️  Daily Audience Mapper starting…")
+    from app.models.tools import AudienceMapReport
+    from app.api.v1.endpoints.tools import _run_audience_mapper
+
+    db = SessionLocal()
+    try:
+        webapps = db.query(WebApp).filter(WebApp.is_active == True).all()
+        for webapp in webapps:
+            token = _get_user_hf_token(db, webapp.user_id)
+            if not token:
+                continue
+            r = AudienceMapReport(
+                id=str(uuid.uuid4()),
+                user_id=webapp.user_id,
+                webapp_id=webapp.id,
+                platform="multi",
+                data_summary=f"{webapp.name}: {webapp.description or ''}",
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_audience_mapper(r.id, token))
+            except Exception as exc:
+                print(f"❌  Audience Mapper {webapp.id}: {exc}")
+        print("✅  Audience Mapper done")
+    finally:
+        db.close()
+
+
+@shared_task(bind=True, name="app.workers.tasks.daily_ad_alchemy")
+def daily_ad_alchemy(self):
+    """Generate A/B ad copy variants for recently posted content."""
+    print("⚗️  Daily Ad Alchemy starting…")
+    from app.models.tools import AdAlchemyReport
+    from app.models.content import Content as ContentModel, ContentStatus
+    from app.api.v1.endpoints.tools import _run_ad_alchemy
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(hours=48)
+        recent = (
+            db.query(ContentModel)
+            .filter(
+                ContentModel.status == ContentStatus.POSTED,
+                ContentModel.posted_at >= cutoff,
+            )
+            .all()
+        )
+        for item in recent:
+            token = _get_user_hf_token(db, item.user_id)
+            if not token:
+                continue
+            r = AdAlchemyReport(
+                id=str(uuid.uuid4()),
+                user_id=item.user_id,
+                content_id=item.id,
+                product_or_service=item.title or "Product",
+                current_copy=item.caption or "",
+                platform=item.platform,
+                status="pending",
+            )
+            db.add(r)
+            db.commit()
+            try:
+                asyncio.run(_run_ad_alchemy(r.id, token))
+            except Exception as exc:
+                print(f"❌  Ad Alchemy {item.id}: {exc}")
+        print("✅  Ad Alchemy done")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Auto-repurpose: remix top-performing posts to other platforms
+# ---------------------------------------------------------------------------
+
+@shared_task(bind=True, name="app.workers.tasks.auto_repurpose_top_content")
+def auto_repurpose_top_content(self):
+    """
+    Find top-performing posted content (high views/likes) from the last 7 days
+    and automatically create remix jobs to re-publish on platforms not yet covered.
+    Runs daily at 06:00 UTC.
+    """
+    print("♻️  Auto-repurpose: top content starting…")
+    from app.models.content import Content as ContentModel, ContentStatus, ContentType
+    from app.services.hf_generator import HuggingFaceGenerator
+    from app.models.user_api_key import UserIntegration
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        # Fetch content with engagement above median
+        top_content = (
+            db.query(ContentModel)
+            .filter(
+                ContentModel.status == ContentStatus.POSTED,
+                ContentModel.posted_at >= cutoff,
+                ContentModel.views >= 100,
+            )
+            .order_by(ContentModel.views.desc())
+            .limit(5)
+            .all()
+        )
+
+        for item in top_content:
+            token = _get_user_hf_token(db, item.user_id)
+            if not token:
+                continue
+
+            # Find platforms this user has connected but this post wasn't on
+            connected = (
+                db.query(UserIntegration)
+                .filter(UserIntegration.user_id == item.user_id, UserIntegration.is_connected == True)
+                .all()
+            )
+            source_platform = item.platform
+            other_platforms = [i.platform for i in connected if i.platform != source_platform][:3]
+
+            if not other_platforms:
+                continue
+
+            generator = HuggingFaceGenerator(token)
+            source_text = f"{item.title}\n\n{item.caption}\n\n{' '.join(f'#{h}' for h in (item.hashtags or []))}"
+
+            for platform in other_platforms:
+                try:
+                    remix = asyncio.run(
+                        generator.remix_to_platform(source_text, platform, item.hashtags or [])
+                    )
+                    new_content = ContentModel(
+                        id=str(uuid.uuid4()),
+                        user_id=item.user_id,
+                        webapp_id=item.webapp_id,
+                        platform=platform,
+                        type=ContentType.VIDEO if platform in ("youtube", "tiktok") else ContentType.IMAGE,
+                        status=ContentStatus.PENDING,
+                        title=remix.get("title", item.title),
+                        caption=remix.get("caption", item.caption),
+                        hashtags=remix.get("hashtags", item.hashtags or []),
+                        media_urls=[],
+                        generation_metadata={"source": "auto_repurpose", "original_id": item.id},
+                    )
+                    db.add(new_content)
+                except Exception as exc:
+                    print(f"❌  Repurpose {item.id} → {platform}: {exc}")
+
+        db.commit()
+        print(f"✅  Auto-repurpose: processed {len(top_content)} top posts")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Comment-to-lead conversion: capture interested commenters as leads
+# ---------------------------------------------------------------------------
+
+_INTEREST_SIGNALS = [
+    "how much", "price", "cost", "buy", "purchase", "sign up", "signup",
+    "interested", "where can i", "how do i", "link", "dm me", "send me",
+    "want this", "need this", "how to get", "how to join", "subscribe",
+    "enroll", "register", "free trial", "demo", "tell me more",
+]
+
+
+@shared_task(bind=True, name="app.workers.tasks.poll_and_capture_comment_leads")
+def poll_and_capture_comment_leads(self):
+    """
+    Scan recent engagement replies for interest signals.
+    Any comment containing a buy/interest keyword that isn't already a lead
+    gets auto-captured as a new lead.
+    Runs every 2 hours.
+    """
+    print("🎯  Comment-to-lead scan starting…")
+    from app.models.engagement import EngagementReply
+    from app.models.lead import Lead
+
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(hours=3)
+        new_engagements = (
+            db.query(EngagementReply)
+            .filter(EngagementReply.created_at >= cutoff)
+            .all()
+        )
+
+        captured = 0
+        for eng in new_engagements:
+            text_lower = (eng.original_text or "").lower()
+            if not any(sig in text_lower for sig in _INTEREST_SIGNALS):
+                continue
+
+            # Check not already captured
+            existing = (
+                db.query(Lead)
+                .filter(
+                    Lead.user_id == eng.user_id,
+                    Lead.source_platform == eng.platform,
+                    Lead.notes == f"comment:{eng.platform_comment_id}",
+                )
+                .first()
+            )
+            if existing:
+                continue
+
+            # Create lead from comment
+            lead = Lead(
+                id=str(uuid.uuid4()),
+                user_id=eng.user_id,
+                name=eng.author_name,
+                email=f"social_{eng.platform}_{eng.author_platform_id or eng.id}@example.com",
+                source_platform=eng.platform,
+                utm_source=eng.platform,
+                utm_medium="comment",
+                utm_campaign="organic",
+                qualifiers={"interest_text": eng.original_text[:200], "type": "comment_lead"},
+                lead_score=45,  # Mid-score — needs follow-up
+                is_qualified=False,
+                status="new",
+                notes=f"comment:{eng.platform_comment_id}",
+            )
+            db.add(lead)
+            captured += 1
+
+        db.commit()
+        print(f"✅  Comment-to-lead: captured {captured} new leads")
     finally:
         db.close()

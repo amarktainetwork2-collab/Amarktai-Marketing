@@ -351,6 +351,375 @@ Provide a JSON object:
             "audience_engagement_level": "medium",
         }
 
+    async def generate_blog_post(
+        self,
+        webapp_data: dict[str, Any],
+        topic: str | None = None,
+        keywords: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Generate a long-form SEO blog post from webapp data.
+        Returns title, slug, meta_description, sections, and cta.
+        """
+        name = webapp_data.get("name", "")
+        description = webapp_data.get("description", "")
+        audience = webapp_data.get("target_audience", "general audience")
+        features = ", ".join(webapp_data.get("key_features", [])[:5])
+        url = webapp_data.get("url", "")
+
+        kw_hint = f"Target keywords: {', '.join(keywords[:8])}" if keywords else ""
+        topic_hint = f"Topic: {topic}" if topic else f"Topic: how {name} helps {audience}"
+
+        system = (
+            "You are an expert SEO content writer for Amarktai Network. "
+            "Write authoritative, long-form blog posts that rank on Google and drive organic leads. "
+            "Respond ONLY with valid JSON."
+        )
+        user = f"""Write a complete SEO blog post for this product.
+
+Business: {name}
+Description: {description}
+Target Audience: {audience}
+Key Features: {features}
+Website: {url}
+{topic_hint}
+{kw_hint}
+
+Return ONLY a JSON object:
+{{
+  "title": "SEO-optimized headline (max 70 chars)",
+  "slug": "url-friendly-slug",
+  "meta_description": "150-160 char meta description",
+  "reading_time_mins": 5,
+  "sections": [
+    {{"heading": "Introduction", "content": "200+ word intro paragraph"}},
+    {{"heading": "Key Benefits", "content": "Detailed benefits section"}},
+    {{"heading": "How It Works", "content": "Step-by-step explanation"}},
+    {{"heading": "Who Is It For?", "content": "Target audience section"}},
+    {{"heading": "Final Thoughts", "content": "Conclusion with call-to-action"}}
+  ],
+  "target_keywords": ["kw1", "kw2", "kw3", "kw4", "kw5"],
+  "cta_text": "Compelling CTA sentence",
+  "cta_url": "{url}"
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=900)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "title": f"How {name} Can Transform Your {audience} Experience",
+            "slug": name.lower().replace(" ", "-"),
+            "meta_description": f"Discover how {name} helps {audience}. {description[:100]}",
+            "reading_time_mins": 5,
+            "sections": [
+                {"heading": "Introduction", "content": f"{name} is designed for {audience}. {description}"},
+                {"heading": "Key Benefits", "content": f"Key features: {features}"},
+                {"heading": "Get Started", "content": f"Visit {url} to learn more."},
+            ],
+            "target_keywords": [name, audience, "marketing", "automation"],
+            "cta_text": f"Try {name} free today",
+            "cta_url": url,
+        }
+
+    async def generate_comment_reply(
+        self,
+        comment_text: str,
+        platform: str,
+        webapp_name: str,
+        sentiment: str = "neutral",
+    ) -> dict[str, Any]:
+        """Generate a contextual reply to a social media comment using HF."""
+        system = (
+            "You are a friendly, professional community manager for Amarktai Network. "
+            "Write genuine, helpful replies. Respond ONLY with valid JSON."
+        )
+        tone_hint = {
+            "positive": "grateful and encouraging",
+            "negative": "empathetic and solution-focused",
+            "neutral": "friendly and informative",
+        }.get(sentiment, "friendly")
+
+        user = f"""Reply to this {platform} comment about {webapp_name}:
+
+Comment: {comment_text[:300]}
+Sentiment: {sentiment}
+Tone required: {tone_hint}
+
+JSON format:
+{{
+  "reply": "Your reply text (max 250 chars)",
+  "confidence": 0.85,
+  "tone": "{tone_hint}",
+  "lead_potential": true
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=300)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "reply": f"Thanks for your comment! 😊 Feel free to check out {webapp_name} for more.",
+            "confidence": 0.6,
+            "tone": tone_hint,
+            "lead_potential": False,
+        }
+
+    async def score_lead_intelligence(
+        self,
+        qualifier_text: str,
+        base_score: int,
+    ) -> int:
+        """
+        Use HF sentiment + classification to boost the lead score.
+        Returns adjusted score (0-100).
+        """
+        try:
+            sentiment = await self.analyze_sentiment(qualifier_text)
+            # Positive sentiment → buyer intent
+            if sentiment["label"] == "POSITIVE" and sentiment["score"] > 0.75:
+                base_score = min(base_score + 15, 100)
+            elif sentiment["label"] == "NEGATIVE":
+                base_score = max(base_score - 10, 0)
+
+            # Zero-shot classify for purchase intent
+            intent_scores = await self.classify_topics(
+                qualifier_text,
+                ["ready to buy", "just browsing", "needs information", "urgent requirement"],
+            )
+            top_intent = max(intent_scores, key=intent_scores.get)
+            if top_intent == "ready to buy":
+                base_score = min(base_score + 20, 100)
+            elif top_intent == "urgent requirement":
+                base_score = min(base_score + 15, 100)
+        except Exception:
+            pass
+        return base_score
+
+    async def generate_echo_amplification(
+        self,
+        trigger_text: str,
+        brand_voice: str,
+        platforms: list[str],
+    ) -> dict[str, Any]:
+        """Turn a visitor query/comment into amplified social content."""
+        platforms_str = ", ".join(platforms[:4])
+        system = "You are a viral content strategist. Respond ONLY with valid JSON."
+        user = f"""Transform this visitor interaction into amplified social content.
+
+Visitor said: {trigger_text[:300]}
+Brand voice: {brand_voice}
+Target platforms: {platforms_str}
+
+JSON format:
+{{
+  "virality_score": 72,
+  "thread_posts": [
+    {{"platform": "twitter", "content": "Thread post 1", "hashtags": ["tag1"]}},
+    {{"platform": "linkedin", "content": "LinkedIn version"}}
+  ],
+  "story_content": [{{"platform": "instagram", "content": "Story hook"}}],
+  "priority": "high"
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=500)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "virality_score": 50,
+            "thread_posts": [{"platform": p, "content": f"Echo: {trigger_text[:100]}", "hashtags": []} for p in platforms[:2]],
+            "story_content": [],
+            "priority": "medium",
+        }
+
+    async def generate_seo_mirage(
+        self,
+        input_text: str,
+        platform: str,
+        url: str = "",
+    ) -> dict[str, Any]:
+        """Generate SEO-optimized metadata and hashtags for a post."""
+        system = "You are an SEO specialist. Respond ONLY with valid JSON."
+        user = f"""Create SEO-optimised metadata for this {platform} content.
+
+Content: {input_text[:500]}
+URL: {url}
+
+JSON format:
+{{
+  "seo_title": "Optimised title (max 60 chars)",
+  "seo_description": "150 char description",
+  "alt_text": "Image alt text",
+  "optimized_hashtags": ["tag1", "tag2", "tag3"],
+  "algorithm_tips": ["tip1", "tip2"],
+  "enhanced_caption": "SEO-enhanced version of the content",
+  "keyword_density": {{"primaryKeyword": 2.5}}
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=400)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "seo_title": input_text[:60],
+            "seo_description": input_text[:150],
+            "alt_text": "Marketing content image",
+            "optimized_hashtags": ["marketing", "growth", "ai"],
+            "algorithm_tips": [f"Post at peak {platform} hours", "Use first comment for extra hashtags"],
+            "enhanced_caption": input_text,
+            "keyword_density": {},
+        }
+
+    async def generate_harmony_pricing(
+        self,
+        product_name: str,
+        current_price: str,
+        competitor_prices: list[str],
+        buzz_context: str,
+    ) -> dict[str, Any]:
+        """Recommend optimal price and ad copy variants."""
+        system = "You are a pricing strategist. Respond ONLY with valid JSON."
+        user = f"""Recommend optimal pricing for this product.
+
+Product: {product_name}
+Current price: {current_price}
+Competitor prices: {', '.join(competitor_prices[:5])}
+Market buzz: {buzz_context[:300]}
+
+JSON format:
+{{
+  "recommended_price": "$X.XX",
+  "price_rationale": "Why this price",
+  "ad_copy_variants": [
+    {{"price_point": "$X.XX", "headline": "Ad headline", "body": "Ad body"}}
+  ],
+  "simulated_roi": {{"low": "2x", "mid": "3.5x", "high": "5x"}},
+  "buzz_score": 65
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=400)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "recommended_price": current_price,
+            "price_rationale": "Competitive market positioning",
+            "ad_copy_variants": [{"price_point": current_price, "headline": f"Get {product_name}", "body": "Best value option"}],
+            "simulated_roi": {"low": "1.5x", "mid": "2.5x", "high": "4x"},
+            "buzz_score": 50,
+        }
+
+    async def generate_audience_map(
+        self,
+        webapp_data: dict[str, Any],
+        platform: str,
+        data_summary: str,
+    ) -> dict[str, Any]:
+        """Map psychographic audience segments."""
+        system = "You are an audience research specialist. Respond ONLY with valid JSON."
+        user = f"""Map audience psychographic segments for this product on {platform}.
+
+Product: {webapp_data.get('name', '')}
+Description: {webapp_data.get('description', '')}
+Target: {webapp_data.get('target_audience', '')}
+Data: {data_summary[:400]}
+
+JSON format:
+{{
+  "segments": [
+    {{"name": "Segment A", "description": "Profile", "size_pct": 35, "interests": ["int1", "int2"]}},
+    {{"name": "Segment B", "description": "Profile", "size_pct": 25, "interests": ["int1"]}}
+  ],
+  "campaign_suggestions": [
+    {{"segment": "Segment A", "campaign_idea": "Idea", "predicted_ctr": 3.2}}
+  ],
+  "targeting_recommendations": ["rec1", "rec2"],
+  "cross_platform_insights": ["insight1"],
+  "response_mirage": {{"Segment A": "Likely response", "Segment B": "Likely response"}}
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=500)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "segments": [
+                {"name": "Core Audience", "description": webapp_data.get("target_audience", ""), "size_pct": 60, "interests": ["productivity", "automation"]},
+            ],
+            "campaign_suggestions": [],
+            "targeting_recommendations": [f"Target {platform} users interested in {webapp_data.get('category', 'tech')}"],
+            "cross_platform_insights": [],
+            "response_mirage": {},
+        }
+
+    async def generate_ad_alchemy(
+        self,
+        product: str,
+        current_copy: str,
+        platform: str,
+    ) -> dict[str, Any]:
+        """Generate A/B tested ad copy variants."""
+        system = "You are a direct-response copywriter. Respond ONLY with valid JSON."
+        user = f"""Create 3 A/B ad copy variants for {platform}.
+
+Product: {product}
+Current copy: {current_copy[:300]}
+
+JSON format:
+{{
+  "variants": [
+    {{"variant_id": "A", "headline": "Headline A", "body": "Body A", "cta": "CTA A", "score": 72}},
+    {{"variant_id": "B", "headline": "Headline B", "body": "Body B", "cta": "CTA B", "score": 85}},
+    {{"variant_id": "C", "headline": "Headline C", "body": "Body C", "cta": "CTA C", "score": 68}}
+  ],
+  "recommended_winner": {{"variant_id": "B", "reason": "Why B wins"}},
+  "global_benchmark_comparison": {{"ctr_benchmark": "2.5%", "our_predicted_ctr": "3.8%"}},
+  "improvement_suggestions": ["Suggestion 1", "Suggestion 2"]
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=500)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "variants": [
+                {"variant_id": "A", "headline": f"Try {product}", "body": current_copy[:100], "cta": "Get Started", "score": 60},
+                {"variant_id": "B", "headline": f"Transform with {product}", "body": "AI-powered results", "cta": "Start Free", "score": 75},
+            ],
+            "recommended_winner": {"variant_id": "B", "reason": "More compelling CTA"},
+            "global_benchmark_comparison": {"ctr_benchmark": "2.5%", "our_predicted_ctr": "3.2%"},
+            "improvement_suggestions": ["Use numbers in headline", "Add social proof"],
+        }
+
     async def generate_feedback_insights(
         self,
         feedback_texts: list[str],
