@@ -1,833 +1,449 @@
-# 🎯 Amarktai Marketing - Complete Feature List
+# 🚀 Amarktai Marketing — Complete Feature List
 
-## 📋 Table of Contents
-1. [Core Features](#core-features)
-2. [Frontend Features](#frontend-features)
-3. [Backend API Features](#backend-api-features)
-4. [AI & Automation Features](#ai--automation-features)
-5. [Integration Features](#integration-features)
-6. [Analytics & Reporting](#analytics--reporting)
-7. [Security Features](#security-features)
+> Autonomous AI Social Media Marketing Platform powered by HuggingFace.
+> **Designed and created by Amarktai Network.**
 
 ---
 
-## ✅ Core Features
+## Table of Contents
 
-### 1. User Management
-- **User Authentication** (via Clerk)
-  - Email/password login
-  - Social login (Google, GitHub, etc.)
-  - Session management
-  - Multi-device support
-- **User Profiles**
-  - Profile customization
-  - Avatar upload
-  - Timezone settings
-  - Language preferences
-  - Notification preferences
-- **Subscription Plans**
-  - FREE tier (1 app, 3 platforms, 3 posts/day)
-  - PRO tier ($29/mo: 5 apps, 6 platforms, 12 posts/day)
-  - BUSINESS tier ($99/mo: unlimited apps, 6 platforms, 36 posts/day)
-  - ENTERPRISE tier (custom pricing)
-- **Usage Tracking**
-  - Monthly content quota monitoring
-  - API cost tracking
-  - Feature usage analytics
-
-### 2. Web App Management
-- **CRUD Operations**
-  - Create new web app profiles
-  - Update app details (name, URL, description)
-  - Delete apps
-  - View app list
-- **App Configuration**
-  - App categorization
-  - Target audience definition
-  - Key features listing
-  - Logo upload
-  - Active/inactive status toggle
-- **Multi-App Support**
-  - Manage multiple apps (based on plan)
-  - Switch between apps
-  - Independent content per app
-
-### 3. Content Generation & Management
-- **Content Library**
-  - View all generated content
-  - Filter by platform, status, date
-  - Search content by keywords
-  - Sort by performance metrics
-- **Content Types Supported**
-  - Video (YouTube Shorts, TikTok, Instagram Reels)
-  - Images (Instagram, Facebook posts)
-  - Carousels (Instagram, LinkedIn)
-  - Text posts (Twitter/X, LinkedIn)
-  - Stories (Instagram, Facebook)
-- **Content Status Workflow**
-  - PENDING (awaiting approval)
-  - APPROVED (ready to post)
-  - REJECTED (not to be posted)
-  - SCHEDULED (queued for posting)
-  - POSTED (live on platform)
-  - FAILED (posting error)
-- **Content Editing**
-  - Edit captions and titles
-  - Modify hashtags
-  - Change media
-  - Adjust scheduling time
-- **Content Repurposing**
-  - Auto-adapt content for different platforms
-  - Parent-child content relationships
-  - Cross-platform optimization
-
-### 4. Approval Queue
-- **Daily Review Dashboard**
-  - View all pending content
-  - Preview media and captions
-  - Platform-specific formatting preview
-- **Approval Actions**
-  - One-click approve
-  - Batch approve multiple items
-  - Edit before approval
-  - Reject with feedback
-  - Request regeneration
-- **Smart Recommendations**
-  - AI confidence scores
-  - Viral prediction scores
-  - Best posting time suggestions
-
-### 5. Social Platform Connections
-- **Supported Platforms** (6 total)
-  - YouTube (Shorts)
-  - TikTok (Videos)
-  - Instagram (Reels, Posts, Stories)
-  - Facebook (Reels, Posts)
-  - Twitter/X (Posts, Threads)
-  - LinkedIn (Posts, Articles)
-- **OAuth2 Integration**
-  - Secure platform authorization
-  - Token refresh automation
-  - Connection status monitoring
-  - Disconnect/reconnect flows
-- **Platform Settings**
-  - Auto-post toggle per platform
-  - Auto-reply toggle per platform
-  - Low-risk auto-reply option
-  - Platform-specific preferences
+1. [User Management & Auth](#1-user-management--auth)
+2. [Business / Web App Management](#2-business--web-app-management)
+3. [Social Platform Connections (12 Platforms)](#3-social-platform-connections-12-platforms)
+4. [AI Content Generation](#4-ai-content-generation)
+5. [Content Approval Workflow](#5-content-approval-workflow)
+6. [Autonomous Posting Schedule](#6-autonomous-posting-schedule)
+7. [Lead Capture & Management](#7-lead-capture--management)
+8. [Analytics & Reporting](#8-analytics--reporting)
+9. [Community Groups Feature](#9-community-groups-feature)
+10. [10 Power Tools (AI Add-Ons)](#10-10-power-tools-ai-add-ons)
+11. [SEO Blog Post Generator](#11-seo-blog-post-generator)
+12. [Engagement & Auto-Reply](#12-engagement--auto-reply)
+13. [A/B Testing](#13-ab-testing)
+14. [Cost Tracking](#14-cost-tracking)
+15. [Autonomous Workflows](#15-autonomous-workflows)
+16. [Admin Panel](#16-admin-panel)
+17. [API Key & Integrations Management](#17-api-key--integrations-management)
+18. [Scheduler & Content Calendar](#18-scheduler--content-calendar)
+19. [Settings & User Preferences](#19-settings--user-preferences)
+20. [Deployment & Infrastructure](#20-deployment--infrastructure)
 
 ---
 
-## 🎨 Frontend Features
+## 1. User Management & Auth
 
-### Landing Page
-- **Hero Section**
-  - Value proposition
-  - CTA buttons (Get Started, View Demo)
-  - Live demo link
-- **Features Showcase**
-  - AI-powered content generation
-  - Daily automation
-  - One-click approval
-  - Performance analytics
-  - Self-optimization
-- **Platform Coverage**
-  - Visual display of 6 supported platforms
-  - Platform-specific capabilities
-- **Pricing Table**
-  - 4 tier comparison (FREE, PRO, BUSINESS, ENTERPRISE)
-  - Feature breakdown per tier
-  - CTA for each tier
-- **Tech Stack Display**
-  - Frontend technologies
-  - Backend frameworks
-  - AI/ML tools
-- **FAQ Section** (expandable)
-- **Footer**
-  - Company info
-  - Social links
-  - Legal pages
-
-### Dashboard
-- **KPI Cards**
-  - Total posts this month
-  - Total views
-  - Total engagement
-  - Average CTR
-  - Platform breakdown
-- **Quick Actions**
-  - Create new web app
-  - Connect platform
-  - Review pending content
-  - View analytics
-- **Recent Activity Feed**
-  - Latest posts
-  - Recent approvals
-  - Performance highlights
-- **Charts & Graphs**
-  - Weekly performance trends
-  - Platform comparison
-  - Engagement breakdown
-  - Growth metrics
-
-### Analytics Page
-- **Performance Summary**
-  - Date range selector
-  - Platform filter
-  - Web app filter
-- **Interactive Charts**
-  - Line charts (views over time)
-  - Bar charts (platform comparison)
-  - Pie charts (engagement breakdown)
-  - Heatmaps (posting times)
-- **Metrics Tables**
-  - Per-content performance
-  - Per-platform aggregates
-  - Top performing content
-  - Worst performing content
-- **Export Options**
-  - CSV export
-  - PDF reports
-  - Data API access
-
-### Content Page
-- **Content Calendar View**
-  - Monthly/weekly/daily views
-  - Drag-and-drop rescheduling
-  - Color-coded by platform
-  - Status indicators
-- **List View**
-  - Sortable columns
-  - Filterable by status/platform
-  - Bulk actions
-  - Preview thumbnails
-- **Content Details Modal**
-  - Full media preview
-  - Caption and hashtags
-  - Performance metrics
-  - Edit/delete options
-  - Duplicate for repurposing
-
-### Approval Queue
-- **Pending Content Cards**
-  - Media preview
-  - Caption preview
-  - Viral score indicator
-  - Best posting time
-  - Platform badge
-- **Batch Actions**
-  - Select multiple
-  - Approve all
-  - Reject all
-  - Edit selected
-- **Content Editor**
-  - Live preview
-  - Caption editor with character count
-  - Hashtag suggestions
-  - Media replacer
-  - Schedule picker
-
-### Platforms Page
-- **Connection Cards**
-  - Platform logo and name
-  - Connection status (connected/disconnected)
-  - Account info (username, avatar)
-  - Connect/disconnect button
-  - Settings button
-- **Platform Settings Modal**
-  - Auto-post toggle
-  - Auto-reply toggle
-  - Low-risk only toggle
-  - Default posting times
-  - Custom preferences
-
-### Engagement Page
-- **Engagement Queue**
-  - Comments from all platforms
-  - Direct messages
-  - Mentions
-  - Reviews
-- **Engagement Cards**
-  - Original comment/message
-  - Author info (name, avatar)
-  - Sentiment badge (positive/negative/neutral)
-  - AI-generated reply
-  - Confidence score
-  - Risk assessment
-- **Reply Actions**
-  - Approve reply
-  - Edit reply
-  - Reject reply
-  - Generate alternative reply
-  - Auto-send if low-risk
-- **Engagement Filters**
-  - Platform filter
-  - Type filter (comment/DM/mention)
-  - Sentiment filter
-  - Priority filter (high/medium/low)
-  - Status filter
-
-### Integrations Page
-- **API Keys Section**
-  - Add new API key
-  - List saved keys
-  - Key usage stats
-  - Revoke key
-  - Test connection
-- **Supported Providers**
-  - LLM: OpenAI, Anthropic, Groq, Gemini, Grok
-  - Image: Leonardo, DALL-E, Midjourney, Stability AI, HuggingFace
-  - Video: Runway, HeyGen, Synthesia
-  - Audio: ElevenLabs, Coqui TTS, Play.ht
-- **Connection Status**
-  - Per-provider status (active/inactive)
-  - Last used timestamp
-  - Error messages if any
-- **OAuth Platforms**
-  - Social platform connections
-  - OAuth flow initiation
-  - Token status
-
-### Settings Page
-- **Profile Settings**
-  - Name, email, avatar
-  - Timezone
-  - Language
-  - Password change (if email auth)
-- **Notification Preferences**
-  - Email notifications
-  - In-app notifications
-  - Digest frequency
-  - Notification types (new content, approvals, analytics)
-- **Plan & Billing**
-  - Current plan display
-  - Usage statistics
-  - Upgrade/downgrade options
-  - Billing history
-  - Payment method management
-- **Danger Zone**
-  - Export data
-  - Delete account
-
-### A/B Testing Panel (Dashboard Component)
-- **Active Tests**
-  - Test name and hypothesis
-  - Variants (A, B, C)
-  - Current performance
-  - Statistical significance
-- **Create New Test**
-  - Content selection
-  - Variant configuration
-  - Distribution settings
-  - Duration settings
-- **Test Results**
-  - Winner declaration
-  - Confidence level
-  - Improvement percentage
-  - Variant comparison charts
-
-### Viral Predictor (Dashboard Component)
-- **Viral Score**
-  - Overall score (0-100)
-  - Hook strength
-  - Emotional impact
-  - Shareability score
-  - Timing score
-  - Uniqueness score
-  - Trend alignment
-- **Predictions**
-  - Estimated reach
-  - Estimated engagement
-  - Viral probability
-- **Recommendations**
-  - Positive factors
-  - Negative factors
-  - Improvement suggestions
-
-### Smart Scheduler (Dashboard Component)
-- **Best Posting Times**
-  - Per-platform optimal times
-  - Based on historical data
-  - Timezone-adjusted
-- **Scheduling Options**
-  - Immediate posting
-  - Schedule for best time
-  - Custom schedule
-  - Recurring posts
-
-### Content Studio (Dashboard Component)
-- **Content Creation**
-  - Topic input
-  - Platform selection
-  - Style selection
-  - Generate button
-- **Media Generator**
-  - Text-to-image
-  - Text-to-video
-  - Text-to-audio
-  - Provider selection
-
-### Performance Predictor (Dashboard Component)
-- **Prediction Model**
-  - Views prediction
-  - Engagement prediction
-  - CTR prediction
-  - Confidence interval
-- **Factors Considered**
-  - Historical performance
-  - Content type
-  - Posting time
-  - Platform trends
-
-### Competitor Intel (Dashboard Component)
-- **Competitor Tracking**
-  - Add competitors
-  - Track their performance
-  - Content analysis
-- **Insights**
-  - What's working for them
-  - Content gaps
-  - Opportunity areas
-
-### Content Repurposer (Dashboard Component)
-- **Source Content Selection**
-  - Select existing content
-  - Choose target platforms
-- **Repurposing Options**
-  - Auto-adapt format
-  - Resize media
-  - Adjust caption length
-  - Platform optimization
-- **Repurposed Content Preview**
-  - Side-by-side comparison
-  - Edit before approval
-
-### AI Insights Feed (Dashboard Component)
-- **Daily Insights**
-  - Performance trends
-  - Opportunity alerts
-  - Best practices
-  - Industry news
-- **Actionable Recommendations**
-  - Content ideas
-  - Posting time suggestions
-  - Engagement strategies
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Clerk JWT authentication (production) | ✅ | RS256 JWKS verification |
+| Demo mode (no Clerk key needed) | ✅ | Auto-creates demo user |
+| Clerk webhook — user.created | ✅ | Svix signature verified |
+| Clerk webhook — user.updated | ✅ | Svix signature verified |
+| Clerk webhook — user.deleted | ✅ | Cascade deletes all user data |
+| User profile (name, avatar, timezone, language) | ✅ | Editable via `/users/me` |
+| Plan tiers: FREE / PRO / BUSINESS / ENTERPRISE | ✅ | Stored in DB |
+| Monthly content quota tracking | ✅ | `monthly_content_used` / `monthly_content_quota` |
+| API cost budget tracking | ✅ | `api_cost_budget` / `api_cost_used` |
+| Per-user feature flags | ✅ | `auto_post_enabled`, `auto_reply_enabled` |
+| Admin user designation (ADMIN_USER_IDS env) | ✅ | Via `get_admin_user` dependency |
 
 ---
 
-## 🔌 Backend API Features
+## 2. Business / Web App Management
 
-### Authentication
-- **Clerk Webhook Integration**
-  - User created event
-  - User updated event
-  - User deleted event
-  - Automatic DB sync
-- **JWT Verification**
-  - Token validation
-  - User context extraction
-  - Permission checking
-
-### Web Apps API
-- **CRUD Endpoints**
-  - `GET /api/v1/webapps` - List all
-  - `GET /api/v1/webapps/{id}` - Get one
-  - `POST /api/v1/webapps` - Create
-  - `PUT /api/v1/webapps/{id}` - Update
-  - `DELETE /api/v1/webapps/{id}` - Delete
-- **Features**
-  - User isolation
-  - Pagination support
-  - Filtering
-  - Validation
-
-### Content API
-- **Content Management**
-  - `GET /api/v1/content` - List (filterable)
-  - `GET /api/v1/content/pending` - Pending approval
-  - `GET /api/v1/content/{id}` - Get details
-  - `POST /api/v1/content` - Create
-  - `PUT /api/v1/content/{id}` - Update
-  - `DELETE /api/v1/content/{id}` - Delete
-- **Status Management**
-  - Approve content
-  - Reject content
-  - Schedule posting
-  - Mark as posted
-
-### Platforms API
-- **Connection Management**
-  - `GET /api/v1/platforms` - List connections
-  - `GET /api/v1/platforms/{platform}` - Get details
-  - `POST /api/v1/platforms/{platform}/connect` - OAuth init
-  - `POST /api/v1/platforms/{platform}/disconnect` - Disconnect
-- **OAuth Flows**
-  - Authorization URL generation
-  - Token exchange
-  - Token refresh
-  - Scope management
-
-### Analytics API
-- **Data Aggregation**
-  - `GET /api/v1/analytics/summary` - Overall stats
-  - `GET /api/v1/analytics/platform/{platform}` - Platform-specific
-  - `GET /api/v1/analytics/daily` - Daily breakdown
-- **Metrics Provided**
-  - Views, likes, comments, shares
-  - CTR calculation
-  - Engagement rate
-  - Growth trends
-
-### Engagement API
-- **Engagement Management**
-  - `GET /api/v1/engagement` - List all
-  - `GET /api/v1/engagement/{id}` - Get details
-  - `POST /api/v1/engagement/generate-reply` - AI reply
-  - `POST /api/v1/engagement/{id}/approve` - Approve reply
-  - `POST /api/v1/engagement/{id}/reject` - Reject reply
-  - `POST /api/v1/engagement/auto-reply/{id}` - Auto-send
-- **Features**
-  - Sentiment analysis
-  - Risk assessment
-  - Priority scoring
-  - Bulk operations
-
-### A/B Testing API
-- **Test Management**
-  - `GET /api/v1/ab-testing` - List tests
-  - `POST /api/v1/ab-testing` - Create test
-  - `GET /api/v1/ab-testing/{id}` - Get test
-  - `PUT /api/v1/ab-testing/{id}` - Update test
-  - `POST /api/v1/ab-testing/{id}/analyze` - Analyze results
-- **Features**
-  - Variant creation
-  - Statistical analysis
-  - Winner determination
-  - Confidence calculation
-
-### Integrations API
-- **API Key Management**
-  - `GET /api/v1/integrations` - List integrations
-  - `POST /api/v1/integrations/api-keys` - Add key
-  - `DELETE /api/v1/integrations/api-keys/{id}` - Revoke key
-  - `GET /api/v1/integrations/status` - Check status
-- **Security**
-  - Fernet encryption
-  - Key isolation
-  - Usage tracking
-
-### Autonomous API
-- **Automation Control**
-  - `POST /api/v1/autonomous/batch-approve` - Bulk approve
-  - `POST /api/v1/autonomous/schedule-post` - Schedule
-  - `POST /api/v1/autonomous/generate-nightly` - Trigger generation
-  - `GET /api/v1/autonomous/workflow-status` - Status check
-  - `POST /api/v1/autonomous/optimize` - Self-optimize
-
-### Cost Tracking API
-- **Cost Management**
-  - `GET /api/v1/cost-tracking/summary` - Monthly summary
-  - `GET /api/v1/cost-tracking/breakdown` - Service breakdown
-  - `POST /api/v1/cost-tracking/alert-settings` - Configure alerts
-- **Tracking**
-  - LLM token usage
-  - Image generation costs
-  - Video generation costs
-  - Audio generation costs
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Create web app / business profile | ✅ | Name, URL, description, category, audience |
+| Up to **20 businesses** per user | ✅ | Enforced at POST `/webapps/` |
+| Edit / delete web app | ✅ | |
+| Active / inactive toggle | ✅ | |
+| Key features list | ✅ | JSON array column |
+| Logo upload field | ✅ | |
+| **Live website scraping** (nightly refresh) | ✅ | BeautifulSoup, stored in `scraped_data` JSON |
+| Scraper enriches content generation | ✅ | Used in `generate-all` and nightly Celery task |
 
 ---
 
-## 🤖 AI & Automation Features
+## 3. Social Platform Connections (12 Platforms)
 
-### Multi-Agent System
-- **Research Agent**
-  - Google Trends analysis
-  - Reddit trend scraping
-  - Twitter/X trend monitoring
-  - TikTok Creative Center data
-  - News API integration
-  - Web app content crawling
-  - Competitor analysis
-- **Creative Agent**
-  - Platform-optimized content
-  - Hook generation
-  - Caption writing
-  - Hashtag optimization
-  - Emoji placement
-  - Thread structuring (X)
-  - Professional tone (LinkedIn)
-  - Casual tone (TikTok, Instagram)
-- **Media Agent**
-  - Image generation
-  - Video script creation
-  - Video generation
-  - Audio/voiceover generation
-  - Multi-provider support
-  - Fallback routing
-  - Quality optimization
-- **Optimizer Agent**
-  - Viral score prediction
-  - Content optimization
-  - Hashtag refinement
-  - Format optimization
-  - Platform-specific tuning
-  - Performance-based learning
-- **Community Agent**
-  - Comment reply generation
-  - DM response creation
-  - Sentiment analysis
-  - Tone matching
-  - Brand voice consistency
-  - Risk assessment
+| Platform | OAuth Connect | Auto-Post | Group/Community |
+|----------|--------------|-----------|-----------------|
+| YouTube | ✅ | ✅ | — |
+| TikTok | ✅ | ✅ | — |
+| Instagram | ✅ | ✅ | — |
+| Facebook | ✅ | ✅ | ✅ Groups |
+| Twitter / X | ✅ | ✅ | — |
+| LinkedIn | ✅ | ✅ | — |
+| Pinterest | ✅ | ✅ | — |
+| Reddit | ✅ | ✅ | ✅ Subreddits |
+| Bluesky | ✅ | ✅ | — |
+| Threads | ✅ | ✅ | — |
+| Telegram | ✅ | ✅ | ✅ Channels |
+| Snapchat | ✅ | ✅ | — |
 
-### Workflows
-- **Nightly Content Generation**
-  - Scheduled at 2:00 AM UTC
-  - Generates content for all platforms
-  - Uses LangGraph orchestration
-  - Multi-agent collaboration
-  - Quality checks
-  - Saves to approval queue
-- **Analytics Sync**
-  - Every 6 hours
-  - Pulls data from all platforms
-  - Updates database
-  - Calculates metrics
-  - Triggers alerts
-- **Engagement Monitoring**
-  - Every 30 minutes
-  - Fetches new comments/DMs
-  - Sentiment analysis
-  - Priority assignment
-  - AI reply generation
-- **A/B Test Analysis**
-  - Daily at 3:00 AM
-  - Statistical significance check
-  - Winner determination
-  - Performance comparison
-- **Post Scheduling**
-  - Every 15 minutes
-  - Checks scheduled posts
-  - Posts at optimal times
-  - Updates status
-  - Tracks results
-
-### Self-Optimization
-- **Performance Learning**
-  - Analyzes past content performance
-  - Identifies patterns
-  - Adjusts future content
-  - Refines prompts
-- **Trend Adaptation**
-  - Daily trend monitoring
-  - Injects trending topics
-  - Aligns with current events
-  - Platform-specific trends
-- **Best Time Prediction**
-  - Historical data analysis
-  - Per-platform optimization
-  - Timezone adjustment
-  - Seasonal patterns
+All OAuth flows include PKCE `code_verifier` (secure).  
+Tokens stored encrypted (Fernet AES-128) in `user_integrations` table.  
+Per-platform: `auto_post_enabled`, `auto_reply_enabled`, `low_risk_auto_reply`.
 
 ---
 
-## 🔗 Integration Features
+## 4. AI Content Generation
 
-### LLM Providers
-- **OpenAI** (GPT-4, GPT-3.5, DALL-E)
-- **Anthropic** (Claude 3, Claude 3.5)
-- **Groq** (Fast inference, cheap)
-- **Google Gemini** (Free tier available)
-- **Grok/X AI** (Latest from X)
+All generation uses **HuggingFace Inference API only** — no other LLM API required.
 
-### Image Generation
-- **Leonardo.AI** (Premium quality)
-- **OpenAI DALL-E** (Versatile)
-- **Midjourney** (Via API)
-- **Stability AI** (SDXL)
-- **HuggingFace** (FREE - Flux.1, SDXL)
-- **Replicate** (Various models)
-- **fal.ai** (Fast generation)
-- **SiliconFlow** (Free tier)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `POST /content/generate` — single platform | ✅ | Mistral-7B-Instruct-v0.2 |
+| `POST /content/generate-all` — batch (all platforms × all webapps) | ✅ | Capped at 2 webapps per manual trigger |
+| Platform-specific prompts (12 platforms) | ✅ | Length, hashtag count, style hints |
+| Website scraper enrichment | ✅ | Live site copy fed into prompt |
+| Fallback content on HF timeout | ✅ | Template-based fallback |
+| JSON response parsing with markdown fence stripping | ✅ | |
+| Title + caption + hashtags + CTA per post | ✅ | |
+| Viral score (0–100) stored per content item | ✅ | |
+| Content type detection (video / image / text) | ✅ | Platform-based auto-detect |
+| `generate_batch()` — concurrent per-platform generation | ✅ | |
 
-### Video Generation
-- **Runway ML** (Premium video)
-- **HeyGen** (AI avatars)
-- **Synthesia** (AI presenters)
-- **Replicate** (Open source models)
-
-### Audio/Voice
-- **ElevenLabs** (Best quality)
-- **Coqui TTS** (FREE - Open source)
-- **Play.ht** (Natural voices)
-
-### Data Sources
-- **Google Trends** (Trend data)
-- **Reddit API** (Community trends)
-- **NewsAPI** (News trends)
-- **GNews** (Global news)
-- **Twitter/X** (Real-time trends)
-
-### Web Scraping
-- **Firecrawl** (Web app content)
-- **ScrapingBee** (General scraping)
-
-### Payment Processing
-- **Stripe** (Subscriptions, payments)
-  - Subscription management
-  - Webhook handling
-  - Invoice generation
-  - Payment method storage
-
-### Email Services
-- **Resend** (Transactional emails)
-- **Brevo** (Alternative option)
-
-### Storage
-- **Supabase** (Object storage, DB)
-- **AWS S3** (Alternative storage)
-
-### Monitoring
-- **Sentry** (Error tracking, performance)
+### Specialist HF Methods
+| Method | Model | Used by |
+|--------|-------|---------|
+| `summarize()` | facebook/bart-large-cnn | Remix Engine, Blog |
+| `analyze_sentiment()` | distilbert-base-uncased-finetuned-sst-2-english | Lead scoring, Feedback Alchemy |
+| `classify_topics()` | facebook/bart-large-mnli | Lead scoring, Ad Alchemy |
+| `extract_keywords()` | Mistral-7B | Competitor Analyzer, SEO |
+| `remix_to_platform()` | Mistral-7B | Content Remix Engine |
+| `generate_competitor_insights()` | Mistral-7B | Competitor Shadow Analyzer |
+| `generate_feedback_insights()` | Mistral-7B | Feedback Alchemy Platform |
+| `generate_blog_post()` | Mistral-7B | SEO Blog Generator |
+| `generate_comment_reply()` | Mistral-7B | Auto-Reply, Echo Amplifier |
+| `score_lead_intelligence()` | sentiment + zero-shot | Lead scoring |
+| `generate_echo_amplification()` | Mistral-7B | Echo Amplifier |
+| `generate_seo_mirage()` | Mistral-7B | SEO Mirage Creator |
+| `generate_harmony_pricing()` | Mistral-7B | Harmony Pricer |
+| `generate_audience_map()` | Mistral-7B | Audience Mirage Mapper |
+| `generate_ad_alchemy()` | Mistral-7B | Ad Alchemy Optimizer |
+| `generate_viral_hook()` | Mistral-7B | Viral Spark Igniter |
 
 ---
 
-## 📊 Analytics & Reporting
+## 5. Content Approval Workflow
 
-### Performance Metrics
-- **Views** (per content, per platform)
-- **Likes** (engagement metric)
-- **Comments** (engagement metric)
-- **Shares** (virality metric)
-- **Clicks** (CTR calculation)
-- **CTR** (click-through rate)
-- **Engagement Rate** (calculated)
-- **Reach** (unique viewers)
-- **Impressions** (total views)
-
-### Reports
-- **Daily Reports**
-  - Performance summary
-  - Top content
-  - Platform breakdown
-- **Weekly Reports**
-  - Trend analysis
-  - Growth metrics
-  - Comparison to previous week
-- **Monthly Reports**
-  - Overall performance
-  - Goal achievement
-  - ROI calculation
-  - Cost analysis
-
-### Visualizations
-- **Line Charts** (trends over time)
-- **Bar Charts** (platform comparison)
-- **Pie Charts** (engagement breakdown)
-- **Heatmaps** (posting times)
-- **Tables** (detailed metrics)
-
-### Export Options
-- **CSV Export** (raw data)
-- **PDF Reports** (formatted reports)
-- **API Access** (programmatic access)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Pending queue — `GET /content/pending` | ✅ | |
+| Approve single item | ✅ | Status → `approved` |
+| Reject single item | ✅ | Status → `rejected` |
+| Bulk approve | ✅ | `POST /content/approve-all` |
+| Edit caption / hashtags before approving | ✅ | `PUT /content/{id}` |
+| Schedule for specific time | ✅ | `scheduled_for` field |
+| Approval UI page (`/dashboard/approval`) | ✅ | |
+| **Content approval is the only non-automated step** | ✅ | All else is fully autonomous |
 
 ---
 
-## 🔒 Security Features
+## 6. Autonomous Posting Schedule
 
-### Authentication & Authorization
-- **Clerk Integration**
-  - Secure authentication
-  - Session management
-  - Multi-factor authentication support
-- **JWT Tokens**
-  - Secure API access
-  - Token expiration
-  - Refresh tokens
-- **User Isolation**
-  - Data separation per user
-  - Permission-based access
+**19 Celery beat tasks** running 24/7:
 
-### Data Encryption
-- **API Keys**
-  - Fernet encryption at rest
-  - Never exposed in responses
-- **OAuth Tokens**
-  - Encrypted access tokens
-  - Encrypted refresh tokens
-  - Secure token storage
-- **Environment Variables**
-  - Sensitive data in .env
-  - Not committed to repo
-
-### Input Validation
-- **Pydantic Schemas**
-  - Type validation
-  - Format validation
-  - Range validation
-- **XSS Protection**
-  - Input sanitization
-  - Output escaping
-
-### Rate Limiting
-- **API Rate Limits**
-  - Per-user limits
-  - Per-endpoint limits
-  - Tier-based limits
-- **Usage Quotas**
-  - Content generation limits
-  - API call limits
-  - Media generation limits
-
-### CORS Configuration
-- **Allowed Origins**
-  - Configurable whitelist
-  - Environment-based
-- **Allowed Methods**
-  - GET, POST, PUT, DELETE
-  - OPTIONS for preflight
-
-### Monitoring
-- **Sentry Integration**
-  - Error tracking
-  - Performance monitoring
-  - Security alerts
-- **Audit Logs**
-  - User actions
-  - API calls
-  - System events
+| Task | Schedule (UTC) | What it does |
+|------|---------------|--------------|
+| Morning content generation | 08:00 | Generate + auto-queue posts for all users |
+| Midday content generation | 13:00 | Same |
+| Evening content generation | 18:00 | Same |
+| Post approved content | Every 15 min | Posts any approved-but-unposted content |
+| Sync platform analytics | Every 6 hours | Pull views/likes/shares from platform APIs |
+| Morning group posts | 08:30 | Post HF-generated content to active groups |
+| Midday group posts | 13:30 | Same |
+| Evening group posts | 18:30 | Same |
+| Nightly scrape refresh | 00:30 | Re-scrape all webapp URLs |
+| Nightly churn check | 01:00 | Churn Shield Defender |
+| Daily competitor refresh | 02:00 | Competitor Shadow Analyzer |
+| Analyse A/B tests | 03:00 | A/B testing winners |
+| Weekly group search | Sunday 03:30 | Discover new groups for all webapps |
+| Feedback Alchemy | 04:00 | Process social feedback |
+| SEO Mirage | 05:00 | SEO visual generation |
+| Auto-repurpose top content | 06:00 | Remix high-performing posts to other platforms |
+| Daily Viral Spark | 07:00 | Viral hook suggestions |
+| Harmony Pricer | 09:00 | Dynamic pricing insights |
+| Echo Amplifier | 10:00 | Amplify best-performing content |
+| Audience Mapper | 14:00 | Psychographic mapping |
+| Ad Alchemy | 15:00 | Ad copy optimisation |
+| Poll comment leads | Every 2 hours | Scan comments → capture as leads |
 
 ---
 
-## 🚀 Feature Flags
+## 7. Lead Capture & Management
 
-The following features can be enabled/disabled via environment variables:
-
-- `ENABLE_AUTO_POST` - Autonomous posting
-- `ENABLE_AUTO_REPLY` - Automatic engagement replies
-- `ENABLE_AB_TESTING` - A/B testing functionality
-- `ENABLE_VIRAL_PREDICTION` - Viral score prediction
-- `ENABLE_COST_TRACKING` - Cost tracking and alerts
-
----
-
-## 📈 Coming Soon (Roadmap)
-
-### Phase 4 Features (Planned)
-- [ ] Pinterest integration
-- [ ] Snapchat integration
-- [ ] Advanced ML prediction models
-- [ ] Team collaboration features
-- [ ] White-label options
-- [ ] Public API for developers
-- [ ] Mobile app (iOS & Android)
-- [ ] Browser extension
-- [ ] Zapier integration
-- [ ] Make.com integration
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Lead model with UTM tracking | ✅ | utm_source, utm_medium, utm_campaign, utm_content, utm_term |
+| Public `POST /leads/capture` endpoint | ✅ | No auth — for embedded forms |
+| Lead scoring (0–100, HF-powered) | ✅ | Sentiment + zero-shot + rule-based |
+| Pre-qualifying form data (JSON) | ✅ | Custom questions per webapp |
+| Lead list with search & filter | ✅ | By status, source, platform, lead score |
+| Lead status workflow | ✅ | new → contacted → qualified → converted / lost |
+| Lead stats dashboard | ✅ | Total, by status, by platform, by source |
+| CSV export | ✅ | `GET /leads/export` |
+| UTM link generator | ✅ | `POST /leads/utm-builder` |
+| Comment-to-lead auto-capture | ✅ | Celery task scans comments every 2h |
+| Leads page UI (`/dashboard/leads`) | ✅ | |
 
 ---
 
-**Last Updated**: February 2026  
-**Version**: 2.0  
-**Part of Amarktai Network**
+## 8. Analytics & Reporting
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Total posts / views / engagement / CTR summary | ✅ | |
+| Platform-level breakdown | ✅ | |
+| 7-day daily stats (posts, views, engagement) | ✅ | |
+| Live sync from Twitter v2, Facebook Graph, YouTube Data API | ✅ | Every 6h Celery task |
+| Analytics page with charts (`/dashboard/analytics`) | ✅ | |
+| Per-content performance (views, likes, comments, shares, clicks, CTR) | ✅ | |
+| Group-level metrics (posts_sent, engagement, member_count) | ✅ | |
+| Viral score per content | ✅ | |
+| A/B test performance tracking | ✅ | |
+| Cost per lead / cost per post tracking | ✅ | |
+
+---
+
+## 9. Community Groups Feature
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Facebook group search (Graph API) | ✅ | Returns suggested groups |
+| Reddit subreddit search (public JSON) | ✅ | No auth required for search |
+| Telegram channel lookup | ✅ | Via bot API |
+| Discord channel — manual input helper | ✅ | |
+| Group suggestion status workflow | ✅ | suggested → joined → active → paused |
+| Post to Facebook group | ✅ | Graph API put_object |
+| Post to Reddit subreddit | ✅ | OAuth2 password flow |
+| Post to Telegram channel | ✅ | Bot sendMessage |
+| Post to Discord channel | ✅ | Webhook |
+| 3× daily group posts (offset from main) | ✅ | 08:30, 13:30, 18:30 UTC |
+| Weekly auto-discovery of new groups | ✅ | Sunday 03:30 UTC |
+| Rate limiting (1–2 posts/group/day) | ✅ | Tracked via `last_posted_at` |
+| Communities page UI (`/dashboard/groups`) | ✅ | Search, join-link, confirm, activate |
+| Compliance notice ("join manually") | ✅ | Shown in UI |
+
+---
+
+## 10. Ten Power Tools (AI Add-Ons)
+
+All tools use HuggingFace exclusively. Each runs autonomously via daily Celery tasks.
+
+### 10.1 Content Remix Engine
+- Turns any blog post / article into platform-native snippets
+- Platform-specific re-formatting (TikTok, Instagram, X, LinkedIn, etc.)
+- Daily trending hashtag injection
+- Engagement-feedback-loop learning (high-engagement styles prioritised)
+- Endpoint: `POST /remix/remix`, `POST /remix/batch`
+
+### 10.2 Competitor Shadow Analyzer
+- Daily scrape of competitor websites & social profiles
+- HF-powered keyword extraction + insight generation
+- Counter-strategy suggestions
+- Sentiment analysis on competitor content
+- Nightly Celery refresh + weekly full scan
+- Endpoint: `POST /tools/competitor/analyze`
+
+### 10.3 Feedback Alchemy Platform
+- Processes social comments & reviews
+- Transforms feedback into campaign tweaks and response templates
+- A/B test simulation suggestions based on historical data
+- Daily Celery run at 04:00 UTC
+- Endpoint: `POST /tools/feedback/analyze`
+
+### 10.4 Social Echo Amplifier
+- Turns visitor queries and comments into amplified social campaigns
+- Scales echoes based on virality potential
+- Daily run at 10:00 UTC
+- Endpoint: `POST /tools/echo/amplify`
+
+### 10.5 SEO Mirage Creator
+- Generates SEO-optimised text content and visual descriptions
+- Aligns with platform algorithm hints
+- Daily run at 05:00 UTC
+- Endpoint: `POST /tools/seo/create`
+
+### 10.6 Churn Shield Defender
+- Predicts social audience churn using engagement drop signals
+- Generates personalised re-engagement post campaigns
+- Nightly Celery run at 01:00 UTC
+- Endpoint: `POST /tools/churn/predict`
+
+### 10.7 Dynamic Harmony Pricer
+- Analyses daily social buzz to suggest price adjustments for promoted products
+- Sentiment-aware pricing recommendations
+- Daily run at 09:00 UTC
+- Endpoint: `POST /tools/pricing/optimize`
+
+### 10.8 Viral Spark Igniter
+- Predicts daily viral opportunities from trend data
+- Generates hooks, challenges, and angles for scheduled posts
+- Pre-morning run at 07:00 UTC (before content generation)
+- Endpoint: `POST /tools/viral/spark`
+
+### 10.9 Audience Mirage Mapper
+- Maps audience psychographics from engagement data
+- Suggests segmented campaigns per platform/niche
+- Daily run at 14:00 UTC
+- Endpoint: `POST /tools/audience/map`
+
+### 10.10 Ad Alchemy Optimizer
+- Virtual A/B tests on ad copy variants
+- Selects and deploys winning copy automatically
+- Daily run at 15:00 UTC
+- Endpoint: `POST /tools/ad/optimize`
+
+---
+
+## 11. SEO Blog Post Generator
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| HF-powered long-form blog post generation | ✅ | Mistral-7B |
+| Keyword-rich SEO structure (H1/H2/H3, meta) | ✅ | |
+| Remix blog post to social snippets | ✅ | `POST /blog/{id}/remix-to-social` |
+| Draft / published / archived status | ✅ | |
+| Blog list, read, edit, delete | ✅ | |
+| Blog page UI (`/dashboard/blog`) | ✅ | Generate, expand/collapse, publish, remix |
+
+---
+
+## 12. Engagement & Auto-Reply
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Engagement reply list | ✅ | |
+| HF-generated reply suggestions | ✅ | `generate_comment_reply()` |
+| Low-risk auto-reply toggle (per platform) | ✅ | |
+| Auto-reply enabled toggle (per platform) | ✅ | |
+| Comment-to-lead detection | ✅ | Interest keywords → auto-capture lead |
+| `POST /engagement/reply` — fire reply async | ✅ | Background Celery task |
+| Engagement page UI (`/dashboard/engagement`) | ✅ | |
+
+---
+
+## 13. A/B Testing
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| A/B test creation | ✅ | Compare 2+ content variants |
+| Variant tracking (views, CTR per variant) | ✅ | |
+| Winner selection | ✅ | Highest CTR auto-wins |
+| Daily analysis Celery task | ✅ | 03:00 UTC |
+| A/B testing page UI (`/dashboard/ab-testing`) | ✅ | |
+
+---
+
+## 14. Cost Tracking
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Per-generation cost logging | ✅ | LLM tokens, image cost, video cost |
+| Monthly API cost budget | ✅ | Per user, configurable |
+| Cost-per-post, cost-per-lead metrics | ✅ | |
+| Cost tracking page UI | ✅ | |
+
+---
+
+## 15. Autonomous Workflows
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Auto-repurpose top-performing content | ✅ | ≥100 views → remix to other platforms |
+| Nightly webapp re-scraping | ✅ | Fresh site copy for generation |
+| Feedback loop — learning from analytics | ✅ | HF scores + engagement data |
+| Autonomous scheduler — `ENABLE_AUTO_POST` flag | ✅ | Off by default for safety |
+
+---
+
+## 16. Admin Panel
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| System health + stats | ✅ | Users, webapps, content, posted count |
+| System API key management | ✅ | Set HF/platform keys at runtime |
+| Feature flag toggles | ✅ | Enable/disable auto-post, auto-reply, etc. |
+| Trigger manual content generation | ✅ | Fire Celery task from UI |
+| User list with usage stats | ✅ | |
+| Admin page UI (`/dashboard/admin`) | ✅ | Requires `ADMIN_USER_IDS` in env |
+
+---
+
+## 17. API Key & Integrations Management
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Per-user API key storage (encrypted Fernet) | ✅ | |
+| Supported keys: HUGGINGFACE_TOKEN, GROQ, OPENAI, GEMINI, LEONARDO, ELEVENLABS, REPLICATE, FAL_AI, SILICONFLOW, COQUI, PLAYHT | ✅ | |
+| Add / delete / list API keys | ✅ | Values never returned in API |
+| Platform OAuth2 connection status | ✅ | |
+| Auto-post / auto-reply toggle per platform | ✅ | |
+| Integrations page UI (`/dashboard/integrations`) | ✅ | |
+
+---
+
+## 18. Scheduler & Content Calendar
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Schedule content for future time | ✅ | `scheduled_for` datetime field |
+| 15-minute post queue | ✅ | Celery picks up approved + scheduled content |
+| Content calendar view (`/dashboard/scheduler`) | ✅ | |
+| Smart scheduler service | ✅ | Optimal time-slot suggestions |
+
+---
+
+## 19. Settings & User Preferences
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Timezone selection | ✅ | |
+| Language preference | ✅ | |
+| Notification preferences (JSON) | ✅ | |
+| Auto-post toggle | ✅ | |
+| Auto-reply toggle | ✅ | |
+| Low-risk auto-reply toggle | ✅ | |
+| Settings page UI (`/dashboard/settings`) | ✅ | |
+
+---
+
+## 20. Deployment & Infrastructure
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Docker Compose (7 services) | ✅ | db, redis, backend, worker, beat, frontend, nginx |
+| Dockerfile.backend (Python 3.11 slim) | ✅ | |
+| Dockerfile.frontend (Node 20, multi-stage Vite build) | ✅ | |
+| Nginx reverse proxy with rate limiting | ✅ | 30 req/min on /api/ |
+| SSL via Let's Encrypt / Certbot (docker profile) | ✅ | |
+| Alembic database migrations (0001–0005) | ✅ | |
+| `Base.metadata.create_all` on startup | ✅ | Fallback for dev |
+| Celery worker + beat as separate containers | ✅ | |
+| Health check endpoints | ✅ | `/health` on backend + nginx |
+| CORS properly configured | ✅ | Via CORS_ORIGINS env |
+| Fernet encryption for tokens & API keys | ✅ | `cryptography==46.0.5` |
+| Svix webhook signature verification | ✅ | `svix==1.15.0` |
+| Sentry error monitoring | ✅ | Optional SENTRY_DSN |
+| Ubuntu Webdock VPS deployment guide | ✅ | `DEPLOYMENT_GUIDE.md` |
+| Systemd service files documented | ✅ | In deployment guide |
+| Log rotation strategy | ✅ | In deployment guide |
+| Daily DB backup script | ✅ | In deployment guide |
+| UFW firewall rules | ✅ | In deployment guide |
+| Fail2Ban configuration | ✅ | In deployment guide |
+
+---
+
+## Summary
+
+**Total backend API endpoints**: 100+  
+**Total frontend pages**: 17  
+**Social platforms supported**: 12  
+**AI tasks / day per user**: up to 21 Celery-driven AI operations  
+**HuggingFace models used**: 4 (Mistral-7B, BART-CNN, DistilBERT-SST2, BART-MNLI)  
+**Only API key required to run**: `HUGGINGFACE_TOKEN`
+
+---
+
+*Designed and created by Amarktai Network*

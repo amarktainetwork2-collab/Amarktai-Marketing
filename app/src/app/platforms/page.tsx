@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Check, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Check, Link as LinkIcon, AlertCircle, Pin, MessageCircle, Send, Ghost } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,48 @@ const platforms: { id: Platform; name: string; icon: React.ElementType; color: s
     icon: Linkedin,
     color: '#0A66C2',
     description: 'Professional content for B2B marketing',
+  },
+  {
+    id: 'pinterest',
+    name: 'Pinterest',
+    icon: Pin,
+    color: '#E60023',
+    description: 'Visual discovery engine for inspiration and shopping',
+  },
+  {
+    id: 'reddit',
+    name: 'Reddit',
+    icon: MessageCircle,
+    color: '#FF4500',
+    description: 'Community-driven discussions and niche audiences',
+  },
+  {
+    id: 'bluesky',
+    name: 'Bluesky',
+    icon: Twitter,
+    color: '#0085FF',
+    description: 'Decentralised social network growing rapidly',
+  },
+  {
+    id: 'threads',
+    name: 'Threads',
+    icon: MessageCircle,
+    color: '#000000',
+    description: "Meta's text-based conversation platform",
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram',
+    icon: Send,
+    color: '#26A5E4',
+    description: 'Broadcast to engaged channel subscribers',
+  },
+  {
+    id: 'snapchat',
+    name: 'Snapchat',
+    icon: Ghost,
+    color: '#FFFC00',
+    description: 'Ephemeral content for younger audiences',
   },
 ];
 

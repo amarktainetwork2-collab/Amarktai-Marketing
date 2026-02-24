@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { 
   Rocket, Zap, BarChart3, Shield, Clock, Globe, 
   Check, ChevronRight, Play, Star, Menu, X,
-  Youtube, Instagram, Facebook, Twitter, Linkedin, Music
+  Youtube, Instagram, Facebook, Twitter, Linkedin, Music,
+  Shuffle, Search, MessageSquarePlus, RefreshCw, Eye,
+  TrendingUp, Users, FlaskConical, Wrench,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,17 +19,17 @@ export default function LandingPage() {
     {
       icon: <Zap className="w-6 h-6" />,
       title: 'AI-Powered Content',
-      description: 'Our AI agents research trends, write scripts, and generate stunning visuals tailored for each platform.',
+      description: 'HuggingFace Mistral generates platform-native posts, scripts and captions for all 6 channels — 3× daily.',
     },
     {
       icon: <Clock className="w-6 h-6" />,
-      title: 'Daily Automation',
-      description: 'Content is generated every night and ready for your approval each morning. Set it and forget it.',
+      title: '3× Daily Automation',
+      description: 'Morning, midday and evening content batches generated and queued for approval automatically.',
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      title: '6 Platforms, One Dashboard',
-      description: 'Manage YouTube, TikTok, Instagram, Facebook, X, and LinkedIn from a single interface.',
+      title: '12 Platforms, One Dashboard',
+      description: 'Manage YouTube, TikTok, Instagram, Facebook, X, LinkedIn, Pinterest, Reddit, Bluesky, Threads, Telegram and Snapchat from one place.',
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
@@ -42,25 +44,53 @@ export default function LandingPage() {
     {
       icon: <Rocket className="w-6 h-6" />,
       title: 'Self-Optimizing',
-      description: 'Our AI learns from performance data to continuously improve your content strategy.',
+      description: 'AI learns from performance data to continuously improve your content strategy over time.',
     },
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: 'Lead Capture & Scoring',
+      description: 'Auto-capture leads from social comments and UTM links. HF AI scores every lead 0-100 for prioritization.',
+    },
+    {
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: 'SEO Blog Generator',
+      description: 'Generate long-form SEO blog posts with HuggingFace to drive organic Google traffic and leads — then remix them into social posts.',
+    },
+  ];
+
+  const powerTools = [
+    { icon: Shuffle, color: 'text-violet-600', bg: 'bg-violet-50', title: 'Content Remix Engine', description: 'Remix any blog or URL into 6-platform snippets with trending hashtags. Daily auto-batches.' },
+    { icon: Search, color: 'text-blue-600', bg: 'bg-blue-50', title: 'Competitor Shadow Analyzer', description: 'Nightly competitor scraping. Spot content gaps and get AI counter-strategies automatically.' },
+    { icon: MessageSquarePlus, color: 'text-green-600', bg: 'bg-green-50', title: 'Feedback Alchemy', description: 'Transform reviews into ad copy, response templates and A/B test ideas.' },
+    { icon: RefreshCw, color: 'text-orange-600', bg: 'bg-orange-50', title: 'Social Echo Amplifier', description: 'Turn visitor queries into amplified social threads ranked by virality score.' },
+    { icon: Eye, color: 'text-pink-600', bg: 'bg-pink-50', title: 'SEO Mirage Creator', description: 'Generate SEO-optimised titles, alt texts and hashtags tuned to each platform algorithm.' },
+    { icon: Shield, color: 'text-red-600', bg: 'bg-red-50', title: 'Churn Shield Defender', description: 'Predict audience churn daily. Auto-generate re-engagement posts and DM templates.' },
+    { icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50', title: 'Dynamic Harmony Pricer', description: 'Adjust social ad prices based on buzz, sentiment and competitor data.' },
+    { icon: Zap, color: 'text-yellow-600', bg: 'bg-yellow-50', title: 'Viral Spark Igniter', description: 'Daily viral opportunity report with hooks, challenges and optimal posting windows.' },
+    { icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50', title: 'Audience Mirage Mapper', description: 'Map psychographic segments and get per-segment campaign ideas and predicted CTR.' },
+    { icon: FlaskConical, color: 'text-teal-600', bg: 'bg-teal-50', title: 'Ad Alchemy Optimizer', description: 'Generate 3 A/B ad copy variants, score against global benchmarks, pick the winner.' },
   ];
 
   const howItWorks = [
     {
       step: '01',
       title: 'Connect Your Apps',
-      description: 'Add your web apps and connect your social media accounts in minutes.',
+      description: 'Add your web apps, connect 12 social accounts and enter your HuggingFace API key in minutes.',
     },
     {
       step: '02',
-      title: 'AI Generates Content',
-      description: 'Every night, our AI analyzes trends and creates platform-optimized content.',
+      title: 'AI Generates Everything',
+      description: 'Every morning, midday and evening our AI creates platform-optimised posts, SEO blog posts, and power tool reports.',
     },
     {
       step: '03',
       title: 'Approve & Publish',
-      description: 'Review content each morning with one click. Approved posts go live automatically.',
+      description: 'Review content with one click. Approved posts go live automatically across all connected platforms.',
+    },
+    {
+      step: '04',
+      title: 'Leads Flow In',
+      description: 'UTM-tracked links, comment-to-lead capture, and AI-scored leads fill your pipeline daily on autopilot.',
     },
   ];
 
@@ -160,8 +190,8 @@ export default function LandingPage() {
                 </span>
               </h1>
               <p className="text-xl text-gray-600 max-w-lg">
-                Promote your web apps across 6 platforms daily with zero manual effort. 
-                AI generates content, you approve with one click.
+                Promote your web apps across 12 platforms daily with zero manual effort. 
+                AI generates content, captures leads, and writes SEO blog posts — you approve with one click.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/register">
@@ -230,33 +260,25 @@ export default function LandingPage() {
       {/* Platform Logos */}
       <section className="py-12 bg-gray-50 border-y">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-500 mb-8">Works with all major platforms</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Youtube className="w-8 h-8" />
-              <span className="font-semibold">YouTube</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Music className="w-8 h-8" />
-              <span className="font-semibold">TikTok</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Instagram className="w-8 h-8" />
-              <span className="font-semibold">Instagram</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Facebook className="w-8 h-8" />
-              <span className="font-semibold">Facebook</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Twitter className="w-8 h-8" />
-              <span className="font-semibold">X</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Linkedin className="w-8 h-8" />
-              <span className="font-semibold">LinkedIn</span>
-            </div>
+          <p className="text-center text-gray-500 mb-8">Works with all 12 major platforms</p>
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10">
+            {[
+              { icon: Youtube, label: 'YouTube' },
+              { icon: Music, label: 'TikTok' },
+              { icon: Instagram, label: 'Instagram' },
+              { icon: Facebook, label: 'Facebook' },
+              { icon: Twitter, label: 'X / Twitter' },
+              { icon: Linkedin, label: 'LinkedIn' },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center space-x-2 text-gray-400">
+                <Icon className="w-7 h-7" />
+                <span className="font-semibold text-sm">{label}</span>
+              </div>
+            ))}
           </div>
+          <p className="text-center text-gray-400 text-sm mt-4">
+            + Pinterest · Reddit · Bluesky · Threads · Telegram · Snapchat
+          </p>
         </div>
       </section>
 
@@ -271,7 +293,7 @@ export default function LandingPage() {
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our AI-powered platform handles the entire social media marketing workflow from research to publishing.
+              Powered exclusively by HuggingFace — the only API key you need.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -286,6 +308,41 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Power Tools Section */}
+      <section id="tools" className="py-20 bg-gradient-to-br from-gray-900 to-gray-800 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge className="bg-violet-600 text-white mb-4">10 AI Power Tools</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Autonomous Marketing Add-Ons
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Each tool runs daily on autopilot via HuggingFace. Together they create a self-improving
+              marketing system that works while you sleep.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {powerTools.map((tool, i) => (
+              <div key={i} className="bg-gray-800 rounded-xl p-4 hover:bg-gray-700 transition-colors border border-gray-700 hover:border-violet-500">
+                <div className={`w-10 h-10 ${tool.bg} rounded-lg flex items-center justify-center mb-3`}>
+                  <tool.icon className={`w-5 h-5 ${tool.color}`} />
+                </div>
+                <h3 className="font-semibold text-white text-sm mb-1">{tool.title}</h3>
+                <p className="text-xs text-gray-400">{tool.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link to="/register">
+              <Button size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
+                <Wrench className="w-4 h-4 mr-2" />
+                Unlock All 10 Power Tools
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

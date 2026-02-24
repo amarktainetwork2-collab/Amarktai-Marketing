@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.user_api_key import UserAPIKey, UserIntegration
 from app.models.user import User
 from app.core.config import settings
@@ -43,15 +44,6 @@ class IntegrationUpdate(BaseModel):
     auto_post_enabled: bool = None
     auto_reply_enabled: bool = None
     low_risk_auto_reply: bool = None
-
-# Helper function to get current user (placeholder - integrate with Clerk)
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    # In production, verify Clerk JWT and get user
-    # For now, return a mock user
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 # API Keys Endpoints
 @router.get("/api-keys", response_model=List[APIKeyResponse])
@@ -156,7 +148,10 @@ async def get_integrations(
     current_user: User = Depends(get_current_user)
 ):
     """Get status of all platform integrations."""
-    platforms = ["youtube", "tiktok", "instagram", "facebook", "twitter", "linkedin"]
+    platforms = [
+        "youtube", "tiktok", "instagram", "facebook", "twitter", "linkedin",
+        "pinterest", "reddit", "bluesky", "threads", "telegram", "snapchat",
+    ]
     
     integrations = db.query(UserIntegration).filter(
         UserIntegration.user_id == current_user.id
@@ -216,7 +211,37 @@ async def connect_platform(
             "auth_url": "https://www.tiktok.com/auth/authorize",
             "client_id": settings.TIKTOK_CLIENT_KEY,
             "scope": "video.upload video.list"
-        }
+        },
+        "pinterest": {
+            "auth_url": "https://www.pinterest.com/oauth/",
+            "client_id": settings.PINTEREST_CLIENT_ID,
+            "scope": "boards:read pins:read pins:write"
+        },
+        "reddit": {
+            "auth_url": "https://www.reddit.com/api/v1/authorize",
+            "client_id": settings.REDDIT_CLIENT_ID,
+            "scope": "identity submit read"
+        },
+        "bluesky": {
+            "auth_url": "https://bsky.social/oauth/authorize",
+            "client_id": settings.BLUESKY_CLIENT_ID,
+            "scope": "atproto"
+        },
+        "threads": {
+            "auth_url": "https://www.threads.net/oauth/authorize",
+            "client_id": settings.META_APP_ID,
+            "scope": "threads_basic threads_content_publish"
+        },
+        "telegram": {
+            "auth_url": "https://oauth.telegram.org/auth",
+            "client_id": settings.TELEGRAM_BOT_TOKEN,
+            "scope": "messages"
+        },
+        "snapchat": {
+            "auth_url": "https://accounts.snapchat.com/accounts/oauth2/auth",
+            "client_id": settings.SNAPCHAT_CLIENT_ID,
+            "scope": "snapchat-marketing-api"
+        },
     }
     
     config = platform_configs.get(platform)
@@ -300,22 +325,124 @@ async def oauth_callback(
     state: str,
     db: Session = Depends(get_db)
 ):
-    """Handle OAuth2 callback from platforms."""
+    """Handle OAuth2 callback from platforms — exchanges code for access token."""
     # Parse state to get user_id and platform
     try:
         user_id, platform = state.split(":")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid state parameter")
-    
+
     # Exchange code for tokens (platform-specific)
-    # This is a simplified version - each platform has different token exchange
-    
+    token_endpoints: dict[str, dict] = {
+        "youtube": {
+            "url": "https://oauth2.googleapis.com/token",
+            "client_id": settings.YOUTUBE_CLIENT_ID,
+            "client_secret": settings.YOUTUBE_CLIENT_SECRET,
+        },
+        "twitter": {
+            "url": "https://api.twitter.com/2/oauth2/token",
+            "client_id": settings.TWITTER_CLIENT_ID,
+            "client_secret": settings.TWITTER_CLIENT_SECRET,
+        },
+        "linkedin": {
+            "url": "https://www.linkedin.com/oauth/v2/accessToken",
+            "client_id": settings.LINKEDIN_CLIENT_ID,
+            "client_secret": settings.LINKEDIN_CLIENT_SECRET,
+        },
+        "instagram": {
+            "url": "https://graph.facebook.com/v18.0/oauth/access_token",
+            "client_id": settings.META_APP_ID,
+            "client_secret": settings.META_APP_SECRET,
+        },
+        "facebook": {
+            "url": "https://graph.facebook.com/v18.0/oauth/access_token",
+            "client_id": settings.META_APP_ID,
+            "client_secret": settings.META_APP_SECRET,
+        },
+        "tiktok": {
+            "url": "https://open.tiktokapis.com/v2/oauth/token/",
+            "client_id": settings.TIKTOK_CLIENT_KEY,
+            "client_secret": settings.TIKTOK_CLIENT_SECRET,
+        },
+        "pinterest": {
+            "url": "https://api.pinterest.com/v5/oauth/token",
+            "client_id": settings.PINTEREST_CLIENT_ID,
+            "client_secret": settings.PINTEREST_CLIENT_SECRET,
+        },
+        "reddit": {
+            "url": "https://www.reddit.com/api/v1/access_token",
+            "client_id": settings.REDDIT_CLIENT_ID,
+            "client_secret": settings.REDDIT_CLIENT_SECRET,
+        },
+        "threads": {
+            "url": "https://graph.threads.net/oauth/access_token",
+            "client_id": settings.META_APP_ID,
+            "client_secret": settings.META_APP_SECRET,
+        },
+        "snapchat": {
+            "url": "https://accounts.snapchat.com/accounts/oauth2/token",
+            "client_id": settings.SNAPCHAT_CLIENT_ID,
+            "client_secret": settings.SNAPCHAT_CLIENT_SECRET,
+        },
+    }
+
+    import httpx as _httpx
+
+    access_token = None
+    refresh_token = None
+    platform_username = None
+
+    cfg = token_endpoints.get(platform)
+    if cfg and cfg.get("client_id") and cfg.get("client_secret"):
+        redirect_uri = f"{settings.FRONTEND_URL}/dashboard/settings/integrations/callback"
+        try:
+            async with _httpx.AsyncClient(timeout=20) as client:
+                if platform == "reddit":
+                    # Reddit uses HTTP Basic Auth
+                    resp = await client.post(
+                        cfg["url"],
+                        data={"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri},
+                        auth=(cfg["client_id"], cfg["client_secret"]),
+                        headers={"User-Agent": settings.REDDIT_USER_AGENT},
+                    )
+                elif platform == "twitter":
+                    import base64 as _b64, secrets as _secrets
+                    creds = _b64.b64encode(f"{cfg['client_id']}:{cfg['client_secret']}".encode()).decode()
+                    # PKCE: use state-embedded verifier or a fallback random verifier
+                    # (in production the verifier should be stored in the session when initiating OAuth)
+                    code_verifier = state.split(":", 2)[2] if state.count(":") >= 2 else _secrets.token_urlsafe(43)
+                    resp = await client.post(
+                        cfg["url"],
+                        data={"grant_type": "authorization_code", "code": code,
+                              "redirect_uri": redirect_uri, "code_verifier": code_verifier},
+                        headers={"Authorization": f"Basic {creds}", "Content-Type": "application/x-www-form-urlencoded"},
+                    )
+                else:
+                    resp = await client.post(
+                        cfg["url"],
+                        data={
+                            "grant_type": "authorization_code",
+                            "code": code,
+                            "redirect_uri": redirect_uri,
+                            "client_id": cfg["client_id"],
+                            "client_secret": cfg["client_secret"],
+                        },
+                    )
+                if resp.is_success:
+                    data = resp.json()
+                    access_token = data.get("access_token")
+                    refresh_token = data.get("refresh_token")
+                else:
+                    print(f"⚠️  OAuth token exchange failed for {platform}: {resp.text}")
+        except Exception as exc:
+            print(f"⚠️  OAuth error for {platform}: {exc}")
+
     # Store tokens
     integration = db.query(UserIntegration).filter(
         UserIntegration.user_id == user_id,
         UserIntegration.platform == platform
     ).first()
-    
+
     if not integration:
         integration = UserIntegration(
             id=str(uuid.uuid4()),
@@ -323,30 +450,16 @@ async def oauth_callback(
             platform=platform
         )
         db.add(integration)
-    
+
     integration.is_connected = True
     integration.connected_at = datetime.now()
-    # In production, exchange code for actual tokens and encrypt them
-    # integration.encrypted_access_token = UserIntegration.encrypt_token(access_token)
-    # integration.encrypted_refresh_token = UserIntegration.encrypt_token(refresh_token)
-    
-    db.commit()
-    
-    return {"message": "Connected successfully", "platform": platform}
 
-# Get user's API keys for agent use (internal endpoint)
-@router.get("/api-keys/internal/{user_id}")
-async def get_user_api_keys_internal(
-    user_id: str,
-    db: Session = Depends(get_db)
-):
-    """Get decrypted API keys for a user (for internal agent use)."""
-    keys = db.query(UserAPIKey).filter(
-        UserAPIKey.user_id == user_id,
-        UserAPIKey.is_active == True
-    ).all()
-    
-    return {
-        key.key_name: key.get_decrypted_key()
-        for key in keys
-    }
+    if access_token:
+        integration.encrypted_access_token = UserIntegration.encrypt_token(access_token)
+    if refresh_token:
+        integration.encrypted_refresh_token = UserIntegration.encrypt_token(refresh_token)
+
+    db.commit()
+
+    return {"message": "Connected successfully", "platform": platform, "has_token": bool(access_token)}
+

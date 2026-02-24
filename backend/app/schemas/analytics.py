@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 class PlatformStats(BaseModel):
     posts: int = 0

@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser, UserButton } from '@clerk/clerk-react';
-import { 
+import {
   LayoutDashboard, 
   Globe, 
   Share2, 
@@ -17,7 +17,11 @@ import {
   User,
   Key,
   MessageSquare,
-  FlaskConical
+  ShieldCheck,
+  Wrench,
+  Users,
+  FileText,
+  UsersRound,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +40,14 @@ const navigation = [
   { name: 'Review & Optimize', href: '/dashboard/approval', icon: Zap, badge: 5 },
   { name: 'Smart Scheduler', href: '/dashboard/scheduler', icon: Clock },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Leads', href: '/dashboard/leads', icon: Users },
+  { name: 'Blog Generator', href: '/dashboard/blog', icon: FileText },
+  { name: 'Communities', href: '/dashboard/groups', icon: UsersRound },
   { name: 'Integrations', href: '/dashboard/integrations', icon: Key },
   { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare },
+  { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Admin', href: '/dashboard/admin', icon: ShieldCheck },
 ];
 
 function DemoUserProfile() {

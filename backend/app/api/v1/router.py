@@ -2,22 +2,35 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
-    integrations, engagement, ab_testing, cost_tracking, autonomous
+    integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
+    remix, tools, leads, blog, groups,
 )
 
 api_router = APIRouter()
 
-# Existing routes
+# Core routes
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(webapps.router, prefix="/webapps", tags=["webapps"])
 api_router.include_router(platforms.router, prefix="/platforms", tags=["platforms"])
 api_router.include_router(content.router, prefix="/content", tags=["content"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
+api_router.include_router(groups.router, prefix="/groups", tags=["groups"])
 
-# New routes for Phase 2 & 3
+# Phase 2 & 3 routes
 api_router.include_router(integrations.router, prefix="/integrations", tags=["integrations"])
 api_router.include_router(engagement.router, prefix="/engagement", tags=["engagement"])
 api_router.include_router(ab_testing.router, prefix="/ab-testing", tags=["ab-testing"])
 api_router.include_router(cost_tracking.router, prefix="/cost-tracking", tags=["cost-tracking"])
 api_router.include_router(autonomous.router, prefix="/autonomous", tags=["autonomous"])
+
+# Admin
+api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+# Power Tools (all 10 add-ons)
+api_router.include_router(remix.router, prefix="/remix", tags=["tools"])
+api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
+
+# Blog Post Generator
+api_router.include_router(blog.router, prefix="/blog", tags=["blog"])

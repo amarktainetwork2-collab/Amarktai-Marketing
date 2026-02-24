@@ -10,6 +10,7 @@ from datetime import datetime
 import uuid
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
 from app.models.engagement import EngagementReply, EngagementStatus, EngagementPriority
 from app.models.user import User
 from app.agents.community_agent import CommunityAgent
@@ -49,13 +50,6 @@ class EngagementUpdate(BaseModel):
 class ReplyAction(BaseModel):
     action: str  # approve, reject, edit
     edited_text: Optional[str] = None
-
-# Helper function to get current user
-async def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
 
 @router.get("/queue", response_model=List[EngagementResponse])
 async def get_engagement_queue(
@@ -161,71 +155,103 @@ async def receive_engagement(
     }
 
 async def generate_reply_background(engagement_id: str, user_id: str):
-    """Background task to generate AI reply."""
+    """Background task to generate AI reply using HuggingFace."""
     from app.db.session import SessionLocal
-    
+
     db = SessionLocal()
     try:
         engagement = db.query(EngagementReply).filter(
             EngagementReply.id == engagement_id
         ).first()
-        
+
         if not engagement:
             return
-        
+
         # Update status to generating
         engagement.status = EngagementStatus.GENERATING
         db.commit()
-        
+
         # Get user's webapp data for context
         from app.models.webapp import WebApp
         webapp = db.query(WebApp).filter(
             WebApp.user_id == user_id
         ).first()
-        
+
+        webapp_name = webapp.name if webapp else "our product"
         webapp_data = {
-            "name": webapp.name if webapp else "our product",
+            "name": webapp_name,
             "description": webapp.description if webapp else "",
             "key_features": webapp.key_features if webapp else []
         } if webapp else {}
-        
-        # Analyze and generate reply
+
+        # Use HuggingFace for reply generation if token available
+        from app.models.user_api_key import UserAPIKey
+        from app.core.config import settings as app_settings
+
+        hf_row = db.query(UserAPIKey).filter_by(
+            user_id=user_id, key_name="HUGGINGFACE_TOKEN", is_active=True
+        ).first()
+        hf_token = hf_row.get_decrypted_key() if hf_row else app_settings.HUGGINGFACE_TOKEN
+
+        # First use local CommunityAgent for sentiment analysis (fast, no API call)
         agent = CommunityAgent(webapp_data=webapp_data)
-        
         analysis = await agent.analyze_engagement(
             text=engagement.original_text,
             platform=engagement.platform,
             engagement_type=engagement.engagement_type
         )
-        
-        reply = await agent.generate_reply(
-            original_text=engagement.original_text,
-            analysis=analysis,
-            platform=engagement.platform
-        )
-        
+
+        # Use HF for higher-quality reply if token available
+        if hf_token:
+            try:
+                from app.services.hf_generator import HuggingFaceGenerator
+                generator = HuggingFaceGenerator(hf_token)
+                hf_result = await generator.generate_comment_reply(
+                    comment_text=engagement.original_text,
+                    platform=engagement.platform,
+                    webapp_name=webapp_name,
+                    sentiment=analysis.sentiment,
+                )
+                reply_text = hf_result.get("reply", "")
+                reply_confidence = float(hf_result.get("confidence", 0.7))
+            except Exception:
+                # Fall back to local agent
+                local_reply = await agent.generate_reply(
+                    original_text=engagement.original_text,
+                    analysis=analysis,
+                    platform=engagement.platform,
+                )
+                reply_text = local_reply.text
+                reply_confidence = local_reply.confidence
+        else:
+            local_reply = await agent.generate_reply(
+                original_text=engagement.original_text,
+                analysis=analysis,
+                platform=engagement.platform,
+            )
+            reply_text = local_reply.text
+            reply_confidence = local_reply.confidence
+
         # Update engagement with analysis and reply
         engagement.sentiment = analysis.sentiment
         engagement.sentiment_score = str(analysis.sentiment_score)
-        engagement.ai_reply_text = reply.text
-        engagement.ai_reply_confidence = str(reply.confidence)
-        engagement.ai_reply_tone = reply.tone
+        engagement.ai_reply_text = reply_text
+        engagement.ai_reply_confidence = str(reply_confidence)
         engagement.status = EngagementStatus.READY
         engagement.priority = analysis.urgency
         engagement.auto_reply_safe = analysis.auto_reply_safe
         engagement.risk_factors = analysis.risk_factors
         engagement.generated_at = datetime.now()
-        
+
         # Auto-send if safe and user has enabled low-risk auto-reply
         if analysis.auto_reply_safe:
             user = db.query(User).filter(User.id == user_id).first()
             if user and user.low_risk_auto_reply:
-                # In production, send via platform API
                 engagement.status = EngagementStatus.AUTO_SENT
                 engagement.sent_at = datetime.now()
-        
+
         db.commit()
-        
+
     except Exception as e:
         if engagement:
             engagement.status = EngagementStatus.PENDING
@@ -233,6 +259,7 @@ async def generate_reply_background(engagement_id: str, user_id: str):
         print(f"Error generating reply: {e}")
     finally:
         db.close()
+
 
 @router.get("/{engagement_id}")
 async def get_engagement(

@@ -24,7 +24,19 @@ export interface WebApp {
   updatedAt: string;
 }
 
-export type Platform = 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'twitter' | 'linkedin';
+export type Platform =
+  | 'youtube'
+  | 'tiktok'
+  | 'instagram'
+  | 'facebook'
+  | 'twitter'
+  | 'linkedin'
+  | 'pinterest'
+  | 'reddit'
+  | 'bluesky'
+  | 'threads'
+  | 'telegram'
+  | 'snapchat';
 
 export interface PlatformConnection {
   id: string;
@@ -90,6 +102,33 @@ export interface DailyStat {
   engagement: number;
 }
 
+export interface Lead {
+  id: string;
+  name?: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  sourcePlatform?: Platform;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  qualifiers?: Record<string, string>;
+  leadScore: number;
+  isQualified: boolean;
+  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface LeadStats {
+  total: number;
+  qualified: number;
+  converted: number;
+  qualificationRate: number;
+  conversionRate: number;
+  byPlatform: Record<string, number>;
+}
+
 export interface PricingPlan {
   id: string;
   name: string;
@@ -104,4 +143,24 @@ export interface PricingPlan {
     videosPerMonth: number;
   };
   highlighted?: boolean;
+}
+
+export interface BusinessGroup {
+  id: string;
+  webappId: string;
+  platform: 'facebook' | 'reddit' | 'telegram' | 'discord' | 'linkedin';
+  groupId?: string;
+  groupName: string;
+  groupUrl?: string;
+  description?: string;
+  status: 'suggested' | 'joined' | 'active' | 'paused' | 'removed';
+  memberCount: number;
+  postsSent: number;
+  totalViews: number;
+  totalEngagements: number;
+  totalLeads: number;
+  avgInteractionRate: number;
+  keywordsUsed?: string;
+  complianceNote?: string;
+  createdAt: string;
 }

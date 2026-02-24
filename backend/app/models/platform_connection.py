@@ -11,6 +11,12 @@ class PlatformType(str, enum.Enum):
     FACEBOOK = "facebook"
     TWITTER = "twitter"
     LINKEDIN = "linkedin"
+    PINTEREST = "pinterest"
+    REDDIT = "reddit"
+    BLUESKY = "bluesky"
+    THREADS = "threads"
+    TELEGRAM = "telegram"
+    SNAPCHAT = "snapchat"
 
 class PlatformConnection(Base):
     __tablename__ = "platform_connections"
