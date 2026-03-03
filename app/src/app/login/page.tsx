@@ -3,14 +3,57 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Rocket, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDemoAuth } from '@/App';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 // Check if we have a valid Clerk key
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
 
+/**
+ * Request geolocation once and store in localStorage for AI targeting/leads.
+ * Uses the free browser Geolocation API (no Twilio or paid service).
+ * This is intentionally fire-and-forget: failures don't affect the login flow.
+ */
+function requestGeolocation() {
+  if (!navigator.geolocation) return;
+  // Only ask if we don't already have a stored location
+  if (localStorage.getItem('amarktai_geo_lat')) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      localStorage.setItem('amarktai_geo_lat', String(pos.coords.latitude));
+      localStorage.setItem('amarktai_geo_lon', String(pos.coords.longitude));
+      localStorage.setItem('amarktai_geo_accuracy', String(pos.coords.accuracy));
+      // Persist to backend for AI lead targeting — intentionally fire-and-forget;
+      // network errors here will not surface to the user.
+      fetch('/api/v1/users/me/location', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }),
+      }).catch(() => {/* best-effort — network failure is non-blocking */});
+    },
+    () => {
+      // Location permission denied — inform user so they understand limited AI targeting
+      toast.info('Location access denied — AI location-based targeting will be limited.', {
+        duration: 4000,
+      });
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 86400000 }
+  );
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useDemoAuth();
+
+  // Request location as soon as the login page loads (once per session)
+  useEffect(() => {
+    requestGeolocation();
+  }, []);
 
   const handleDemoLogin = () => {
     login();
@@ -32,6 +75,9 @@ export default function LoginPage() {
             </Link>
             <h1 className="mt-6 text-2xl font-bold">Welcome back</h1>
             <p className="text-gray-600 mt-2">Sign in to your account to continue</p>
+            <p className="text-xs mt-1" style={{ color: '#0000FF' }}>
+              Powered by <strong>AI</strong> — Autonomous Marketing Intelligence
+            </p>
           </div>
           
           <div className="bg-white rounded-xl shadow-sm border p-6">
