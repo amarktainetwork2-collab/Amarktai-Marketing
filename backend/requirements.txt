@@ -25,5 +25,5 @@ beautifulsoup4==4.12.3
 requests==2.31.0
 svix==1.15.0
 huggingface_hub==0.21.0
-Pillow==10.2.0
+Pillow==10.3.0
 playwright==1.41.2
