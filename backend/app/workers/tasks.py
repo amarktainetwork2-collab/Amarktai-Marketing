@@ -170,11 +170,11 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
             content_type = (
                 ContentType.VIDEO if platform in ("youtube", "tiktok", "snapchat") else ContentType.IMAGE
             )
-            from app.services.media_service import _get_placeholder_image, _get_stock_video
+            from app.services.media_service import placeholder_image, placeholder_video
             if content_type == ContentType.VIDEO:
-                media_urls = [_get_stock_video(webapp_data)]
+                media_urls = [placeholder_video(webapp_data)]
             else:
-                media_urls = [_get_placeholder_image(webapp_data, platform)]
+                media_urls = [placeholder_image(webapp_data, platform)]
             db_content = Content(
                 id=str(uuid.uuid4()),
                 user_id=user.id,

@@ -49,6 +49,12 @@ _PLATFORM_DIMENSIONS: dict[str, tuple[int, int]] = {
 
 VIDEO_PLATFORMS = {"youtube", "tiktok", "snapchat"}
 
+# HuggingFace inference steps — low value = fast generation, suitable for Pro tier
+# FLUX.1-schnell is designed for 4-step inference; SDXL works well at 20-25 steps
+_FLUX_INFERENCE_STEPS = 4
+_SDXL_INFERENCE_STEPS = 20
+_VIDEO_INFERENCE_STEPS = 25
+
 
 async def get_media_url(
     platform: str,
@@ -85,7 +91,7 @@ async def _generate_hf_image(hf_token: str, prompt: str, platform: str) -> str |
         url = _HF_INFERENCE_URL.format(model=model)
         try:
             headers = {"Authorization": f"Bearer {hf_token}", "Content-Type": "application/json"}
-            payload = {"inputs": prompt, "parameters": {"width": min(w, 1024), "height": min(h, 1024), "num_inference_steps": 4}}
+            payload = {"inputs": prompt, "parameters": {"width": min(w, 1024), "height": min(h, 1024), "num_inference_steps": _FLUX_INFERENCE_STEPS}}
             async with httpx.AsyncClient(timeout=90) as client:
                 resp = await client.post(url, json=payload, headers=headers)
                 if resp.status_code == 200:
@@ -114,7 +120,7 @@ async def _generate_hf_video(hf_token: str, webapp_data: dict[str, Any], platfor
     url = _HF_INFERENCE_URL.format(model=_HF_VIDEO_MODEL)
     try:
         headers = {"Authorization": f"Bearer {hf_token}", "Content-Type": "application/json"}
-        payload = {"inputs": prompt, "parameters": {"num_frames": 16, "num_inference_steps": 25}}
+        payload = {"inputs": prompt, "parameters": {"num_frames": 16, "num_inference_steps": _VIDEO_INFERENCE_STEPS}}
         async with httpx.AsyncClient(timeout=120) as client:
             resp = await client.post(url, json=payload, headers=headers)
             if resp.status_code == 200:
@@ -137,6 +143,17 @@ def _get_placeholder_image(webapp_data: dict[str, Any], platform: str) -> str:
 def _get_stock_video(webapp_data: dict[str, Any]) -> str:
     idx = abs(hash(webapp_data.get("name", "app"))) % len(_PLACEHOLDER_VIDEO_URLS)
     return _PLACEHOLDER_VIDEO_URLS[idx]
+
+
+# Public aliases — use these outside this module instead of the private variants
+def placeholder_image(webapp_data: dict[str, Any], platform: str) -> str:
+    """Public wrapper around _get_placeholder_image for use in other modules."""
+    return _get_placeholder_image(webapp_data, platform)
+
+
+def placeholder_video(webapp_data: dict[str, Any]) -> str:
+    """Public wrapper around _get_stock_video for use in other modules."""
+    return _get_stock_video(webapp_data)
 
 
 def _build_image_prompt(webapp_data: dict[str, Any], platform: str) -> str:

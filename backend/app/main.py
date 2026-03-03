@@ -12,7 +12,10 @@ from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.session import engine, Base
 
-# Rate limiter (uses client IP; Redis-backed if REDIS_URL is set)
+# Rate limiter — Redis-backed in production, in-memory in dev.
+# Limits are deliberately generous because content generation runs on a schedule
+# (every 6–8 hours via Celery Beat), not in real-time loops.  The 200/hour and
+# 30/minute caps prevent scraper/bot abuse without impacting normal users.
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=settings.REDIS_URL or "memory://",

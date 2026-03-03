@@ -392,7 +392,7 @@ class OpenAIOrchestrator:
         """Generate a platform-optimised video script."""
         name = webapp_data.get("name", "the product")
         description = webapp_data.get("description", "")
-        durations = {"youtube": "45-60 seconds", "tiktok": "15-30 seconds"}
+        durations = {"youtube": "45-60 seconds", "tiktok": "15-30 seconds", "snapchat": "10-15 seconds"}
         duration = durations.get(platform, "30-45 seconds")
 
         system = (
