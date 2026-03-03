@@ -1,0 +1,150 @@
+"""
+Media Service — central router for image and video generation.
+
+HuggingFace is the primary provider for ALL media generation ($9/month Pro):
+  - Images: FLUX.1-schnell (fast, high quality) or SDXL as fallback
+  - Videos: damo-vilab/text-to-video-ms-1.7b for short video clips
+  - Fallback: picsum.photos (images) and free stock videos (video)
+
+Designed and created by Amarktai Network
+"""
+
+from __future__ import annotations
+
+import hashlib
+import base64
+from typing import Any
+
+import httpx
+
+# HuggingFace models
+_HF_FLUX_MODEL = "black-forest-labs/FLUX.1-schnell"
+_HF_SDXL_MODEL = "stabilityai/stable-diffusion-xl-base-1.0"
+_HF_VIDEO_MODEL = "damo-vilab/text-to-video-ms-1.7b"
+_HF_INFERENCE_URL = "https://api-inference.huggingface.co/models/{model}"
+
+# Free placeholder sources
+_PLACEHOLDER_VIDEO_URLS = [
+    "https://assets.mixkit.co/videos/preview/mixkit-typing-on-a-laptop-in-a-coffee-shop-484-large.mp4",
+    "https://assets.mixkit.co/videos/preview/mixkit-man-working-on-laptop-top-view-4848-large.mp4",
+    "https://assets.mixkit.co/videos/preview/mixkit-woman-working-on-her-laptop-5385-large.mp4",
+    "https://assets.mixkit.co/videos/preview/mixkit-digital-marketing-campaign-5374-large.mp4",
+    "https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-1860-large.mp4",
+]
+
+_PLATFORM_DIMENSIONS: dict[str, tuple[int, int]] = {
+    "instagram": (1080, 1080),
+    "facebook": (1200, 630),
+    "twitter": (1600, 900),
+    "linkedin": (1200, 627),
+    "pinterest": (1000, 1500),
+    "tiktok": (1080, 1920),
+    "youtube": (1280, 720),
+    "reddit": (1200, 628),
+    "bluesky": (1200, 628),
+    "threads": (1080, 1080),
+    "telegram": (1280, 720),
+    "snapchat": (1080, 1920),
+}
+
+VIDEO_PLATFORMS = {"youtube", "tiktok", "snapchat"}
+
+
+async def get_media_url(
+    platform: str,
+    webapp_data: dict[str, Any],
+    hf_token: str | None = None,
+    image_prompt: str | None = None,
+) -> list[str]:
+    """
+    Return list of media URLs for a content item.
+    - Video platforms: HF text-to-video or stock placeholder
+    - Image platforms: HF FLUX/SDXL or picsum placeholder
+    """
+    if platform in VIDEO_PLATFORMS:
+        if hf_token:
+            url = await _generate_hf_video(hf_token, webapp_data, platform)
+            if url:
+                return [url]
+        return [_get_stock_video(webapp_data)]
+
+    # Image platform
+    if hf_token:
+        prompt = image_prompt or _build_image_prompt(webapp_data, platform)
+        url = await _generate_hf_image(hf_token, prompt, platform)
+        if url:
+            return [url]
+
+    return [_get_placeholder_image(webapp_data, platform)]
+
+
+async def _generate_hf_image(hf_token: str, prompt: str, platform: str) -> str | None:
+    """Generate image via HF FLUX.1-schnell (then SDXL fallback). Returns None on failure."""
+    w, h = _PLATFORM_DIMENSIONS.get(platform, (1080, 1080))
+    for model in [_HF_FLUX_MODEL, _HF_SDXL_MODEL]:
+        url = _HF_INFERENCE_URL.format(model=model)
+        try:
+            headers = {"Authorization": f"Bearer {hf_token}", "Content-Type": "application/json"}
+            payload = {"inputs": prompt, "parameters": {"width": min(w, 1024), "height": min(h, 1024), "num_inference_steps": 4}}
+            async with httpx.AsyncClient(timeout=90) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+                if resp.status_code == 200:
+                    content_type = resp.headers.get("content-type", "")
+                    if content_type.startswith("image/"):
+                        # Return as data URI (works without external storage)
+                        b64 = base64.b64encode(resp.content).decode()
+                        ext = "jpeg" if "jpeg" in content_type else "png"
+                        return f"data:image/{ext};base64,{b64}"
+                elif resp.status_code == 503:
+                    continue  # model loading
+        except Exception:
+            continue
+    return None
+
+
+async def _generate_hf_video(hf_token: str, webapp_data: dict[str, Any], platform: str) -> str | None:
+    """
+    Generate a short video clip via HuggingFace text-to-video.
+    Returns None on failure (caller uses stock placeholder).
+    """
+    name = webapp_data.get("name", "product")
+    description = webapp_data.get("description", "")[:100]
+    prompt = f"Professional marketing video for {name}: {description}. Modern, clean, corporate style."
+
+    url = _HF_INFERENCE_URL.format(model=_HF_VIDEO_MODEL)
+    try:
+        headers = {"Authorization": f"Bearer {hf_token}", "Content-Type": "application/json"}
+        payload = {"inputs": prompt, "parameters": {"num_frames": 16, "num_inference_steps": 25}}
+        async with httpx.AsyncClient(timeout=120) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            if resp.status_code == 200:
+                content_type = resp.headers.get("content-type", "")
+                if "video" in content_type or "gif" in content_type or resp.headers.get("content-length", "0") != "0":
+                    b64 = base64.b64encode(resp.content).decode()
+                    return f"data:video/mp4;base64,{b64}"
+    except Exception:
+        pass
+    return None
+
+
+def _get_placeholder_image(webapp_data: dict[str, Any], platform: str) -> str:
+    seed_str = f"{webapp_data.get('name', 'app')}-{platform}"
+    seed = hashlib.md5(seed_str.encode()).hexdigest()[:8]
+    w, h = _PLATFORM_DIMENSIONS.get(platform, (1080, 1080))
+    return f"https://picsum.photos/seed/{seed}/{w}/{h}"
+
+
+def _get_stock_video(webapp_data: dict[str, Any]) -> str:
+    idx = abs(hash(webapp_data.get("name", "app"))) % len(_PLACEHOLDER_VIDEO_URLS)
+    return _PLACEHOLDER_VIDEO_URLS[idx]
+
+
+def _build_image_prompt(webapp_data: dict[str, Any], platform: str) -> str:
+    name = webapp_data.get("name", "product")
+    category = webapp_data.get("category", "SaaS")
+    audience = webapp_data.get("target_audience", "professionals")
+    return (
+        f"Professional {platform} marketing image for {name}, a {category} tool for {audience}. "
+        "Sleek modern UI mockup, clean minimalist design, purple-blue gradient background, "
+        "high quality, photorealistic, no text, no watermarks, 4K render."
+    )

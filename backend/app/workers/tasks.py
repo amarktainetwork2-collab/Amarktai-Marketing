@@ -114,9 +114,6 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
     from app.models.user_api_key import UserIntegration
 
     hf_token = _get_hf_token(db, user)
-    if not hf_token:
-        print(f"⏭️  User {user.id}: no HuggingFace token, skipping")
-        return
 
     # Quota guard
     if user.monthly_content_used >= user.monthly_content_quota:
@@ -139,9 +136,7 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
     if user.plan.value == "free":
         platforms = platforms[:3]
 
-    generator = HuggingFaceGenerator(hf_token)
-
-    for webapp in webapps[:1]:  # 1 webapp per cycle to stay within HF free limits
+    for webapp in webapps[:1]:  # 1 webapp per cycle to stay within HF Pro limits
         # Enrich webapp data by scraping live website copy
         live_description = webapp.description or ""
         try:
@@ -159,14 +154,27 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
             "target_audience": webapp.target_audience,
             "key_features": webapp.key_features or [],
         }
-        results = asyncio.run(generator.generate_batch(webapp_data, platforms))
+        if hf_token:
+            try:
+                generator = HuggingFaceGenerator(hf_token)
+                results = asyncio.run(generator.generate_batch(webapp_data, platforms))
+            except Exception as exc:
+                print(f"⚠️  HF generation failed for {webapp.url}: {exc}")
+                results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
+        else:
+            results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
 
         for platform, content_dict in results.items():
             if content_dict.get("_generation_error") and not content_dict.get("caption"):
                 continue
             content_type = (
-                ContentType.VIDEO if platform in ("youtube", "tiktok") else ContentType.IMAGE
+                ContentType.VIDEO if platform in ("youtube", "tiktok", "snapchat") else ContentType.IMAGE
             )
+            from app.services.media_service import _get_placeholder_image, _get_stock_video
+            if content_type == ContentType.VIDEO:
+                media_urls = [_get_stock_video(webapp_data)]
+            else:
+                media_urls = [_get_placeholder_image(webapp_data, platform)]
             db_content = Content(
                 id=str(uuid.uuid4()),
                 user_id=user.id,
@@ -177,8 +185,8 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
                 title=content_dict.get("title", "Generated Post"),
                 caption=content_dict.get("caption", ""),
                 hashtags=content_dict.get("hashtags", []),
-                media_urls=[],
-                generation_metadata={"window": window, "generator": "huggingface"},
+                media_urls=media_urls,
+                generation_metadata={"window": window, "generator": "huggingface" if hf_token else "template"},
             )
             db.add(db_content)
 

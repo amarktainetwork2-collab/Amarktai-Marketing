@@ -1,23 +1,8 @@
 import { useEffect, useState } from 'react';
 import { 
-  Key, 
-  Check, 
-  X, 
-  ExternalLink, 
-  RefreshCw, 
-  Shield, 
-  AlertCircle,
-  Youtube,
-  Instagram,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Music,
-  Settings,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff
+  Key, Check, X, ExternalLink, RefreshCw, Shield, AlertCircle,
+  Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Settings, Plus,
+  Trash2, Eye, EyeOff, MessageSquare, Cloud, AtSign, Send, Camera, Pin
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,12 +47,18 @@ const AVAILABLE_API_KEYS = [
 ];
 
 const PLATFORMS = [
-  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'text-red-500', bgColor: 'bg-red-500/10' },
-  { id: 'tiktok', name: 'TikTok', icon: Music, color: 'text-pink-500', bgColor: 'bg-pink-500/10' },
-  { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
-  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-  { id: 'twitter', name: 'Twitter/X', icon: Twitter, color: 'text-sky-500', bgColor: 'bg-sky-500/10' },
-  { id: 'linkedin', name: 'LinkedIn', icon: Linkedin, color: 'text-blue-600', bgColor: 'bg-blue-600/10' },
+  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'text-red-500', bgColor: 'bg-red-500/10', description: 'Upload Shorts & long-form videos' },
+  { id: 'tiktok', name: 'TikTok', icon: Music, color: 'text-pink-500', bgColor: 'bg-pink-500/10', description: 'Post short-form viral videos' },
+  { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-purple-500', bgColor: 'bg-purple-500/10', description: 'Posts, Stories, Reels' },
+  { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Page posts and Reels' },
+  { id: 'twitter', name: 'Twitter / X', icon: Twitter, color: 'text-sky-500', bgColor: 'bg-sky-500/10', description: 'Tweets and threads' },
+  { id: 'linkedin', name: 'LinkedIn', icon: Linkedin, color: 'text-blue-600', bgColor: 'bg-blue-600/10', description: 'Professional posts and articles' },
+  { id: 'pinterest', name: 'Pinterest', icon: Pin, color: 'text-red-600', bgColor: 'bg-red-600/10', description: 'Pins and idea boards' },
+  { id: 'reddit', name: 'Reddit', icon: MessageSquare, color: 'text-orange-500', bgColor: 'bg-orange-500/10', description: 'Posts and community threads' },
+  { id: 'bluesky', name: 'Bluesky', icon: Cloud, color: 'text-sky-400', bgColor: 'bg-sky-400/10', description: 'Short posts on AT Protocol' },
+  { id: 'threads', name: 'Threads', icon: AtSign, color: 'text-gray-800', bgColor: 'bg-gray-800/10', description: 'Text threads by Meta' },
+  { id: 'telegram', name: 'Telegram', icon: Send, color: 'text-blue-400', bgColor: 'bg-blue-400/10', description: 'Channel and group messages' },
+  { id: 'snapchat', name: 'Snapchat', icon: Camera, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', description: 'Stories and Spotlight' },
 ];
 
 export default function IntegrationsPage() {
@@ -239,7 +230,7 @@ export default function IntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Connected Platforms</p>
-                <p className="text-2xl font-bold">{connectedPlatformsCount}/6</p>
+                <p className="text-2xl font-bold">{connectedPlatformsCount}/12</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <Check className="w-5 h-5 text-green-600" />
