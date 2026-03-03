@@ -27,3 +27,4 @@ svix==1.15.0
 huggingface_hub==0.21.0
 Pillow==12.1.1
 playwright==1.41.2
+slowapi==0.1.9

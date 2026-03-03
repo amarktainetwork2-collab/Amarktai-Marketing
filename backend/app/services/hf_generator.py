@@ -426,6 +426,60 @@ Return ONLY a JSON object:
             "cta_url": url,
         }
 
+    async def generate_video_script(
+        self,
+        webapp_data: dict[str, Any],
+        platform: str,
+    ) -> dict[str, Any]:
+        """
+        Generate a platform-optimised short video script using HuggingFace.
+        Used for YouTube Shorts, TikTok, Instagram Reels, Snapchat Spotlight.
+        """
+        name = webapp_data.get("name", "the product")
+        description = webapp_data.get("description", "")
+        durations = {"youtube": "45-60 seconds", "tiktok": "15-30 seconds", "snapchat": "10-15 seconds"}
+        duration = durations.get(platform, "30 seconds")
+
+        system = (
+            "You are a viral video scriptwriter for Amarktai Network. "
+            "Write concise, hook-driven video scripts. Respond ONLY with valid JSON."
+        )
+        user = f"""Write a {duration} {platform} video script for '{name}'.
+Description: {description[:200]}
+
+JSON format:
+{{
+  "title": "Video title with #Shorts if YouTube",
+  "hook": "Opening hook line (0-3s)",
+  "scenes": [
+    {{"time": "0-3s", "visual": "...", "audio": "...", "text_overlay": "..."}}
+  ],
+  "cta": "Call to action text",
+  "description": "Full video description for upload",
+  "hashtags": ["Shorts", "tag2", "tag3"]
+}}"""
+
+        prompt = f"<s>[INST] <<SYS>>\n{system}\n<</SYS>>\n\n{user} [/INST]"
+        raw = await self._call_text_generation(self._inference_url, prompt, max_tokens=600)
+        try:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            if match:
+                return json.loads(_clean_json(match.group()))
+        except Exception:
+            pass
+        return {
+            "title": f"How {name} Works #Shorts",
+            "hook": f"This is {name} and it changes everything...",
+            "scenes": [
+                {"time": "0-3s", "visual": "Product logo/hook", "audio": f"Meet {name}", "text_overlay": "🚀"},
+                {"time": "3-20s", "visual": "Key feature demo", "audio": f"{name} helps you work smarter", "text_overlay": "Game changer!"},
+                {"time": "20-30s", "visual": "CTA screen", "audio": "Try it free today!", "text_overlay": "Link in bio 👆"},
+            ],
+            "cta": f"Try {name} free",
+            "description": f"{description}\n\n#Shorts #AI #Marketing",
+            "hashtags": ["Shorts", "AI", "Marketing", "AmarktaiNetwork"],
+        }
+
     async def generate_comment_reply(
         self,
         comment_text: str,

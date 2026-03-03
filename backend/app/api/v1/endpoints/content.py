@@ -1,74 +1,137 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import List
-import uuid
+"""
+Content endpoints — generate, approve, reject, manage social media content.
 
+Generation chain (HuggingFace $9/month Pro as primary engine):
+  1. HuggingFace Inference API  — primary (Mistral-7B text, SDXL/FLUX images, text-to-video)
+  2. Template-based generation  — guaranteed fallback (no API key required)
+
+OpenAI (OPENAI_API_KEY, optional) polishes HF output if available.
+
+Designed and created by Amarktai Network
+"""
+
+from __future__ import annotations
+
+import uuid
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.api.deps import get_current_user
 from app.db.base import get_db
 from app.models.content import Content as ContentModel, ContentStatus
 from app.models.user import User
-from app.schemas.content import Content, ContentCreate, ContentUpdate, ContentPerformance
-from app.api.deps import get_current_user
+from app.schemas.content import Content, ContentUpdate
 
 router = APIRouter()
 
+
+def _get_hf_token(db: Session, user: User) -> str | None:
+    from app.core.config import settings
+    from app.models.user_api_key import UserAPIKey
+    row = db.query(UserAPIKey).filter(
+        UserAPIKey.user_id == user.id,
+        UserAPIKey.key_name == "HUGGINGFACE_TOKEN",
+        UserAPIKey.is_active == True,
+    ).first()
+    if row:
+        return row.get_decrypted_key()
+    return settings.HUGGINGFACE_TOKEN or None
+
+
+def _get_openai_key(db: Session, user: User) -> str | None:
+    from app.core.config import settings
+    from app.models.user_api_key import UserAPIKey
+    row = db.query(UserAPIKey).filter(
+        UserAPIKey.user_id == user.id,
+        UserAPIKey.key_name == "OPENAI_API_KEY",
+        UserAPIKey.is_active == True,
+    ).first()
+    if row:
+        return row.get_decrypted_key()
+    return settings.OPENAI_API_KEY or None
+
+
+async def _generate_text_content(webapp_data: dict, platform: str, hf_token: str | None, openai_key: str | None) -> dict:
+    """HuggingFace primary → OpenAI improvement (optional) → template fallback."""
+    from app.services.hf_generator import HuggingFaceGenerator
+    result: dict | None = None
+    if hf_token:
+        try:
+            gen = HuggingFaceGenerator(hf_token)
+            result = await gen.generate_content(webapp_data, platform)
+            if openai_key and result and not result.get("_generation_error"):
+                try:
+                    from app.services.openai_service import OpenAIOrchestrator
+                    result = await OpenAIOrchestrator(openai_key).validate_and_improve(result, webapp_data, platform)
+                except Exception:
+                    pass
+        except Exception:
+            result = None
+    if not result:
+        from app.services.hf_generator import HuggingFaceGenerator
+        result = HuggingFaceGenerator._fallback_content(webapp_data, platform)
+    return result
+
+
 @router.get("/", response_model=List[Content])
 async def get_content(
-    status: ContentStatus = None,
+    content_status: ContentStatus = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get all content for the current user."""
     query = db.query(ContentModel).filter(ContentModel.user_id == current_user.id)
-    if status:
-        query = query.filter(ContentModel.status == status)
+    if content_status:
+        query = query.filter(ContentModel.status == content_status)
     return query.order_by(ContentModel.created_at.desc()).all()
+
 
 @router.get("/pending", response_model=List[Content])
 async def get_pending_content(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get pending content for approval."""
-    return db.query(ContentModel).filter(
-        ContentModel.user_id == current_user.id,
-        ContentModel.status == ContentStatus.PENDING
-    ).order_by(ContentModel.created_at.desc()).all()
+    return (
+        db.query(ContentModel)
+        .filter(ContentModel.user_id == current_user.id, ContentModel.status == ContentStatus.PENDING)
+        .order_by(ContentModel.created_at.desc())
+        .all()
+    )
+
+
+@router.get("/{content_id}", response_model=Content)
+async def get_content_item(
+    content_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    content = db.query(ContentModel).filter(
+        ContentModel.id == content_id, ContentModel.user_id == current_user.id
+    ).first()
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    return content
+
 
 @router.post("/generate")
-async def generate_content(    webapp_id: str,
+async def generate_content(
+    webapp_id: str,
     platform: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Generate AI content for a platform using Hugging Face."""
+    """Generate AI content via HuggingFace (text + image/video). Falls back to templates."""
     from app.models.webapp import WebApp
-    from app.services.hf_generator import HuggingFaceGenerator
-    from app.models.user_api_key import UserAPIKey
+    from app.services.media_service import get_media_url, VIDEO_PLATFORMS
 
-    webapp = db.query(WebApp).filter(
-        WebApp.id == webapp_id,
-        WebApp.user_id == current_user.id
-    ).first()
+    webapp = db.query(WebApp).filter(WebApp.id == webapp_id, WebApp.user_id == current_user.id).first()
     if not webapp:
         raise HTTPException(status_code=404, detail="Web app not found")
 
-    # Get HuggingFace token (user key takes priority)
-    hf_token = None
-    user_key = db.query(UserAPIKey).filter(
-        UserAPIKey.user_id == current_user.id,
-        UserAPIKey.key_name == "HUGGINGFACE_TOKEN",
-        UserAPIKey.is_active == True,
-    ).first()
-    if user_key:
-        hf_token = user_key.get_decrypted_key()
+    hf_token = _get_hf_token(db, current_user)
+    openai_key = _get_openai_key(db, current_user)
 
-    from app.core.config import settings
-    if not hf_token:
-        hf_token = settings.HUGGINGFACE_TOKEN
-    if not hf_token:
-        raise HTTPException(status_code=503, detail="No HuggingFace API key configured. Add HUGGINGFACE_TOKEN in Integrations.")
-
-    generator = HuggingFaceGenerator(hf_token)
     webapp_data = {
         "name": webapp.name,
         "url": str(webapp.url),
@@ -77,9 +140,11 @@ async def generate_content(    webapp_id: str,
         "target_audience": webapp.target_audience,
         "key_features": webapp.key_features or [],
     }
-    result = await generator.generate_content(webapp_data, platform)
 
-    content_type = "video" if platform in ["youtube", "tiktok"] else "image"
+    result = await _generate_text_content(webapp_data, platform, hf_token, openai_key)
+    media_urls = await get_media_url(platform, webapp_data, hf_token)
+    content_type = "video" if platform in VIDEO_PLATFORMS else "image"
+
     db_content = ContentModel(
         id=str(uuid.uuid4()),
         user_id=current_user.id,
@@ -90,100 +155,16 @@ async def generate_content(    webapp_id: str,
         title=result.get("title", "Generated Content"),
         caption=result.get("caption", ""),
         hashtags=result.get("hashtags", []),
-        media_urls=[],
+        media_urls=media_urls,
+        generation_metadata={
+            "generator": "huggingface" if hf_token else "template",
+            "openai_improved": bool(openai_key and not result.get("_generation_error")),
+        },
     )
     db.add(db_content)
     db.commit()
     db.refresh(db_content)
     return db_content
-
-@router.get("/{content_id}", response_model=Content)
-async def get_content_item(
-    content_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Get a specific content item."""
-    content = db.query(ContentModel).filter(
-        ContentModel.id == content_id,
-        ContentModel.user_id == current_user.id
-    ).first()
-    if not content:
-        raise HTTPException(status_code=404, detail="Content not found")
-    return content
-
-@router.post("/{content_id}/approve", response_model=Content)
-async def approve_content(
-    content_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Approve content for posting."""
-    content = db.query(ContentModel).filter(
-        ContentModel.id == content_id,
-        ContentModel.user_id == current_user.id
-    ).first()
-    if not content:
-        raise HTTPException(status_code=404, detail="Content not found")
-    content.status = ContentStatus.APPROVED
-    db.commit()
-    db.refresh(content)
-    return content
-
-@router.post("/{content_id}/reject", response_model=Content)
-async def reject_content(
-    content_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Reject content."""
-    content = db.query(ContentModel).filter(
-        ContentModel.id == content_id,
-        ContentModel.user_id == current_user.id
-    ).first()
-    if not content:
-        raise HTTPException(status_code=404, detail="Content not found")
-    content.status = ContentStatus.REJECTED
-    db.commit()
-    db.refresh(content)
-    return content
-
-@router.post("/approve-all")
-async def approve_all_content(
-    content_ids: List[str],
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Approve multiple content items."""
-    db.query(ContentModel).filter(
-        ContentModel.id.in_(content_ids),
-        ContentModel.user_id == current_user.id
-    ).update({"status": ContentStatus.APPROVED}, synchronize_session=False)
-    db.commit()
-    return {"message": f"Approved {len(content_ids)} items"}
-
-@router.put("/{content_id}", response_model=Content)
-async def update_content(
-    content_id: str,
-    content_update: ContentUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Update content (e.g., edit caption)."""
-    content = db.query(ContentModel).filter(
-        ContentModel.id == content_id,
-        ContentModel.user_id == current_user.id
-    ).first()
-    if not content:
-        raise HTTPException(status_code=404, detail="Content not found")
-
-    update_data = content_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(content, field, value)
-
-    db.commit()
-    db.refresh(content)
-    return content
 
 
 @router.post("/generate-all")
@@ -191,50 +172,27 @@ async def generate_all_content(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Batch generate content for ALL active platforms and ALL active webapps
-    for the current user using HuggingFace.  Posts go into PENDING approval queue.
-    """
+    """Batch generate for all active platforms + webapps via HuggingFace."""
+    from app.models.user_api_key import UserIntegration
     from app.models.webapp import WebApp
     from app.services.hf_generator import HuggingFaceGenerator
+    from app.services.media_service import get_media_url, VIDEO_PLATFORMS
     from app.services.scraper import scrape_page
-    from app.models.user_api_key import UserAPIKey, UserIntegration
-    from app.core.config import settings
 
-    hf_token = None
-    user_key = db.query(UserAPIKey).filter(
-        UserAPIKey.user_id == current_user.id,
-        UserAPIKey.key_name == "HUGGINGFACE_TOKEN",
-        UserAPIKey.is_active == True,
-    ).first()
-    if user_key:
-        hf_token = user_key.get_decrypted_key()
-    if not hf_token:
-        hf_token = settings.HUGGINGFACE_TOKEN
-    if not hf_token:
-        raise HTTPException(
-            status_code=503,
-            detail="No HuggingFace API key configured. Add HUGGINGFACE_TOKEN in Integrations.",
-        )
+    hf_token = _get_hf_token(db, current_user)
+    openai_key = _get_openai_key(db, current_user)
 
-    webapps = db.query(WebApp).filter(
-        WebApp.user_id == current_user.id, WebApp.is_active == True
-    ).all()
+    webapps = db.query(WebApp).filter(WebApp.user_id == current_user.id, WebApp.is_active == True).all()
     if not webapps:
         raise HTTPException(status_code=400, detail="No active web apps found.")
 
     connected = db.query(UserIntegration).filter(
         UserIntegration.user_id == current_user.id, UserIntegration.is_connected == True
     ).all()
-    platforms = [i.platform for i in connected] or [
-        "instagram", "twitter", "linkedin", "facebook"
-    ]
+    platforms = [i.platform for i in connected] or ["instagram", "twitter", "linkedin", "facebook"]
 
-    generator = HuggingFaceGenerator(hf_token)
-    created: list[ContentModel] = []
-
-    for webapp in webapps[:2]:  # cap at 2 webapps per manual trigger
-        # Enrich with live site content
+    created = []
+    for webapp in webapps[:2]:
         live_description = webapp.description or ""
         try:
             scraped = await scrape_page(str(webapp.url), timeout=15)
@@ -252,11 +210,27 @@ async def generate_all_content(
             "key_features": webapp.key_features or [],
         }
 
-        results = await generator.generate_batch(webapp_data, platforms)
+        if hf_token:
+            try:
+                gen = HuggingFaceGenerator(hf_token)
+                results = await gen.generate_batch(webapp_data, platforms)
+            except Exception:
+                results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
+        else:
+            results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
+
         for platform, content_dict in results.items():
             if content_dict.get("_generation_error") and not content_dict.get("caption"):
                 continue
-            content_type = "video" if platform in ("youtube", "tiktok") else "image"
+            if openai_key and not content_dict.get("_generation_error"):
+                try:
+                    from app.services.openai_service import OpenAIOrchestrator
+                    content_dict = await OpenAIOrchestrator(openai_key).validate_and_improve(content_dict, webapp_data, platform)
+                except Exception:
+                    pass
+
+            media_urls = await get_media_url(platform, webapp_data, hf_token)
+            content_type = "video" if platform in VIDEO_PLATFORMS else "image"
             db_content = ContentModel(
                 id=str(uuid.uuid4()),
                 user_id=current_user.id,
@@ -267,8 +241,8 @@ async def generate_all_content(
                 title=content_dict.get("title", "Generated Post"),
                 caption=content_dict.get("caption", ""),
                 hashtags=content_dict.get("hashtags", []),
-                media_urls=[],
-                generation_metadata={"source": "manual_batch"},
+                media_urls=media_urls,
+                generation_metadata={"source": "manual_batch", "generator": "huggingface" if hf_token else "template"},
             )
             db.add(db_content)
             created.append(db_content)
@@ -278,4 +252,66 @@ async def generate_all_content(
         "message": f"Generated {len(created)} content items across {len(platforms)} platforms",
         "count": len(created),
         "platforms": platforms,
+        "generator": "huggingface" if hf_token else "template",
     }
+
+
+@router.post("/{content_id}/approve", response_model=Content)
+async def approve_content(
+    content_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    content = db.query(ContentModel).filter(ContentModel.id == content_id, ContentModel.user_id == current_user.id).first()
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    content.status = ContentStatus.APPROVED
+    db.commit()
+    db.refresh(content)
+    return content
+
+
+@router.post("/{content_id}/reject", response_model=Content)
+async def reject_content(
+    content_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    content = db.query(ContentModel).filter(ContentModel.id == content_id, ContentModel.user_id == current_user.id).first()
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    content.status = ContentStatus.REJECTED
+    db.commit()
+    db.refresh(content)
+    return content
+
+
+@router.post("/approve-all")
+async def approve_all_content(
+    content_ids: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    db.query(ContentModel).filter(
+        ContentModel.id.in_(content_ids), ContentModel.user_id == current_user.id
+    ).update({"status": ContentStatus.APPROVED}, synchronize_session=False)
+    db.commit()
+    return {"message": f"Approved {len(content_ids)} items"}
+
+
+@router.put("/{content_id}", response_model=Content)
+async def update_content(
+    content_id: str,
+    content_update: ContentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    content = db.query(ContentModel).filter(ContentModel.id == content_id, ContentModel.user_id == current_user.id).first()
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    update_data = content_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(content, field, value)
+    db.commit()
+    db.refresh(content)
+    return content
