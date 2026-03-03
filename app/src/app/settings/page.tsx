@@ -64,7 +64,7 @@ export default function SettingsPage() {
     }
     setHfSaving(true);
     try {
-      await saveApiKey('huggingface', hfKey.trim());
+      await saveApiKey('HUGGINGFACE_TOKEN', hfKey.trim());
       toast.success('HuggingFace key saved securely (encrypted)');
       setHfKey('');
     } catch {

@@ -34,6 +34,10 @@ class User(Base):
     preferred_language = Column(String, default="en")
     timezone = Column(String, default="UTC")
     notification_preferences = Column(JSON, default=dict)
+
+    # Geolocation (captured via browser Geolocation API on login)
+    geo_lat = Column(Float, nullable=True)
+    geo_lon = Column(Float, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
