@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { groupsApi, webAppApi, BusinessGroup } from '@/lib/api';
+import { groupsApi, webAppApi } from '@/lib/api';
+import type { BusinessGroup } from '@/lib/api';
 import { toast } from 'sonner';
 
 const PLATFORM_COLORS: Record<string, string> = {

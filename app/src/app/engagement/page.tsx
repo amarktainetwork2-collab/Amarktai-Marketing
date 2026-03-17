@@ -5,16 +5,12 @@ import {
   X, 
   RefreshCw, 
   AlertTriangle,
-  ThumbsUp,
-  MessageCircle,
   Send,
-  Filter,
   Sparkles,
-  Edit3,
   Clock,
   TrendingUp
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -151,9 +147,7 @@ export default function EngagementPage() {
   };
 
   const pendingEngagements = engagements.filter(e => ['pending', 'generating', 'ready'].includes(e.status));
-  const processedEngagements = engagements.filter(e => ['approved', 'sent', 'rejected'].includes(e.status));
-
-  return (
+    return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>

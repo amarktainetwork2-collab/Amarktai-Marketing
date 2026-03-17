@@ -40,7 +40,7 @@ export default function NewWebAppPage() {
     setStep('creating');
 
     try {
-      const created = await webAppApi.create({
+      await webAppApi.create({
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
         isActive: true,

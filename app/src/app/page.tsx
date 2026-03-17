@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, type Variants } from 'framer-motion';
 import {
   Rocket, Zap, BarChart3, Shield, Clock, Globe,
   Check, ChevronRight, Play, Star, Menu, X,
@@ -15,22 +15,22 @@ import { pricingPlans } from '@/lib/mockData';
 
 // ─── Animation helpers ───────────────────────────────────────────────────────
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
 };
 
-const fadeIn = {
+const fadeIn: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { duration: 0.6 } },
 };
 
-const staggerContainer = (stagger = 0.1, delay = 0) => ({
+const staggerContainer = (stagger = 0.1, delay = 0): Variants => ({
   hidden: {},
   show: { transition: { staggerChildren: stagger, delayChildren: delay } },
 });
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
   show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
 };
