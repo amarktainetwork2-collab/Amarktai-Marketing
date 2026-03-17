@@ -587,3 +587,110 @@ export const groupsApi = {
     return apiFetch('/groups/stats/summary');
   },
 };
+
+// ─── WebApp Scraping ──────────────────────────────────────────────────────────
+
+export interface ScrapedData {
+  scrapedAt: string;
+  title: string;
+  metaDescription: string;
+  headings: string[];
+  paragraphs: string[];
+  socialLinks: string[];
+  fullText: string;
+  error: string | null;
+  status: 'ok' | 'error';
+}
+
+export const scrapeApi = {
+  scrapeWebapp: async (webappId: string): Promise<{ message: string; scraped_data: ScrapedData }> => {
+    const raw = await apiFetch<{ message: string; scraped_data: Record<string, unknown> }>(
+      `/webapps/${webappId}/scrape`,
+      { method: 'POST' }
+    );
+    const d = raw.scraped_data;
+    return {
+      message: raw.message,
+      scraped_data: {
+        scrapedAt: d.scraped_at as string,
+        title: d.title as string,
+        metaDescription: d.meta_description as string,
+        headings: (d.headings as string[]) ?? [],
+        paragraphs: (d.paragraphs as string[]) ?? [],
+        socialLinks: (d.social_links as string[]) ?? [],
+        fullText: d.full_text as string,
+        error: d.error as string | null,
+        status: d.status as 'ok' | 'error',
+      },
+    };
+  },
+};
+
+// ─── Platform Audit ───────────────────────────────────────────────────────────
+
+export interface PlatformAudit {
+  platform: string;
+  accountName: string;
+  accountId: string;
+  connectedAt: string | null;
+  accountAgeDays: number;
+  accountType: 'new' | 'established';
+  accountTypeLabel: string;
+  algorithmInsights: {
+    best_post_times: string[];
+    content_priority: string[];
+    algorithm_tips: string[];
+    engagement_benchmarks: { good_rate: number; great_rate: number; unit: string };
+    paid_ad_tips: string[];
+  };
+  recommendations: string[];
+  canCreateBusinessPages: boolean;
+  businessPageInfo: {
+    max_pages_per_account: number;
+    can_create: boolean;
+    setup_steps: string[];
+  } | null;
+  autoPostEnabled: boolean;
+  autoReplyEnabled: boolean;
+  monthlyAdBudget: number;
+}
+
+export const platformAuditApi = {
+  audit: async (platform: string): Promise<PlatformAudit> => {
+    const raw = await apiFetch<Record<string, unknown>>(`/platforms/${platform}/audit`);
+    return {
+      platform: raw.platform as string,
+      accountName: raw.account_name as string,
+      accountId: raw.account_id as string,
+      connectedAt: raw.connected_at as string | null,
+      accountAgeDays: raw.account_age_days as number,
+      accountType: raw.account_type as 'new' | 'established',
+      accountTypeLabel: raw.account_type_label as string,
+      algorithmInsights: raw.algorithm_insights as PlatformAudit['algorithmInsights'],
+      recommendations: (raw.recommendations as string[]) ?? [],
+      canCreateBusinessPages: raw.can_create_business_pages as boolean,
+      businessPageInfo: raw.business_page_info as PlatformAudit['businessPageInfo'],
+      autoPostEnabled: raw.auto_post_enabled as boolean,
+      autoReplyEnabled: raw.auto_reply_enabled as boolean,
+      monthlyAdBudget: raw.monthly_ad_budget as number,
+    };
+  },
+
+  createBusinessPage: async (
+    platform: string,
+    body: { page_name: string; category: string; description?: string; website_url?: string }
+  ): Promise<{
+    status: string;
+    platform: string;
+    page_name: string;
+    page_id: string;
+    message: string;
+    setup_steps: string[];
+    max_pages_per_account: number;
+  }> => {
+    return apiFetch(`/platforms/${platform}/create-business-page`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+};
