@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
+import { containerVariants, itemVariants } from '@/lib/motion';
 
 interface Competitor {
   id: string;
@@ -96,22 +97,7 @@ const mockTrends: TrendingTopic[] = [
   { topic: '#Metaverse', volume: 980000, growth: -15, sentiment: 'negative', related: ['#VR', '#VirtualReality', '#Web3'] }
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 100 }
-  }
-};
 
 export function CompetitorIntel() {
   const [competitors] = useState<Competitor[]>(mockCompetitors);

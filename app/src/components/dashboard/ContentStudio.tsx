@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, itemVariants } from '@/lib/motion';
 
 interface GeneratedAsset {
   id: string;
@@ -33,22 +34,7 @@ interface GeneratedAsset {
   status: 'generating' | 'completed' | 'error';
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 100 }
-  }
-};
 
 export function ContentStudio() {
   const [prompt, setPrompt] = useState('');

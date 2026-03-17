@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariantsSlow, itemVariantsX } from '@/lib/motion';
 
 interface Insight {
   id: string;
@@ -94,22 +95,7 @@ const mockInsights: Insight[] = [
   }
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 }
-  }
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { 
-    opacity: 1, 
-    x: 0,
-    transition: { type: 'spring' as const, stiffness: 100 }
-  }
-};
 
 export function AIInsightsFeed() {
   const [insights, setInsights] = useState<Insight[]>(mockInsights);
@@ -162,7 +148,7 @@ export function AIInsightsFeed() {
     <div className="space-y-6">
       {/* Header Stats */}
       <motion.div 
-        variants={containerVariants}
+        variants={containerVariantsSlow}
         initial="hidden"
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
@@ -173,7 +159,7 @@ export function AIInsightsFeed() {
           { icon: Target, label: 'Opportunities', value: insights.filter(i => i.type === 'opportunity').length.toString(), color: 'text-green-400', bg: 'bg-green-500/20' },
           { icon: AlertTriangle, label: 'Warnings', value: insights.filter(i => i.type === 'warning').length.toString(), color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
         ].map((stat, i) => (
-          <motion.div key={i} variants={itemVariants}>
+          <motion.div key={i} variants={itemVariantsX}>
             <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">

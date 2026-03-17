@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, itemVariants } from '@/lib/motion';
 
 interface ViralScore {
   overall: number;
@@ -71,22 +72,7 @@ const mockPrediction: ViralPrediction = {
   ]
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: 'spring' as const, stiffness: 100 }
-  }
-};
 
 export function ViralPredictor() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
