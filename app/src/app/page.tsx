@@ -17,7 +17,7 @@ import { pricingPlans } from '@/lib/mockData';
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
 };
 
 const fadeIn: Variants = {
@@ -32,7 +32,7 @@ const staggerContainer = (stagger = 0.1, delay = 0): Variants => ({
 
 const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 };
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -147,7 +147,7 @@ export default function LandingPage() {
       <motion.nav
         initial={{ y: -64, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
