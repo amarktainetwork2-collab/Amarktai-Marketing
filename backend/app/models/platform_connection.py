@@ -33,9 +33,9 @@ class PlatformConnection(Base):
     expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Per-platform paid advertising budget
-    monthly_ad_budget = Column(Numeric(10, 2), nullable=True, default=0)   # Monthly spend cap (USD)
-    daily_ad_budget = Column(Numeric(10, 2), nullable=True, default=0)     # Daily spend cap (USD)
-    ad_budget_currency = Column(String, default="USD")
+    monthly_ad_budget = Column(Numeric(10, 2), nullable=True, default=0)   # Monthly spend cap
+    daily_ad_budget = Column(Numeric(10, 2), nullable=True, default=0)     # Daily spend cap
+    ad_budget_currency = Column(String, default="USD")                     # ISO 4217 currency code
     ad_account_id = Column(String, nullable=True)   # Platform-specific ad account ID
     auto_post_enabled = Column(Boolean, default=False)
     auto_reply_enabled = Column(Boolean, default=False)

@@ -322,7 +322,9 @@ async def reject_content(
     rejected_platform = content.platform
     user_id = current_user.id
 
-    async def _regen():
+    async def _regenerate_content_after_rejection():
+        import logging
+        logger = logging.getLogger(__name__)
         from app.db.base import SessionLocal
         from app.models.webapp import WebApp
         from app.services.media_service import get_media_url, VIDEO_PLATFORMS
@@ -372,12 +374,19 @@ async def reject_content(
             )
             async_db.add(new_content)
             async_db.commit()
-        except Exception:
-            pass
+            logger.info(
+                "Replacement content %s generated for rejected content %s on %s",
+                new_content.id, content_id, rejected_platform,
+            )
+        except Exception as exc:
+            logger.error(
+                "Failed to regenerate content after rejection of %s: %s",
+                content_id, exc, exc_info=True,
+            )
         finally:
             async_db.close()
 
-    background_tasks.add_task(_regen)
+    background_tasks.add_task(_regenerate_content_after_rejection)
     return content
 
 

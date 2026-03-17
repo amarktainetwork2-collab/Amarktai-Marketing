@@ -202,10 +202,10 @@ export default function PlatformsPage() {
                       <span className="text-gray-600">Connected as</span>
                       <span className="font-medium ml-1">{connection.accountName}</span>
                     </div>
-                    {(connection as any).monthlyAdBudget > 0 && (
+                    {(connection.monthlyAdBudget ?? 0) > 0 && (
                       <div className="flex items-center text-sm text-emerald-600">
                         <DollarSign className="w-3 h-3 mr-1" />
-                        <span>${(connection as any).monthlyAdBudget}/mo budget</span>
+                        <span>${connection.monthlyAdBudget}/mo budget</span>
                       </div>
                     )}
                     <div className="flex gap-2">
