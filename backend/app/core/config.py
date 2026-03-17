@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     FRONTEND_URL: str = "http://localhost:3000"
     ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
-    # Admin email always granted unlimited access at no cost
+    # Platform owner's email — always granted unlimited access at no cost.
+    # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
     # Database

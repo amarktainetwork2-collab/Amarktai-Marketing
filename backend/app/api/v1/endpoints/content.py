@@ -91,7 +91,6 @@ async def _generate_text_content(
                 except Exception:
                     pass
         except Exception:
-
             result = None
     if not result:
         from app.services.hf_generator import HuggingFaceGenerator

@@ -100,7 +100,13 @@ _CLERK_ENABLED = bool(settings.CLERK_SECRET_KEY and settings.CLERK_SECRET_KEY !=
 
 
 def is_admin_user(user: User) -> bool:
-    """Return True if the user has admin privileges (unlimited access, no cost)."""
+    """Return True if the user has admin privileges (unlimited access, no cost).
+
+    The default fallback (amarktainetwork@gmail.com) is intentional: this is the
+    platform owner's email, as specified in the system requirements.  Set the
+    ADMIN_EMAIL environment variable to override this for a different deployment.
+    """
+    # ADMIN_EMAIL defaults to the platform owner; override via env in production
     admin_email = (settings.ADMIN_EMAIL or "amarktainetwork@gmail.com").lower()
     if user.email and user.email.lower() == admin_email:
         return True
@@ -167,7 +173,7 @@ async def get_admin_user(
     Dependency that ensures the current user is an admin.
     Admin status is determined by:
       1. The ADMIN_USER_IDS env var (comma-separated Clerk user IDs), OR
-      2. The user's email matching ADMIN_EMAIL (amarktainetwork@gmail.com).
+      2. The user's email matching ADMIN_EMAIL (platform owner — defaults to amarktainetwork@gmail.com).
     In demo mode (no Clerk key) the demo user is always admin.
     Admin users bypass all cost/quota restrictions.
     """
@@ -178,7 +184,7 @@ async def get_admin_user(
         # In demo mode, the demo user is always admin
         return current_user
 
-    # Allow by Clerk user ID or by email (admin email always has access)
+    # Allow by Clerk user ID or by email (platform owner always has access)
     admin_email = settings.ADMIN_EMAIL or "amarktainetwork@gmail.com"
     is_admin = (
         current_user.id in admin_ids

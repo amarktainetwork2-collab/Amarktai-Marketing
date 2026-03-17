@@ -43,8 +43,11 @@ async def _run_scrape(webapp_id: str) -> None:
             "status": "error" if scraped.error else "ok",
         }
         db.commit()
-    except Exception:
-        pass
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(
+            "Background scrape failed for webapp %s: %s", webapp_id, exc
+        )
     finally:
         db.close()
 
