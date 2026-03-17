@@ -5,6 +5,7 @@ import {
   Zap, 
   Target,
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Sparkles,
   Share2,
@@ -16,8 +17,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/lib/motion';
+import { viralPredictApi } from '@/lib/api';
 
 interface ViralScore {
   overall: number;
@@ -40,54 +44,53 @@ interface ViralPrediction {
   recommendations: string[];
 }
 
-const mockPrediction: ViralPrediction = {
-  score: {
-    overall: 87,
-    hookStrength: 92,
-    emotionalImpact: 85,
-    shareability: 88,
-    timing: 78,
-    uniqueness: 90
-  },
-  viralProbability: 73,
-  estimatedReach: 125000,
-  timeToViral: '24-48 hours',
-  factors: {
-    positive: [
-      'Strong emotional hook in first 3 seconds',
-      'Trending audio/sound usage detected',
-      'Optimal video length for platform',
-      'High-contrast visuals'
-    ],
-    negative: [
-      'Posting time not optimal',
-      'Hashtag count below recommended'
-    ]
-  },
-  recommendations: [
-    'Add 3-5 more trending hashtags',
-    'Post at 6-8 PM for maximum reach',
-    'Include a clear CTA in caption',
-    'Consider adding text overlay'
-  ]
-};
-
-
-
 export function ViralPredictor() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [prediction, setPrediction] = useState<ViralPrediction | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [hashtags, setHashtags] = useState('');
+  const [platform, setPlatform] = useState('instagram');
+  const [error, setError] = useState<string | null>(null);
 
-  const analyzeContent = () => {
+  const analyzeContent = async () => {
+    if (!caption.trim()) return;
+
     setIsAnalyzing(true);
     setShowAnimation(true);
+    setError(null);
     
-    setTimeout(() => {
-      setPrediction(mockPrediction);
-      setIsAnalyzing(false);
+    try {
+      const result = await viralPredictApi.predict({
+        caption: caption.trim(),
+        hashtags: hashtags.split(',').map(h => h.trim()).filter(Boolean),
+        platform,
+      });
+
+      const mapped: ViralPrediction = {
+        score: {
+          overall: result.score.overall,
+          hookStrength: result.score.hook_strength,
+          emotionalImpact: result.score.emotional_impact,
+          shareability: result.score.shareability,
+          timing: result.score.timing,
+          uniqueness: result.score.uniqueness,
+        },
+        viralProbability: result.viral_probability,
+        estimatedReach: result.estimated_reach,
+        timeToViral: result.time_to_viral,
+        factors: result.factors,
+        recommendations: result.recommendations,
+      };
+
+      setPrediction(mapped);
       setTimeout(() => setShowAnimation(false), 1000);
-    }, 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to analyze content');
+      setShowAnimation(false);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const getScoreColor = (score: number) => {
@@ -101,6 +104,14 @@ export function ViralPredictor() {
     if (probability >= 40) return { text: 'Moderate Potential', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
     return { text: 'Low Viral Potential', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
   };
+
+  const platformOptions = [
+    { id: 'instagram', label: 'Instagram' },
+    { id: 'tiktok', label: 'TikTok' },
+    { id: 'twitter', label: 'Twitter' },
+    { id: 'facebook', label: 'Facebook' },
+    { id: 'youtube', label: 'YouTube' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -141,38 +152,90 @@ export function ViralPredictor() {
           animate={{ opacity: 1, scale: 1 }}
         >
           <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
-            <CardContent className="p-12 text-center">
-              <motion.div 
-                animate={showAnimation ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
-                transition={{ duration: 0.5 }}
-                className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6"
-              >
-                <Flame className="w-10 h-10 text-white" />
-              </motion.div>
-              <h3 className="text-2xl font-bold text-slate-200 mb-2">
-                Viral Content Predictor
-              </h3>
-              <p className="text-slate-400 max-w-md mx-auto mb-6">
-                Our AI analyzes your content across 50+ viral factors to predict its potential to go viral and provides actionable recommendations.
-              </p>
-              <Button
-                onClick={analyzeContent}
-                disabled={isAnalyzing}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                size="lg"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing Viral Factors...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Analyze Viral Potential
-                  </>
+            <CardContent className="p-8 space-y-6">
+              <div className="text-center">
+                <motion.div 
+                  animate={showAnimation ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
+                  transition={{ duration: 0.5 }}
+                  className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                >
+                  <Flame className="w-10 h-10 text-white" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-slate-200 mb-2">
+                  Viral Content Predictor
+                </h3>
+                <p className="text-slate-400 max-w-md mx-auto mb-6">
+                  Our AI analyzes your content across 50+ viral factors to predict its potential to go viral and provides actionable recommendations.
+                </p>
+              </div>
+
+              {/* Input Fields */}
+              <div className="max-w-lg mx-auto space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-400">Caption / Content</label>
+                  <Textarea
+                    placeholder="Enter your post caption or content to analyze..."
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    className="min-h-[100px] bg-slate-800/50 border-slate-700 resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-400">Hashtags (comma-separated)</label>
+                  <Input
+                    placeholder="viral, trending, fyp, content"
+                    value={hashtags}
+                    onChange={(e) => setHashtags(e.target.value)}
+                    className="bg-slate-800/50 border-slate-700"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-slate-400">Platform</label>
+                  <div className="flex flex-wrap gap-2">
+                    {platformOptions.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => setPlatform(p.id)}
+                        className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                          platform === p.id
+                            ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-slate-700/50'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    <p className="text-sm text-red-400">{error}</p>
+                  </div>
                 )}
-              </Button>
+
+                <Button
+                  onClick={analyzeContent}
+                  disabled={isAnalyzing || !caption.trim()}
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  size="lg"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing Viral Factors...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Analyze Viral Potential
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -273,7 +336,7 @@ export function ViralPredictor() {
                   ].map((item) => (
                     <div key={item.label} className="text-center p-3 bg-slate-800/50 rounded-lg">
                       <item.icon className={`w-5 h-5 mx-auto mb-2 ${getScoreColor(item.score)}`} />
-                      <p className="text-2xl font-bold {getScoreColor(item.score)}">{item.score}</p>
+                      <p className={`text-2xl font-bold ${getScoreColor(item.score)}`}>{item.score}</p>
                       <p className="text-xs text-slate-400">{item.label}</p>
                     </div>
                   ))}

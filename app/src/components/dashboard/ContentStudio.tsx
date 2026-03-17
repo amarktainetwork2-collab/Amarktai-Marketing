@@ -14,7 +14,8 @@ import {
   Subtitles,
   Settings,
   Scissors,
-  Layers
+  Layers,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +25,8 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/lib/motion';
+import { contentApi } from '@/lib/api';
+import type { Platform } from '@/types';
 
 interface GeneratedAsset {
   id: string;
@@ -32,9 +35,10 @@ interface GeneratedAsset {
   content?: string;
   prompt: string;
   status: 'generating' | 'completed' | 'error';
+  title?: string;
+  caption?: string;
+  errorMessage?: string;
 }
-
-
 
 export function ContentStudio() {
   const [prompt, setPrompt] = useState('');
@@ -42,6 +46,8 @@ export function ContentStudio() {
   const [generatedAssets, setGeneratedAssets] = useState<GeneratedAsset[]>([]);
   const [selectedStyle, setSelectedStyle] = useState('modern');
   const [intensity, setIntensity] = useState([50]);
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('instagram');
+  const [webappId] = useState('default');
 
   const styles = [
     { id: 'modern', name: 'Modern', icon: Palette, color: 'from-blue-500 to-cyan-500' },
@@ -51,35 +57,59 @@ export function ContentStudio() {
     { id: 'corporate', name: 'Corporate', icon: Type, color: 'from-emerald-500 to-teal-500' },
   ];
 
+  const platforms: { id: Platform; label: string }[] = [
+    { id: 'instagram', label: 'Instagram' },
+    { id: 'tiktok', label: 'TikTok' },
+    { id: 'twitter', label: 'Twitter' },
+    { id: 'facebook', label: 'Facebook' },
+    { id: 'youtube', label: 'YouTube' },
+    { id: 'linkedin', label: 'LinkedIn' },
+  ];
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     
     setIsGenerating(true);
     
-    // Simulate generation
     const newAsset: GeneratedAsset = {
       id: Date.now().toString(),
-      type: 'image',
+      type: 'text',
       prompt,
       status: 'generating'
     };
     
-    setGeneratedAssets([newAsset, ...generatedAssets]);
-    
-    setTimeout(() => {
-      setGeneratedAssets(prev => 
-        prev.map(asset => 
-          asset.id === newAsset.id 
-            ? { 
-                ...asset, 
-                status: 'completed',
-                url: `https://images.unsplash.com/photo-${['1557804506-669a67965ba0', '1460925895917-afdab827c52f', '1536240478700-b869070f9279'][Math.floor(Math.random() * 3)]}?w=400&h=300&fit=crop`
+    setGeneratedAssets(prev => [newAsset, ...prev]);
+
+    try {
+      const result = await contentApi.generate(webappId, selectedPlatform);
+      setGeneratedAssets(prev =>
+        prev.map(asset =>
+          asset.id === newAsset.id
+            ? {
+                ...asset,
+                status: 'completed' as const,
+                content: result.caption,
+                title: result.title,
+                caption: result.caption,
               }
             : asset
         )
       );
+    } catch (err) {
+      setGeneratedAssets(prev =>
+        prev.map(asset =>
+          asset.id === newAsset.id
+            ? {
+                ...asset,
+                status: 'error' as const,
+                errorMessage: err instanceof Error ? err.message : 'Generation failed',
+              }
+            : asset
+        )
+      );
+    } finally {
       setIsGenerating(false);
-    }, 3000);
+    }
   };
 
   return (
@@ -139,6 +169,26 @@ export function ContentStudio() {
                   onChange={(e) => setPrompt(e.target.value)}
                   className="min-h-[100px] bg-slate-800/50 border-slate-700 resize-none"
                 />
+              </div>
+
+              {/* Platform Selection */}
+              <div className="space-y-2">
+                <label className="text-sm text-slate-400">Target Platform</label>
+                <div className="flex flex-wrap gap-2">
+                  {platforms.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPlatform(p.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                        selectedPlatform === p.id
+                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-slate-700/50'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Style Selection */}
@@ -221,7 +271,7 @@ export function ContentStudio() {
               <CardTitle className="text-lg">Recent Generations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AnimatePresence>
                   {generatedAssets.map((asset) => (
                     <motion.div
@@ -231,7 +281,7 @@ export function ContentStudio() {
                       exit={{ opacity: 0, scale: 0.9 }}
                       className="relative group"
                     >
-                      <div className="aspect-video bg-slate-800 rounded-lg overflow-hidden">
+                      <div className="p-4 bg-slate-800 rounded-lg overflow-hidden min-h-[120px]">
                         {asset.status === 'generating' ? (
                           <div className="w-full h-full flex items-center justify-center">
                             <div className="text-center">
@@ -239,13 +289,21 @@ export function ContentStudio() {
                               <p className="text-sm text-slate-400">Generating...</p>
                             </div>
                           </div>
-                        ) : asset.url ? (
-                          <img 
-                            src={asset.url} 
-                            alt="Generated content"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : null}
+                        ) : asset.status === 'error' ? (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center">
+                              <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                              <p className="text-sm text-red-400">{asset.errorMessage || 'Generation failed'}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            {asset.title && (
+                              <h4 className="font-medium text-slate-200 mb-2">{asset.title}</h4>
+                            )}
+                            <p className="text-sm text-slate-300 line-clamp-4">{asset.caption || asset.content}</p>
+                          </div>
+                        )}
                       </div>
                       
                       {asset.status === 'completed' && (

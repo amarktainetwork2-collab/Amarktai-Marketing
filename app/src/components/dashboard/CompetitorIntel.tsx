@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Target, 
   TrendingUp, 
@@ -16,7 +16,8 @@ import {
   Filter,
   Sparkles,
   Zap,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/lib/motion';
+import { competitorApi } from '@/lib/api';
 
 interface Competitor {
   id: string;
@@ -48,61 +50,60 @@ interface TrendingTopic {
   related: string[];
 }
 
-const mockCompetitors: Competitor[] = [
-  {
-    id: 'comp-1',
-    name: 'TechVision Pro',
-    handle: '@techvision',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop',
-    followers: 245000,
-    engagement: 4.8,
-    postsPerWeek: 14,
-    growth: 12.5,
-    topContent: ['Product Reviews', 'Tech Tips', 'Industry News'],
-    strengths: ['High video quality', 'Consistent posting', 'Strong CTAs'],
-    weaknesses: ['Limited engagement', 'Slow response time']
-  },
-  {
-    id: 'comp-2',
-    name: 'Digital Daily',
-    handle: '@digitaldaily',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop',
-    followers: 189000,
-    engagement: 6.2,
-    postsPerWeek: 21,
-    growth: 8.3,
-    topContent: ['Tutorials', 'Behind the Scenes', 'User Stories'],
-    strengths: ['Great storytelling', 'High engagement', 'Community building'],
-    weaknesses: ['Inconsistent branding', 'Long videos']
-  },
-  {
-    id: 'comp-3',
-    name: 'Innovate Hub',
-    handle: '@innovatehub',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-    followers: 320000,
-    engagement: 3.9,
-    postsPerWeek: 10,
-    growth: -2.1,
-    topContent: ['Interviews', 'Case Studies', 'Webinars'],
-    strengths: ['Authority content', 'Expert guests'],
-    weaknesses: ['Low post frequency', 'Declining engagement']
-  }
-];
+function mapCompetitor(raw: Record<string, unknown>): Competitor {
+  return {
+    id: (raw.id ?? '') as string,
+    name: (raw.name ?? '') as string,
+    handle: (raw.handle ?? '') as string,
+    avatar: (raw.avatar ?? '') as string,
+    followers: (raw.followers as number) ?? 0,
+    engagement: (raw.engagement as number) ?? 0,
+    postsPerWeek: ((raw.posts_per_week ?? raw.postsPerWeek) as number) ?? 0,
+    growth: (raw.growth as number) ?? 0,
+    topContent: ((raw.top_content ?? raw.topContent) as string[]) ?? [],
+    strengths: (raw.strengths as string[]) ?? [],
+    weaknesses: (raw.weaknesses as string[]) ?? [],
+  };
+}
 
-const mockTrends: TrendingTopic[] = [
-  { topic: '#AITools', volume: 2450000, growth: 145, sentiment: 'positive', related: ['#ChatGPT', '#AIAutomation', '#MachineLearning'] },
-  { topic: '#RemoteWork', volume: 1890000, growth: 23, sentiment: 'neutral', related: ['#WorkFromHome', '#DigitalNomad', '#Productivity'] },
-  { topic: '#Sustainability', volume: 3200000, growth: 67, sentiment: 'positive', related: ['#EcoFriendly', '#GreenTech', '#ClimateAction'] },
-  { topic: '#Metaverse', volume: 980000, growth: -15, sentiment: 'negative', related: ['#VR', '#VirtualReality', '#Web3'] }
-];
-
-
+function mapTrend(raw: Record<string, unknown>): TrendingTopic {
+  return {
+    topic: (raw.topic ?? '') as string,
+    volume: (raw.volume as number) ?? 0,
+    growth: (raw.growth as number) ?? 0,
+    sentiment: (raw.sentiment ?? 'neutral') as TrendingTopic['sentiment'],
+    related: (raw.related as string[]) ?? [],
+  };
+}
 
 export function CompetitorIntel() {
-  const [competitors] = useState<Competitor[]>(mockCompetitors);
-  const [trends] = useState<TrendingTopic[]>(mockTrends);
+  const [competitors, setCompetitors] = useState<Competitor[]>([]);
+  const [trends, setTrends] = useState<TrendingTopic[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [compRes, trendsRes] = await Promise.all([
+        competitorApi.getData(),
+        competitorApi.getTrends(),
+      ]);
+
+      setCompetitors(compRes.competitors.map(mapCompetitor));
+      setTrends(trendsRes.map(mapTrend));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load competitor data');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
@@ -111,6 +112,33 @@ export function CompetitorIntel() {
       default: return 'text-yellow-400 bg-yellow-500/20';
     }
   };
+
+  const filteredCompetitors = competitors.filter(c =>
+    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.handle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+          <p className="text-slate-400 mb-3">{error}</p>
+          <Button onClick={fetchData} variant="outline" className="border-slate-600 text-slate-300">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -122,8 +150,8 @@ export function CompetitorIntel() {
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         {[
-          { icon: Target, label: 'Competitors Tracked', value: '12', color: 'text-red-400', bg: 'bg-red-500/20' },
-          { icon: TrendingUp, label: 'Avg Growth Rate', value: '+8.4%', color: 'text-green-400', bg: 'bg-green-500/20' },
+          { icon: Target, label: 'Competitors Tracked', value: competitors.length.toString(), color: 'text-red-400', bg: 'bg-red-500/20' },
+          { icon: TrendingUp, label: 'Avg Growth Rate', value: competitors.length > 0 ? `${(competitors.reduce((s, c) => s + c.growth, 0) / competitors.length).toFixed(1)}%` : '—', color: 'text-green-400', bg: 'bg-green-500/20' },
           { icon: Eye, label: 'Content Analyzed', value: '2.4K', color: 'text-blue-400', bg: 'bg-blue-500/20' },
           { icon: Zap, label: 'Opportunities', value: '7', color: 'text-yellow-400', bg: 'bg-yellow-500/20' },
         ].map((stat, i) => (
@@ -170,9 +198,21 @@ export function CompetitorIntel() {
             </Button>
           </div>
 
+          {filteredCompetitors.length === 0 && (
+            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+              <CardContent className="p-12 text-center">
+                <Target className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-300 mb-2">No Competitors Found</h3>
+                <p className="text-slate-400">
+                  {searchQuery ? 'No competitors match your search.' : 'Add competitors to start tracking their performance.'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Competitor Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {competitors.map((comp, idx) => (
+            {filteredCompetitors.map((comp, idx) => (
               <motion.div
                 key={comp.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -184,11 +224,17 @@ export function CompetitorIntel() {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={comp.avatar} 
-                          alt={comp.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
+                        {comp.avatar ? (
+                          <img 
+                            src={comp.avatar} 
+                            alt={comp.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
+                            <Users className="w-6 h-6 text-slate-400" />
+                          </div>
+                        )}
                         <div>
                           <h4 className="font-medium text-slate-200">{comp.name}</h4>
                           <p className="text-sm text-slate-400">{comp.handle}</p>
@@ -220,43 +266,49 @@ export function CompetitorIntel() {
                     </div>
 
                     {/* Top Content */}
-                    <div className="mb-4">
-                      <p className="text-xs text-slate-400 mb-2">Top Content Types</p>
-                      <div className="flex flex-wrap gap-1">
-                        {comp.topContent.map((type, i) => (
-                          <span key={i} className="text-xs px-2 py-1 bg-slate-700/50 rounded text-slate-300">
-                            {type}
-                          </span>
-                        ))}
+                    {comp.topContent.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-slate-400 mb-2">Top Content Types</p>
+                        <div className="flex flex-wrap gap-1">
+                          {comp.topContent.map((type, i) => (
+                            <span key={i} className="text-xs px-2 py-1 bg-slate-700/50 rounded text-slate-300">
+                              {type}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Strengths & Weaknesses */}
                     <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-green-400 mb-1 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Strengths
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {comp.strengths.map((s, i) => (
-                            <span key={i} className="text-xs px-2 py-0.5 bg-green-500/10 rounded text-green-300">
-                              {s}
-                            </span>
-                          ))}
+                      {comp.strengths.length > 0 && (
+                        <div>
+                          <p className="text-xs text-green-400 mb-1 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Strengths
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {comp.strengths.map((s, i) => (
+                              <span key={i} className="text-xs px-2 py-0.5 bg-green-500/10 rounded text-green-300">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-red-400 mb-1 flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" /> Weaknesses
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {comp.weaknesses.map((w, i) => (
-                            <span key={i} className="text-xs px-2 py-0.5 bg-red-500/10 rounded text-red-300">
-                              {w}
-                            </span>
-                          ))}
+                      )}
+                      {comp.weaknesses.length > 0 && (
+                        <div>
+                          <p className="text-xs text-red-400 mb-1 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> Weaknesses
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {comp.weaknesses.map((w, i) => (
+                              <span key={i} className="text-xs px-2 py-0.5 bg-red-500/10 rounded text-red-300">
+                                {w}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -266,45 +318,55 @@ export function CompetitorIntel() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {trends.map((trend, idx) => (
-              <motion.div
-                key={trend.topic}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium text-slate-200 text-lg">{trend.topic}</h4>
-                        <p className="text-sm text-slate-400">{(trend.volume / 1000000).toFixed(1)}M mentions</p>
+          {trends.length === 0 ? (
+            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+              <CardContent className="p-12 text-center">
+                <TrendingUp className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-300 mb-2">No Trends Available</h3>
+                <p className="text-slate-400">Trending topics will appear here once data is available.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {trends.map((trend, idx) => (
+                <motion.div
+                  key={trend.topic}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium text-slate-200 text-lg">{trend.topic}</h4>
+                          <p className="text-sm text-slate-400">{(trend.volume / 1000000).toFixed(1)}M mentions</p>
+                        </div>
+                        <Badge className={getSentimentColor(trend.sentiment)}>
+                          {trend.sentiment}
+                        </Badge>
                       </div>
-                      <Badge className={getSentimentColor(trend.sentiment)}>
-                        {trend.sentiment}
-                      </Badge>
-                    </div>
 
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className={`w-4 h-4 ${trend.growth > 0 ? 'text-green-400' : 'text-red-400'}`} />
-                      <span className={`font-medium ${trend.growth > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {trend.growth > 0 ? '+' : ''}{trend.growth}% this week
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      {trend.related.map((tag, i) => (
-                        <span key={i} className="text-xs px-2 py-1 bg-slate-700/50 rounded-full text-slate-300">
-                          {tag}
+                      <div className="flex items-center gap-2 mb-3">
+                        <TrendingUp className={`w-4 h-4 ${trend.growth > 0 ? 'text-green-400' : 'text-red-400'}`} />
+                        <span className={`font-medium ${trend.growth > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {trend.growth > 0 ? '+' : ''}{trend.growth}% this week
                         </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1">
+                        {trend.related.map((tag, i) => (
+                          <span key={i} className="text-xs px-2 py-1 bg-slate-700/50 rounded-full text-slate-300">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="opportunities">

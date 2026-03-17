@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   FlaskConical, 
   Play, 
@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   RotateCcw,
   Zap,
-  Target
+  Target,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/lib/motion';
+import { abTestingApi } from '@/lib/api';
 
 interface Variant {
   id: string;
@@ -45,83 +48,80 @@ interface ABTest {
   winner?: string;
 }
 
-const mockTests: ABTest[] = [
-  {
-    id: 'test-1',
-    contentId: 'content-1',
-    contentTitle: 'Summer Sale Announcement',
-    status: 'running',
-    startDate: '2024-01-15',
-    totalReach: 15420,
-    variants: [
-      {
-        id: 'variant-a',
-        name: 'Variant A - Bold CTA',
-        thumbnail: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=150&fit=crop',
-        engagement: 8.4,
-        views: 7710,
-        ctr: 4.2,
-        conversions: 324,
-        confidence: 78
-      },
-      {
-        id: 'variant-b',
-        name: 'Variant B - Soft CTA',
-        thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=150&fit=crop',
-        engagement: 11.2,
-        views: 7710,
-        ctr: 5.8,
-        conversions: 447,
-        confidence: 89
-      }
-    ]
-  },
-  {
-    id: 'test-2',
-    contentId: 'content-2',
-    contentTitle: 'Product Launch Teaser',
-    status: 'completed',
-    startDate: '2024-01-10',
-    endDate: '2024-01-14',
-    totalReach: 28300,
-    winner: 'variant-c',
-    variants: [
-      {
-        id: 'variant-c',
-        name: 'Video Version',
-        thumbnail: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=200&h=150&fit=crop',
-        engagement: 15.7,
-        views: 14150,
-        ctr: 7.3,
-        conversions: 1033,
-        confidence: 95
-      },
-      {
-        id: 'variant-d',
-        name: 'Image Carousel',
-        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=150&fit=crop',
-        engagement: 9.2,
-        views: 14150,
-        ctr: 4.1,
-        conversions: 580,
-        confidence: 95
-      }
-    ]
-  }
-];
+function mapTest(raw: Record<string, unknown>): ABTest {
+  const variants = ((raw.variants as Record<string, unknown>[]) ?? []).map((v) => ({
+    id: (v.id ?? v.variant_id ?? '') as string,
+    name: (v.name ?? v.variant_name ?? '') as string,
+    thumbnail: (v.thumbnail ?? '') as string,
+    engagement: (v.engagement as number) ?? 0,
+    views: (v.views as number) ?? 0,
+    ctr: (v.ctr as number) ?? 0,
+    conversions: (v.conversions as number) ?? 0,
+    confidence: (v.confidence as number) ?? 0,
+  }));
 
-
+  return {
+    id: (raw.id ?? raw.test_id ?? '') as string,
+    contentId: (raw.content_id ?? '') as string,
+    contentTitle: (raw.content_title ?? raw.test_name ?? 'Untitled Test') as string,
+    status: (raw.status ?? 'running') as ABTest['status'],
+    startDate: (raw.start_date ?? raw.created_at ?? '') as string,
+    endDate: (raw.end_date ?? undefined) as string | undefined,
+    totalReach: (raw.total_reach as number) ?? 0,
+    variants,
+    winner: (raw.winner ?? raw.winner_variant_id ?? undefined) as string | undefined,
+  };
+}
 
 export function ABTestingPanel() {
-  const [tests, setTests] = useState<ABTest[]>(mockTests);
-  const [selectedTest, setSelectedTest] = useState<ABTest | null>(mockTests[0]);
+  const [tests, setTests] = useState<ABTest[]>([]);
+  const [selectedTest, setSelectedTest] = useState<ABTest | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleTestStatus = (testId: string) => {
-    setTests(tests.map(test => 
-      test.id === testId 
-        ? { ...test, status: test.status === 'running' ? 'paused' : 'running' }
-        : test
+  const fetchTests = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await abTestingApi.getTests();
+      const mapped = data.map(mapTest);
+      setTests(mapped);
+      if (mapped.length > 0) setSelectedTest(mapped[0]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load A/B tests');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTests();
+  }, [fetchTests]);
+
+  const toggleTestStatus = async (testId: string) => {
+    const test = tests.find(t => t.id === testId);
+    if (!test) return;
+    const newStatus = test.status === 'running' ? 'paused' : 'running';
+
+    // Optimistically update
+    setTests(tests.map(t =>
+      t.id === testId ? { ...t, status: newStatus } : t
     ));
+    if (selectedTest?.id === testId) {
+      setSelectedTest({ ...selectedTest, status: newStatus });
+    }
+
+    try {
+      await abTestingApi.updateTest(testId, { status: newStatus });
+    } catch {
+      // Revert on failure
+      setTests(tests.map(t =>
+        t.id === testId ? { ...t, status: test.status } : t
+      ));
+      if (selectedTest?.id === testId) {
+        setSelectedTest({ ...selectedTest, status: test.status });
+      }
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -131,6 +131,29 @@ export function ABTestingPanel() {
       case 'completed': return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30"><CheckCircle2 className="w-3 h-3 mr-1" /> Completed</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+          <p className="text-slate-400 mb-3">{error}</p>
+          <Button onClick={fetchTests} variant="outline" className="border-slate-600 text-slate-300">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -142,9 +165,9 @@ export function ABTestingPanel() {
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         {[
-          { icon: FlaskConical, label: 'Active Tests', value: '3', color: 'text-purple-400', bg: 'bg-purple-500/20' },
-          { icon: Target, label: 'Total Variants', value: '8', color: 'text-blue-400', bg: 'bg-blue-500/20' },
-          { icon: Users, label: 'Test Reach', value: '45.2K', color: 'text-green-400', bg: 'bg-green-500/20' },
+          { icon: FlaskConical, label: 'Active Tests', value: tests.filter(t => t.status === 'running').length.toString(), color: 'text-purple-400', bg: 'bg-purple-500/20' },
+          { icon: Target, label: 'Total Variants', value: tests.reduce((sum, t) => sum + t.variants.length, 0).toString(), color: 'text-blue-400', bg: 'bg-blue-500/20' },
+          { icon: Users, label: 'Test Reach', value: `${(tests.reduce((sum, t) => sum + t.totalReach, 0) / 1000).toFixed(1)}K`, color: 'text-green-400', bg: 'bg-green-500/20' },
           { icon: TrendingUp, label: 'Avg Lift', value: '+23%', color: 'text-orange-400', bg: 'bg-orange-500/20' },
         ].map((stat, i) => (
           <motion.div key={i} variants={itemVariants}>
@@ -180,6 +203,12 @@ export function ABTestingPanel() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {tests.length === 0 && (
+                <div className="text-center py-8">
+                  <FlaskConical className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+                  <p className="text-sm text-slate-400">No A/B tests yet. Create one to get started.</p>
+                </div>
+              )}
               {tests.map((test) => (
                 <motion.div
                   key={test.id}
@@ -273,58 +302,64 @@ export function ABTestingPanel() {
                       </TabsList>
 
                       <TabsContent value="comparison" className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          {selectedTest.variants.map((variant, idx) => (
-                            <motion.div
-                              key={variant.id}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: idx * 0.1 }}
-                              className={`relative p-4 rounded-xl border-2 ${
-                                selectedTest.winner === variant.id
-                                  ? 'border-green-500 bg-green-500/10'
-                                  : 'border-slate-700 bg-slate-800/50'
-                              }`}
-                            >
-                              {selectedTest.winner === variant.id && (
-                                <div className="absolute -top-3 left-4">
-                                  <Badge className="bg-green-500 text-white">
-                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Winner
-                                  </Badge>
-                                </div>
-                              )}
-                              
-                              <img 
-                                src={variant.thumbnail} 
-                                alt={variant.name}
-                                className="w-full h-32 object-cover rounded-lg mb-3"
-                              />
-                              <h5 className="font-medium text-slate-200 mb-3">{variant.name}</h5>
-                              
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-slate-400">Engagement</span>
-                                  <span className="text-slate-200 font-medium">{variant.engagement}%</span>
-                                </div>
-                                <Progress value={variant.engagement * 5} className="h-2" />
+                        {selectedTest.variants.length === 0 ? (
+                          <p className="text-slate-400 text-center py-8">No variants for this test yet.</p>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedTest.variants.map((variant, idx) => (
+                              <motion.div
+                                key={variant.id}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: idx * 0.1 }}
+                                className={`relative p-4 rounded-xl border-2 ${
+                                  selectedTest.winner === variant.id
+                                    ? 'border-green-500 bg-green-500/10'
+                                    : 'border-slate-700 bg-slate-800/50'
+                                }`}
+                              >
+                                {selectedTest.winner === variant.id && (
+                                  <div className="absolute -top-3 left-4">
+                                    <Badge className="bg-green-500 text-white">
+                                      <CheckCircle2 className="w-3 h-3 mr-1" /> Winner
+                                    </Badge>
+                                  </div>
+                                )}
                                 
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-slate-400">CTR</span>
-                                  <span className="text-slate-200 font-medium">{variant.ctr}%</span>
-                                </div>
-                                <Progress value={variant.ctr * 10} className="h-2" />
+                                {variant.thumbnail && (
+                                  <img 
+                                    src={variant.thumbnail} 
+                                    alt={variant.name}
+                                    className="w-full h-32 object-cover rounded-lg mb-3"
+                                  />
+                                )}
+                                <h5 className="font-medium text-slate-200 mb-3">{variant.name}</h5>
                                 
-                                <div className="flex justify-between text-sm pt-2">
-                                  <span className="text-slate-400">Confidence</span>
-                                  <span className={`font-medium ${
-                                    variant.confidence >= 90 ? 'text-green-400' : 
-                                    variant.confidence >= 70 ? 'text-yellow-400' : 'text-orange-400'
-                                  }`}>{variant.confidence}%</span>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-slate-400">Engagement</span>
+                                    <span className="text-slate-200 font-medium">{variant.engagement}%</span>
+                                  </div>
+                                  <Progress value={variant.engagement * 5} className="h-2" />
+                                  
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-slate-400">CTR</span>
+                                    <span className="text-slate-200 font-medium">{variant.ctr}%</span>
+                                  </div>
+                                  <Progress value={variant.ctr * 10} className="h-2" />
+                                  
+                                  <div className="flex justify-between text-sm pt-2">
+                                    <span className="text-slate-400">Confidence</span>
+                                    <span className={`font-medium ${
+                                      variant.confidence >= 90 ? 'text-green-400' : 
+                                      variant.confidence >= 70 ? 'text-yellow-400' : 'text-orange-400'
+                                    }`}>{variant.confidence}%</span>
+                                  </div>
                                 </div>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
                       </TabsContent>
 
                       <TabsContent value="metrics">
@@ -411,6 +446,15 @@ export function ABTestingPanel() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {!selectedTest && tests.length > 0 && (
+            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+              <CardContent className="p-12 text-center">
+                <FlaskConical className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-400">Select a test from the list to view details.</p>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
     </div>
