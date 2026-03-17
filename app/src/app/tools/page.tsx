@@ -149,9 +149,9 @@ async function pollResult(endpoint: string, id: string, maxWait = 60000): Promis
     await new Promise(r => setTimeout(r, 2500));
     const res = await fetch(`/api/v1/${endpoint}/${id}`);
     if (!res.ok) throw new Error('Poll failed');
-    const data = await res.json();
+    const data = await res.json() as Record<string, unknown>;
     if (data.status === 'done') return data;
-    if (data.status === 'failed') throw new Error(data.error_message || 'Processing failed');
+    if (data.status === 'failed') throw new Error((data.error_message as string | undefined) || 'Processing failed');
   }
   throw new Error('Timeout waiting for result');
 }
