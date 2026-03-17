@@ -160,6 +160,20 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET: str = ""
     AWS_REGION: str = "us-east-1"
     
+    # ==================== AMARKTAI NETWORK INTEGRATION ====================
+    # Per-app identity
+    APP_ID: str = "amarktai-marketing"
+    APP_SLUG: str = "amarktai-marketing"
+    APP_NAME: str = "Amarktai Marketing"
+    APP_VERSION: str = "1.0.0"
+    APP_ENVIRONMENT: str = "production"  # production | staging | development
+
+    # Outbound integration (connection to Amarktai Network main dashboard)
+    # Keep AMARKTAI_INTEGRATION_TOKEN server-side only — never expose to frontend
+    AMARKTAI_DASHBOARD_URL: str = ""   # e.g. https://dashboard.amarktai.com
+    AMARKTAI_INTEGRATION_TOKEN: str = ""  # generated per-app token in Amarktai Network
+    AMARKTAI_INTEGRATION_ENABLED: bool = False
+
     # ==================== MONITORING ====================
     SENTRY_DSN: str = ""
     
