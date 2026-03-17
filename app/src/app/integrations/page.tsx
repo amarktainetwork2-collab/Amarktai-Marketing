@@ -4,7 +4,7 @@ import {
   Key, Check, X, ExternalLink, RefreshCw, AlertCircle,
   Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Settings, Plus,
   Trash2, Eye, EyeOff, MessageSquare, Cloud, AtSign, Send, Camera, Pin,
-  Sparkles, Globe, ChevronRight, CheckCircle2,
+  Sparkles, Globe, ChevronRight, CheckCircle2, Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,7 @@ const PLATFORMS = [
 export default function IntegrationsPage() {
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
   const [integrations, setIntegrations] = useState<PlatformIntegration[]>([]);
-  const [_isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [showAddKeyDialog, setShowAddKeyDialog] = useState(false);
   const [selectedKeyType, setSelectedKeyType] = useState('');
   const [keyValue, setKeyValue] = useState('');
@@ -204,6 +204,14 @@ export default function IntegrationsPage() {
 
   const activeKeysCount = apiKeys.filter(k => k.is_active).length;
   const connectedPlatformsCount = integrations.filter(i => i.is_connected).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

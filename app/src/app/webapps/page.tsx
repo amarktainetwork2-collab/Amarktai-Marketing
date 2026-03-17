@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
+import { EASE_OUT_CURVE } from '@/lib/motion';
 import {
   Plus, ExternalLink, Edit2, Trash2, MoreVertical, Power,
   Globe, RefreshCw, CheckCircle2, AlertCircle, Loader2,
@@ -23,7 +24,7 @@ const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: (i: number) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.07, duration: 0.45, ease: EASE_OUT_CURVE },
   }),
 };
 
