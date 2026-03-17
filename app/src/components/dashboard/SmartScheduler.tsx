@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Clock, 
   Calendar, 
@@ -11,7 +11,9 @@ import {
   CheckCircle2,
   Clock4,
   Globe,
-  Sparkles
+  Sparkles,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/lib/motion';
+import { schedulerApi } from '@/lib/api';
 
 interface TimeSlot {
   hour: number;
@@ -38,56 +41,57 @@ interface ScheduledPost {
   status: 'scheduled' | 'optimizing' | 'ready';
 }
 
-const generateTimeSlots = (): TimeSlot[] => {
-  return Array.from({ length: 24 }, (_, i) => {
-    const baseScore = Math.sin((i - 6) * Math.PI / 12) * 40 + 50;
-    const randomVariation = Math.random() * 20 - 10;
-    return {
-      hour: i,
-      score: Math.max(20, Math.min(95, baseScore + randomVariation)),
-      audienceCount: Math.floor(Math.random() * 5000) + 1000,
-      engagement: Math.random() * 8 + 2
-    };
-  });
-};
-
-const mockScheduledPosts: ScheduledPost[] = [
-  {
-    id: 'post-1',
-    title: 'Product Launch Announcement',
-    platform: 'Instagram',
-    scheduledTime: 'Today, 6:00 PM',
-    predictedEngagement: 12.5,
-    optimalScore: 94,
-    status: 'ready'
-  },
-  {
-    id: 'post-2',
-    title: 'Behind the Scenes Video',
-    platform: 'TikTok',
-    scheduledTime: 'Tomorrow, 7:30 PM',
-    predictedEngagement: 15.2,
-    optimalScore: 91,
-    status: 'scheduled'
-  },
-  {
-    id: 'post-3',
-    title: 'Weekly Tips Thread',
-    platform: 'Twitter',
-    scheduledTime: 'Optimizing...',
-    predictedEngagement: 8.7,
-    optimalScore: 0,
-    status: 'optimizing'
-  }
-];
-
-
-
 export function SmartScheduler() {
-  const [timeSlots] = useState<TimeSlot[]>(generateTimeSlots());
-  const [scheduledPosts] = useState<ScheduledPost[]>(mockScheduledPosts);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
   const [autoOptimize, setAutoOptimize] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(18);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [heatmapRes, postsRes] = await Promise.all([
+        schedulerApi.getHeatmap(),
+        schedulerApi.getScheduledPosts(),
+      ]);
+
+      const slots: TimeSlot[] = heatmapRes.time_slots.map(s => ({
+        hour: s.hour,
+        score: Math.round(s.score),
+        audienceCount: s.audience_count,
+        engagement: s.engagement,
+      }));
+      setTimeSlots(slots);
+
+      const bestSlot = heatmapRes.best_slots[0];
+      if (bestSlot) setSelectedSlot(bestSlot.hour);
+
+      const posts: ScheduledPost[] = postsRes.map(p => ({
+        id: p.id,
+        title: p.title,
+        platform: p.platform,
+        scheduledTime: p.scheduled_time ?? 'Optimizing...',
+        predictedEngagement: p.predicted_engagement,
+        optimalScore: p.optimal_score,
+        status: p.status as ScheduledPost['status'],
+      }));
+      setScheduledPosts(posts);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load scheduler data');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    // Poll every 60 seconds for live scheduler feel
+    const id = setInterval(() => fetchData(), 60_000);
+    return () => clearInterval(id);
+  }, [fetchData]);
 
   const getHeatmapColor = (score: number) => {
     if (score >= 80) return 'bg-gradient-to-t from-green-500 to-green-400';
@@ -105,6 +109,41 @@ export function SmartScheduler() {
 
   const bestSlots = timeSlots.filter(s => s.score >= 80).sort((a, b) => b.score - a.score).slice(0, 3);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+          <p className="text-slate-400 mb-3">{error}</p>
+          <Button onClick={fetchData} variant="outline" className="border-slate-600 text-slate-300">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (timeSlots.length === 0) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <CardContent className="p-12 text-center">
+          <Clock className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-300 mb-2">No Scheduler Data</h3>
+          <p className="text-slate-400">Connect a platform and start posting to see scheduling insights.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header Stats */}
@@ -115,10 +154,10 @@ export function SmartScheduler() {
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         {[
-          { icon: Clock, label: 'Optimal Time', value: '6:00 PM', color: 'text-green-400', bg: 'bg-green-500/20' },
-          { icon: Users, label: 'Peak Audience', value: '4.2K', color: 'text-blue-400', bg: 'bg-blue-500/20' },
-          { icon: TrendingUp, label: 'Predicted Engagement', value: '+28%', color: 'text-purple-400', bg: 'bg-purple-500/20' },
-          { icon: Target, label: 'Optimization Score', value: '94%', color: 'text-orange-400', bg: 'bg-orange-500/20' },
+          { icon: Clock, label: 'Optimal Time', value: bestSlots[0] ? getTimeLabel(bestSlots[0].hour) : '—', color: 'text-green-400', bg: 'bg-green-500/20' },
+          { icon: Users, label: 'Peak Audience', value: bestSlots[0] ? `${(bestSlots[0].audienceCount / 1000).toFixed(1)}K` : '—', color: 'text-blue-400', bg: 'bg-blue-500/20' },
+          { icon: TrendingUp, label: 'Predicted Engagement', value: bestSlots[0] ? `+${bestSlots[0].engagement.toFixed(0)}%` : '—', color: 'text-purple-400', bg: 'bg-purple-500/20' },
+          { icon: Target, label: 'Optimization Score', value: bestSlots[0] ? `${bestSlots[0].score}%` : '—', color: 'text-orange-400', bg: 'bg-orange-500/20' },
         ].map((stat, i) => (
           <motion.div key={i} variants={itemVariants}>
             <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
@@ -224,7 +263,7 @@ export function SmartScheduler() {
               </div>
 
               {/* Selected Slot Details */}
-              {selectedSlot !== null && (
+              {selectedSlot !== null && timeSlots[selectedSlot] && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -280,6 +319,9 @@ export function SmartScheduler() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {bestSlots.length === 0 && (
+                <p className="text-sm text-slate-400 text-center py-4">No optimal time slots found.</p>
+              )}
               {bestSlots.map((slot, idx) => (
                 <motion.div
                   key={slot.hour}
@@ -319,6 +361,9 @@ export function SmartScheduler() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {scheduledPosts.length === 0 && (
+                <p className="text-sm text-slate-400 text-center py-4">No scheduled posts yet.</p>
+              )}
               {scheduledPosts.map((post, idx) => (
                 <motion.div
                   key={post.id}

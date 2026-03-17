@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { TrendingUp, Eye, Heart, MousePointer, AlertTriangle, CheckCircle, Lightbulb } from 'lucide-react';
+import { TrendingUp, Eye, Heart, MousePointer, AlertTriangle, CheckCircle, Lightbulb, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { performancePredictApi } from '@/lib/api';
 
 interface PredictionResult {
   predicted_views: number;
@@ -13,40 +17,49 @@ interface PredictionResult {
   improvement_suggestions: string[];
 }
 
-interface PerformancePredictorProps {
-  content?: {
-    caption: string;
-    hashtags: string[];
-    platform: string;
-  };
-}
-
-export default function PerformancePredictor({ content: _content }: PerformancePredictorProps) {
+export default function PerformancePredictor() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
+  const [caption, setCaption] = useState('');
+  const [hashtags, setHashtags] = useState('');
+  const [platform, setPlatform] = useState('instagram');
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock prediction function
-  const analyzeContent = () => {
+  const platformOptions = [
+    { id: 'instagram', label: 'Instagram' },
+    { id: 'tiktok', label: 'TikTok' },
+    { id: 'twitter', label: 'Twitter' },
+    { id: 'facebook', label: 'Facebook' },
+    { id: 'youtube', label: 'YouTube' },
+    { id: 'linkedin', label: 'LinkedIn' },
+  ];
+
+  const analyzeContent = async () => {
+    if (!caption.trim()) return;
+
     setIsAnalyzing(true);
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      const mockPrediction: PredictionResult = {
-        predicted_views: 2500,
-        predicted_engagement: 180,
-        predicted_ctr: 8.5,
-        confidence_score: 0.82,
-        risk_level: 'low',
-        improvement_suggestions: [
-          '💡 Add a stronger hook in the first sentence',
-          '💡 Use 5-8 hashtags for optimal reach',
-          '💡 Post at 2 PM for maximum engagement'
-        ]
-      };
-      
-      setPrediction(mockPrediction);
+    try {
+      const result = await performancePredictApi.predict({
+        caption: caption.trim(),
+        hashtags: hashtags.split(',').map(h => h.trim()).filter(Boolean),
+        platform,
+      });
+
+      setPrediction({
+        predicted_views: result.predicted_views,
+        predicted_engagement: result.predicted_engagement,
+        predicted_ctr: result.predicted_ctr,
+        confidence_score: result.confidence_score,
+        risk_level: result.risk_level as PredictionResult['risk_level'],
+        improvement_suggestions: result.improvement_suggestions,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to analyze content');
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
   };
 
   const getRiskColor = (risk: string) => {
@@ -77,7 +90,7 @@ export default function PerformancePredictor({ content: _content }: PerformanceP
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
+          <div className="text-center py-4 mb-4">
             <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="w-8 h-8 text-violet-600" />
             </div>
@@ -85,12 +98,67 @@ export default function PerformancePredictor({ content: _content }: PerformanceP
             <p className="text-gray-500 text-sm mb-4 max-w-sm mx-auto">
               Our AI analyzes your content and predicts views, engagement, and CTR before you post.
             </p>
+          </div>
+
+          <div className="space-y-4 max-w-md mx-auto">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Caption / Content</label>
+              <Textarea
+                placeholder="Enter your post caption or content to analyze..."
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                className="min-h-[80px] resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Hashtags (comma-separated)</label>
+              <Input
+                placeholder="marketing, socialmedia, growth"
+                value={hashtags}
+                onChange={(e) => setHashtags(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Platform</label>
+              <div className="flex flex-wrap gap-2">
+                {platformOptions.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPlatform(p.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-all border ${
+                      platform === p.id
+                        ? 'bg-violet-100 text-violet-700 border-violet-300'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             <button
               onClick={analyzeContent}
-              disabled={isAnalyzing}
-              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50"
+              disabled={isAnalyzing || !caption.trim()}
+              className="w-full px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 flex items-center justify-center"
             >
-              {isAnalyzing ? 'Analyzing...' : 'Analyze Content'}
+              {isAnalyzing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                'Analyze Content'
+              )}
             </button>
           </div>
         </CardContent>
@@ -166,12 +234,13 @@ export default function PerformancePredictor({ content: _content }: PerformanceP
         </div>
 
         {/* Re-analyze button */}
-        <button
+        <Button
           onClick={() => setPrediction(null)}
-          className="w-full py-2 text-sm text-violet-600 hover:text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-50"
+          variant="outline"
+          className="w-full"
         >
           Analyze Different Content
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );

@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, CheckCircle, AlertCircle, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay } from 'date-fns';
+import { calendarApi } from '@/lib/api';
 
 interface CalendarEvent {
   id: string;
@@ -12,10 +13,6 @@ interface CalendarEvent {
   title: string;
   status: 'scheduled' | 'posted' | 'pending';
   time: string;
-}
-
-interface ContentCalendarProps {
-  events?: CalendarEvent[];
 }
 
 const platformColors: Record<string, string> = {
@@ -36,9 +33,41 @@ const platformIcons: Record<string, string> = {
   linkedin: '💼',
 };
 
-export default function ContentCalendar({ events = [] }: ContentCalendarProps) {
+export default function ContentCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEvents = useCallback(async (month: Date) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const monthStr = format(month, 'yyyy-MM');
+      const data = await calendarApi.getEvents(monthStr);
+      const mapped: CalendarEvent[] = data.map(e => ({
+        id: e.id,
+        date: e.date ? new Date(e.date) : new Date(),
+        platform: e.platform,
+        title: e.title,
+        status: (e.status ?? 'pending') as CalendarEvent['status'],
+        time: e.time,
+      }));
+      setEvents(mapped);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load calendar events');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEvents(currentMonth);
+    // Poll every 45 seconds so the calendar stays live
+    const id = setInterval(() => fetchEvents(currentMonth), 45_000);
+    return () => clearInterval(id);
+  }, [currentMonth, fetchEvents]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -59,12 +88,28 @@ export default function ContentCalendar({ events = [] }: ContentCalendarProps) {
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+          <p className="text-slate-400 mb-3">{error}</p>
+          <Button onClick={() => fetchEvents(currentMonth)} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center text-lg">
           <CalendarIcon className="w-5 h-5 mr-2 text-violet-600" />
           Content Calendar
+          {loading && <RefreshCw className="w-4 h-4 ml-2 animate-spin text-violet-400" />}
         </CardTitle>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={prevMonth}>

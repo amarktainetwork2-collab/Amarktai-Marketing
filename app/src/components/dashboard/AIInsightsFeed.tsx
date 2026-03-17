@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariantsSlow, itemVariantsX } from '@/lib/motion';
+import { insightsApi } from '@/lib/api';
+import { usePolling } from '@/lib/usePolling';
 
 interface Insight {
   id: string;
@@ -33,74 +35,19 @@ interface Insight {
   read: boolean;
 }
 
-const mockInsights: Insight[] = [
-  {
-    id: '1',
-    type: 'opportunity',
-    title: 'Trending Topic Match',
-    description: '#AIFeatures is trending with 2.4M views. Your scheduled content aligns perfectly with this trend.',
-    action: 'Post now to capitalize',
-    impact: 'high',
-    timestamp: '2 min ago',
-    read: false
-  },
-  {
-    id: '2',
-    type: 'warning',
-    title: 'Engagement Drop Detected',
-    description: 'Your Instagram engagement dropped 15% this week. Consider adjusting your posting schedule.',
-    action: 'View analytics',
-    impact: 'high',
-    timestamp: '15 min ago',
-    read: false
-  },
-  {
-    id: '3',
-    type: 'trend',
-    title: 'Video Content Performing 3x Better',
-    description: 'Your video posts are getting 3x more engagement than image posts. Consider creating more video content.',
-    action: 'Create video',
-    impact: 'medium',
-    timestamp: '1 hour ago',
-    read: false
-  },
-  {
-    id: '4',
-    type: 'tip',
-    title: 'Optimal Posting Time',
-    description: 'Based on your audience activity, 6:00 PM - 8:00 PM is your best posting window.',
-    action: 'Schedule posts',
-    impact: 'medium',
-    timestamp: '2 hours ago',
-    read: true
-  },
-  {
-    id: '5',
-    type: 'achievement',
-    title: 'Milestone Reached!',
-    description: 'Congratulations! You have reached 10,000 total followers across all platforms.',
-    impact: 'high',
-    timestamp: '3 hours ago',
-    read: true
-  },
-  {
-    id: '6',
-    type: 'opportunity',
-    title: 'Competitor Gap Identified',
-    description: 'Your competitors are not posting on weekends. This is a great opportunity to capture more attention.',
-    action: 'Schedule weekend posts',
-    impact: 'medium',
-    timestamp: '4 hours ago',
-    read: true
-  }
-];
-
-
-
 export function AIInsightsFeed() {
-  const [insights, setInsights] = useState<Insight[]>(mockInsights);
+  const { data: rawInsights, loading, error, refresh } = usePolling(
+    () => insightsApi.getAll(),
+    30_000,
+  );
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<'all' | 'unread' | 'opportunity' | 'warning'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const insights: Insight[] = (rawInsights ?? []).map(i => ({
+    ...i as Insight,
+    read: (i as Insight).read || readIds.has(i.id),
+  }));
 
   const unreadCount = insights.filter(i => !i.read).length;
 
@@ -112,16 +59,17 @@ export function AIInsightsFeed() {
   });
 
   const markAsRead = (id: string) => {
-    setInsights(insights.map(i => i.id === id ? { ...i, read: true } : i));
+    setReadIds(prev => new Set(prev).add(id));
   };
 
   const markAllAsRead = () => {
-    setInsights(insights.map(i => ({ ...i, read: true })));
+    setReadIds(new Set(insights.map(i => i.id)));
   };
 
-  const refreshInsights = () => {
+  const refreshInsights = async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1500);
+    await refresh();
+    setIsRefreshing(false);
   };
 
   const getInsightIcon = (type: string) => {
@@ -143,6 +91,29 @@ export function AIInsightsFeed() {
       default: return 'bg-slate-500/20 text-slate-400';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-6 h-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <CardContent className="p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+          <p className="text-slate-400 mb-3">{error}</p>
+          <Button onClick={refreshInsights} variant="outline" className="border-slate-600 text-slate-300">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -228,7 +199,7 @@ export function AIInsightsFeed() {
                 ].map((f) => (
                   <button
                     key={f.key}
-                    onClick={() => setFilter(f.key as any)}
+                    onClick={() => setFilter(f.key as typeof filter)}
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                       filter === f.key
                         ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'

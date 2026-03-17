@@ -694,3 +694,188 @@ export const platformAuditApi = {
     });
   },
 };
+
+// ─── Dashboard Feature APIs ──────────────────────────────────────────────────
+
+/** AI Insights Feed */
+export const insightsApi = {
+  getAll: async (): Promise<{
+    id: string;
+    type: string;
+    title: string;
+    description: string;
+    action?: string;
+    impact: string;
+    timestamp: string;
+    read: boolean;
+  }[]> => {
+    return apiFetch('/dashboard/insights');
+  },
+};
+
+/** Smart Scheduler */
+export const schedulerApi = {
+  getHeatmap: async (platform = 'all'): Promise<{
+    time_slots: { hour: number; score: number; audience_count: number; engagement: number }[];
+    best_slots: { hour: number; score: number; audience_count: number; engagement: number }[];
+    platform: string;
+  }> => {
+    return apiFetch(`/dashboard/scheduler/heatmap?platform=${platform}`);
+  },
+
+  getScheduledPosts: async (): Promise<{
+    id: string;
+    title: string;
+    platform: string;
+    scheduled_time: string | null;
+    status: string;
+    predicted_engagement: number;
+    optimal_score: number;
+  }[]> => {
+    return apiFetch('/dashboard/scheduler/posts');
+  },
+};
+
+/** Viral Prediction */
+export const viralPredictApi = {
+  predict: async (body: {
+    caption: string;
+    hashtags: string[];
+    platform: string;
+    media_urls?: string[];
+  }): Promise<{
+    score: {
+      overall: number;
+      hook_strength: number;
+      emotional_impact: number;
+      shareability: number;
+      timing: number;
+      uniqueness: number;
+    };
+    viral_probability: number;
+    estimated_reach: number;
+    time_to_viral: string;
+    factors: { positive: string[]; negative: string[] };
+    recommendations: string[];
+  }> => {
+    return apiFetch('/dashboard/viral-predict', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+};
+
+/** Performance Prediction */
+export const performancePredictApi = {
+  predict: async (body: {
+    caption: string;
+    hashtags: string[];
+    platform: string;
+    media_urls?: string[];
+  }): Promise<{
+    predicted_views: number;
+    predicted_engagement: number;
+    predicted_ctr: number;
+    confidence_score: number;
+    risk_level: string;
+    improvement_suggestions: string[];
+  }> => {
+    return apiFetch('/dashboard/performance-predict', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+};
+
+/** Content Calendar */
+export const calendarApi = {
+  getEvents: async (month?: string): Promise<{
+    id: string;
+    date: string | null;
+    platform: string;
+    title: string;
+    status: string;
+    time: string;
+  }[]> => {
+    const qs = month ? `?month=${month}` : '';
+    return apiFetch(`/dashboard/calendar${qs}`);
+  },
+};
+
+/** A/B Testing (wires to existing /ab-testing endpoints) */
+export const abTestingApi = {
+  getTests: async (status?: string, platform?: string): Promise<Record<string, unknown>[]> => {
+    const qs = new URLSearchParams();
+    if (status) qs.set('status', status);
+    if (platform) qs.set('platform', platform);
+    const query = qs.toString() ? `?${qs.toString()}` : '';
+    return apiFetch(`/ab-testing/tests${query}`);
+  },
+
+  getStats: async (): Promise<Record<string, unknown>> => {
+    return apiFetch('/ab-testing/stats');
+  },
+
+  createTest: async (body: {
+    content_id: string;
+    test_name: string;
+    platform: string;
+    test_hypothesis?: string;
+    variants: Record<string, unknown>[];
+  }): Promise<Record<string, unknown>> => {
+    return apiFetch('/ab-testing/tests', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  updateTest: async (testId: string, update: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    return apiFetch(`/ab-testing/tests/${testId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(update),
+    });
+  },
+};
+
+/** Content Remix / Repurposer (wires to existing /remix endpoints) */
+export const remixApi = {
+  create: async (body: {
+    source_type: string;
+    source_url?: string;
+    source_text?: string;
+    target_platforms: string[];
+    webapp_id?: string;
+  }): Promise<{ id: string; status: string; message: string }> => {
+    return apiFetch('/remix/', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  getAll: async (): Promise<Record<string, unknown>[]> => {
+    return apiFetch('/remix/');
+  },
+
+  getById: async (id: string): Promise<Record<string, unknown>> => {
+    return apiFetch(`/remix/${id}`);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiFetch<void>(`/remix/${id}`, { method: 'DELETE' });
+  },
+};
+
+/** Competitor Intelligence */
+export const competitorApi = {
+  getData: async (): Promise<{
+    competitors: Record<string, unknown>[];
+    has_data: boolean;
+    message: string | null;
+  }> => {
+    return apiFetch('/dashboard/competitors');
+  },
+
+  getTrends: async (): Promise<Record<string, unknown>[]> => {
+    return apiFetch('/dashboard/competitors/trends');
+  },
+};
