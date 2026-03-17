@@ -96,6 +96,9 @@ export function ABTestingPanel() {
 
   useEffect(() => {
     fetchTests();
+    // Poll every 30 seconds for live test status
+    const id = setInterval(() => fetchTests(), 30_000);
+    return () => clearInterval(id);
   }, [fetchTests]);
 
   const toggleTestStatus = async (testId: string) => {

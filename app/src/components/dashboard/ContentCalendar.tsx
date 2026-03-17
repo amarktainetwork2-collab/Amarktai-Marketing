@@ -64,6 +64,9 @@ export default function ContentCalendar() {
 
   useEffect(() => {
     fetchEvents(currentMonth);
+    // Poll every 45 seconds so the calendar stays live
+    const id = setInterval(() => fetchEvents(currentMonth), 45_000);
+    return () => clearInterval(id);
   }, [currentMonth, fetchEvents]);
 
   const monthStart = startOfMonth(currentMonth);

@@ -132,8 +132,9 @@ def _generate_for_user(db: Session, user: User, window: str) -> None:
     platforms = [i.platform for i in integrations] or [
         "youtube", "tiktok", "instagram", "twitter", "linkedin", "facebook"
     ]
-    # Free tier: cap at 3 platforms
-    if user.plan.value == "free":
+    # Free tier: cap at 3 platforms (admin bypasses all limits)
+    from app.api.deps import is_admin_user
+    if user.plan.value == "free" and not is_admin_user(user):
         platforms = platforms[:3]
 
     for webapp in webapps[:1]:  # 1 webapp per cycle to stay within HF Pro limits

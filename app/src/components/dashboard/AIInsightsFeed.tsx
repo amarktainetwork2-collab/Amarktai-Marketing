@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { 
   Sparkles, 
   TrendingUp, 
@@ -22,6 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariantsSlow, itemVariantsX } from '@/lib/motion';
 import { insightsApi } from '@/lib/api';
+import { usePolling } from '@/lib/usePolling';
 
 interface Insight {
   id: string;
@@ -35,28 +36,18 @@ interface Insight {
 }
 
 export function AIInsightsFeed() {
-  const [insights, setInsights] = useState<Insight[]>([]);
+  const { data: rawInsights, loading, error, refresh } = usePolling(
+    () => insightsApi.getAll(),
+    30_000,
+  );
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<'all' | 'unread' | 'opportunity' | 'warning'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchInsights = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await insightsApi.getAll();
-      setInsights(data as Insight[]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load insights');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchInsights();
-  }, [fetchInsights]);
+  const insights: Insight[] = (rawInsights ?? []).map(i => ({
+    ...i as Insight,
+    read: (i as Insight).read || readIds.has(i.id),
+  }));
 
   const unreadCount = insights.filter(i => !i.read).length;
 
@@ -68,23 +59,17 @@ export function AIInsightsFeed() {
   });
 
   const markAsRead = (id: string) => {
-    setInsights(insights.map(i => i.id === id ? { ...i, read: true } : i));
+    setReadIds(prev => new Set(prev).add(id));
   };
 
   const markAllAsRead = () => {
-    setInsights(insights.map(i => ({ ...i, read: true })));
+    setReadIds(new Set(insights.map(i => i.id)));
   };
 
   const refreshInsights = async () => {
     setIsRefreshing(true);
-    try {
-      const data = await insightsApi.getAll();
-      setInsights(data as Insight[]);
-    } catch {
-      // silently fail on refresh – existing data stays
-    } finally {
-      setIsRefreshing(false);
-    }
+    await refresh();
+    setIsRefreshing(false);
   };
 
   const getInsightIcon = (type: string) => {
@@ -121,7 +106,7 @@ export function AIInsightsFeed() {
         <CardContent className="p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
           <p className="text-slate-400 mb-3">{error}</p>
-          <Button onClick={fetchInsights} variant="outline" className="border-slate-600 text-slate-300">
+          <Button onClick={refreshInsights} variant="outline" className="border-slate-600 text-slate-300">
             <RefreshCw className="w-4 h-4 mr-2" />
             Retry
           </Button>

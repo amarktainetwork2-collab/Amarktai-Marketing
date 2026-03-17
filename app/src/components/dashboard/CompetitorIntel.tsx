@@ -103,6 +103,8 @@ export function CompetitorIntel() {
 
   useEffect(() => {
     fetchData();
+    const id = setInterval(() => fetchData(), 60_000);
+    return () => clearInterval(id);
   }, [fetchData]);
 
   const getSentimentColor = (sentiment: string) => {

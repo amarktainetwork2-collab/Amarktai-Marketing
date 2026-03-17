@@ -88,6 +88,9 @@ export function SmartScheduler() {
 
   useEffect(() => {
     fetchData();
+    // Poll every 60 seconds for live scheduler feel
+    const id = setInterval(() => fetchData(), 60_000);
+    return () => clearInterval(id);
   }, [fetchData]);
 
   const getHeatmapColor = (score: number) => {

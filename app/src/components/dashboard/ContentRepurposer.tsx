@@ -124,6 +124,8 @@ export function ContentRepurposer() {
 
   useEffect(() => {
     fetchRemixes();
+    const id = setInterval(() => fetchRemixes(), 30_000);
+    return () => clearInterval(id);
   }, [fetchRemixes]);
 
   const toggleTargetPlatform = (platform: string) => {
