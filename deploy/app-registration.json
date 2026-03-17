@@ -1,0 +1,77 @@
+{
+  "_comment": "Amarktai Marketing — app registration record for the Amarktai Network dashboard.",
+  "_usage": [
+    "Import this file into the Amarktai Network admin panel under Apps → Register App → Import JSON.",
+    "After import, generate the per-app token (Apps → [this app] → Generate Token).",
+    "Copy the token into backend/.env as AMARKTAI_INTEGRATION_TOKEN.",
+    "Then set AMARKTAI_INTEGRATION_ENABLED=true and restart the backend."
+  ],
+
+  "name": "Amarktai Marketing",
+  "slug": "amarktai-marketing",
+  "category": "marketing",
+  "short_description": "Autonomous AI social media marketing platform. Generates and schedules content across 12 platforms powered by HuggingFace and Qwen2.5.",
+  "status": "active",
+  "access_type": "saas",
+  "primary_url": "https://amarktai-marketing.amarktai.com",
+  "hosted_here": true,
+  "hosting_scope": "subdomain",
+  "subdomain": "amarktai-marketing",
+  "integration_enabled": true,
+  "monitoring_enabled": true,
+  "version": "1.0.0",
+
+  "integration": {
+    "status_endpoint": "https://amarktai-marketing.amarktai.com/api/amarktai/status",
+    "health_endpoint": "https://amarktai-marketing.amarktai.com/health",
+    "heartbeat_interval_seconds": 300,
+    "supported_metric_keys": [
+      "total_users",
+      "active_webapps",
+      "content_generated_today",
+      "content_posted_today",
+      "leads_captured_today",
+      "platforms_connected",
+      "uptime_seconds",
+      "db_pool_size"
+    ],
+    "event_types": [
+      "content.generated",
+      "content.posted",
+      "content.rejected",
+      "user.signup",
+      "user.deleted",
+      "platform.connected",
+      "platform.disconnected",
+      "lead.captured",
+      "error.generation_failed",
+      "error.posting_failed"
+    ]
+  },
+
+  "tech_stack": {
+    "frontend": "React 19 + Vite + Tailwind CSS + Framer Motion",
+    "backend": "FastAPI (Python 3.11) + PostgreSQL + Redis + Celery",
+    "auth": "Clerk",
+    "ai": "HuggingFace + Qwen2.5",
+    "deployment": "Nginx + PM2 or Docker Compose"
+  },
+
+  "required_env": {
+    "backend": [
+      "APP_ID",
+      "APP_SLUG",
+      "APP_NAME",
+      "APP_VERSION",
+      "APP_ENVIRONMENT",
+      "AMARKTAI_DASHBOARD_URL",
+      "AMARKTAI_INTEGRATION_TOKEN",
+      "AMARKTAI_INTEGRATION_ENABLED"
+    ],
+    "frontend": [
+      "VITE_APP_NAME",
+      "VITE_APP_VERSION",
+      "VITE_APP_ENVIRONMENT"
+    ]
+  }
+}

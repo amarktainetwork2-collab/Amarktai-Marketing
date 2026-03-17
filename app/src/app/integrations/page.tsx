@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { 
-  Key, Check, X, ExternalLink, RefreshCw, Shield, AlertCircle,
+import { motion } from 'framer-motion';
+import {
+  Key, Check, X, ExternalLink, RefreshCw, AlertCircle,
   Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Settings, Plus,
-  Trash2, Eye, EyeOff, MessageSquare, Cloud, AtSign, Send, Camera, Pin
+  Trash2, Eye, EyeOff, MessageSquare, Cloud, AtSign, Send, Camera, Pin,
+  Sparkles, Globe, ChevronRight, CheckCircle2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,8 +35,9 @@ interface PlatformIntegration {
 }
 
 const AVAILABLE_API_KEYS = [
+  { key: 'HUGGINGFACE_TOKEN', name: 'Hugging Face Token', description: 'Free image & text generation (PRIMARY — required)', provider: 'Hugging Face' },
+  { key: 'QWEN_API_KEY', name: 'Qwen API Key (DashScope)', description: 'High-quality Qwen2.5 generation via HuggingFace — low cost', provider: 'Alibaba Cloud' },
   { key: 'GROQ_API_KEY', name: 'Groq API Key', description: 'Fast LLM inference for content generation', provider: 'Groq' },
-  { key: 'HUGGINGFACE_TOKEN', name: 'Hugging Face Token', description: 'Free image generation with Flux.1, SDXL', provider: 'Hugging Face' },
   { key: 'GOOGLE_GEMINI_API_KEY', name: 'Google Gemini API Key', description: 'Google AI for content and images', provider: 'Google' },
   { key: 'LEONARDO_API_KEY', name: 'Leonardo.ai Key', description: 'Premium AI image generation', provider: 'Leonardo.ai' },
   { key: 'ELEVENLABS_API_KEY', name: 'ElevenLabs API Key', description: 'High-quality voiceover generation', provider: 'ElevenLabs' },
@@ -64,7 +67,7 @@ const PLATFORMS = [
 export default function IntegrationsPage() {
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
   const [integrations, setIntegrations] = useState<PlatformIntegration[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [showAddKeyDialog, setShowAddKeyDialog] = useState(false);
   const [selectedKeyType, setSelectedKeyType] = useState('');
   const [keyValue, setKeyValue] = useState('');
@@ -209,6 +212,68 @@ export default function IntegrationsPage() {
         <h2 className="text-2xl font-bold">API Keys & Integrations</h2>
         <p className="text-gray-500">Connect your accounts and add API keys for enhanced AI generation</p>
       </div>
+
+      {/* Setup Wizard — shown when no keys added yet */}
+      {activeKeysCount === 0 && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-violet-600" />
+                <h3 className="font-semibold text-violet-900">Setup Guide — Get Started in 3 Steps</h3>
+              </div>
+              <div className="space-y-3">
+                {[
+                  {
+                    step: '1',
+                    icon: Key,
+                    title: 'Add your HuggingFace Token',
+                    desc: 'Free — get yours at huggingface.co/settings/tokens. This is the PRIMARY key required for all AI generation.',
+                    link: 'https://huggingface.co/settings/tokens',
+                    done: apiKeys.some(k => k.key_name === 'HUGGINGFACE_TOKEN' && k.is_active),
+                  },
+                  {
+                    step: '2',
+                    icon: Globe,
+                    title: 'Add your Qwen API Key (optional but recommended)',
+                    desc: 'Low-cost, high-quality generation. Get your key at dashscope.aliyun.com.',
+                    link: 'https://dashscope.aliyun.com/',
+                    done: apiKeys.some(k => k.key_name === 'QWEN_API_KEY' && k.is_active),
+                  },
+                  {
+                    step: '3',
+                    icon: Settings,
+                    title: 'Connect your social media accounts',
+                    desc: 'Go to the Platforms page to connect all 12 social accounts via OAuth.',
+                    link: '/dashboard/platforms',
+                    done: integrations.some(i => i.is_connected),
+                  },
+                ].map((item) => (
+                  <div key={item.step} className="flex items-start gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${item.done ? 'bg-green-500 text-white' : 'bg-violet-200 text-violet-700'}`}>
+                      {item.done ? <CheckCircle2 className="w-4 h-4" /> : item.step}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm font-medium ${item.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                          {item.title}
+                        </p>
+                        {item.done && <span className="text-xs text-green-600 font-medium">Done</span>}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                    {!item.done && (
+                      <a href={item.link} target={item.link.startsWith('http') ? '_blank' : undefined} rel="noreferrer">
+                        <ChevronRight className="w-4 h-4 text-violet-500" />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

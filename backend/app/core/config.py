@@ -7,7 +7,10 @@ class Settings(BaseSettings):
     APP_NAME: str = "Amarktai Marketing"
     DEBUG: bool = False
     FRONTEND_URL: str = "http://localhost:3000"
-    ADMIN_USER_IDS: str = ""  # comma-separated list of admin user IDs
+    ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
+    # Platform owner's email — always granted unlimited access at no cost.
+    # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
+    ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/amarktai"
@@ -31,6 +34,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     GROQ_API_KEY: str = ""  # Fast inference
+
+    # Qwen (Alibaba Cloud) – low-cost, high quality
+    QWEN_API_KEY: str = ""  # DashScope API key from console.aliyun.com
+    QWEN_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"  # HF model ID or DashScope model name
     
     # Google AI
     GOOGLE_GEMINI_API_KEY: str = ""
@@ -48,7 +55,7 @@ class Settings(BaseSettings):
     STABILITY_API_KEY: str = ""  # Stability AI
     
     # Free/Cheap alternatives
-    HUGGINGFACE_TOKEN: str = ""  # Hugging Face Inference API
+    HUGGINGFACE_TOKEN: str = ""  # Hugging Face Inference API (primary – free tier)
     FAL_AI_KEY: str = ""  # fal.ai
     SILICONFLOW_API_KEY: str = ""  # SiliconFlow
     REPLICATE_API_TOKEN: str = ""  # Replicate
@@ -153,6 +160,20 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET: str = ""
     AWS_REGION: str = "us-east-1"
     
+    # ==================== AMARKTAI NETWORK INTEGRATION ====================
+    # Per-app identity
+    APP_ID: str = "amarktai-marketing"
+    APP_SLUG: str = "amarktai-marketing"
+    APP_NAME: str = "Amarktai Marketing"
+    APP_VERSION: str = "1.0.0"
+    APP_ENVIRONMENT: str = "production"  # production | staging | development
+
+    # Outbound integration (connection to Amarktai Network main dashboard)
+    # Keep AMARKTAI_INTEGRATION_TOKEN server-side only — never expose to frontend
+    AMARKTAI_DASHBOARD_URL: str = ""   # e.g. https://dashboard.amarktai.com
+    AMARKTAI_INTEGRATION_TOKEN: str = ""  # generated per-app token in Amarktai Network
+    AMARKTAI_INTEGRATION_ENABLED: bool = False
+
     # ==================== MONITORING ====================
     SENTRY_DSN: str = ""
     
@@ -167,6 +188,9 @@ class Settings(BaseSettings):
     MAX_CONTENT_PER_DAY: int = 10  # Per user
     MAX_ENGAGEMENT_REPLIES_PER_DAY: int = 50
     MAX_MEDIA_GENERATIONS_PER_DAY: int = 20
+
+    # ==================== BUSINESS LIMITS ====================
+    MAX_BUSINESSES_PER_USER: int = 20  # Max web apps / businesses per account
     
     class Config:
         env_file = ".env"

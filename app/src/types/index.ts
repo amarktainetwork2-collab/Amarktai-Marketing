@@ -47,6 +47,13 @@ export interface PlatformConnection {
   isActive: boolean;
   connectedAt: string;
   expiresAt?: string;
+  monthlyAdBudget?: number;
+  dailyAdBudget?: number;
+  adBudgetCurrency?: string;
+  adAccountId?: string;
+  autoPostEnabled?: boolean;
+  autoReplyEnabled?: boolean;
+  postingSchedule?: Record<string, unknown>;
 }
 
 export type ContentStatus = 'pending' | 'approved' | 'rejected' | 'posted' | 'failed';

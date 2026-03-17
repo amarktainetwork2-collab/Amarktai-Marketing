@@ -2,13 +2,15 @@
 
 **Autonomous AI Social Media Marketing Platform | Part of Amarktai Network**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20Site-blue)](https://ojlhabefx73cy.ok.kimi.link)
+[![Deploy on Webdock](https://img.shields.io/badge/Deploy-Webdock%20VPS-blue)](https://webdock.io)
 
-Amarktai Marketing is a fully autonomous AI-powered social media marketing SaaS platform that promotes users' web apps across the top 6 social media platforms daily with **zero manual effort** beyond a single daily approval step.
+Amarktai Marketing is a fully autonomous AI-powered social media marketing SaaS platform that promotes users' web apps across all 12 social media platforms daily with **zero manual effort** beyond a single approval step per post.
 
-## 🚀 Live Demo
+## 🚀 Deployment
 
-**Frontend:** https://ojlhabefx73cy.ok.kimi.link
+**Deploy on your Webdock VPS** — see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for full instructions.
+
+**Admin contact:** amarktainetwork@gmail.com
 
 ## ✨ Features
 

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  Eye, 
-  Heart, 
-  MousePointer, 
+import { motion } from 'framer-motion';
+import {
+  TrendingUp,
+  Eye,
+  Heart,
+  MousePointer,
   ArrowRight,
   Clock,
   CheckCircle,
@@ -115,21 +116,28 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat) => (
-          <Card key={stat.title}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">{stat.title}</p>
-                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  <p className="text-xs text-green-600 mt-1">{stat.change} from last month</p>
+        {statsCards.map((stat, i) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.4 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500">{stat.title}</p>
+                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                    <p className="text-xs text-green-600 mt-1">{stat.change} from last month</p>
+                  </div>
+                  <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
+                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                  </div>
                 </div>
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 

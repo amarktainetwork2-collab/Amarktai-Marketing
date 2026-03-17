@@ -1,6 +1,6 @@
 # 🚀 Amarktai Marketing — Complete Feature List
 
-> Autonomous AI Social Media Marketing Platform powered by HuggingFace.
+> Autonomous AI Social Media Marketing Platform powered by HuggingFace and Qwen.
 > **Designed and created by Amarktai Network.**
 
 ---
@@ -88,20 +88,21 @@ Per-platform: `auto_post_enabled`, `auto_reply_enabled`, `low_risk_auto_reply`.
 
 ## 4. AI Content Generation
 
-All generation uses **HuggingFace Inference API only** — no other LLM API required.
+Generation priority (lowest cost first): **Qwen/Qwen2.5-72B-Instruct** → **HuggingFace Mistral-7B** → template fallback.
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `POST /content/generate` — single platform | ✅ | Mistral-7B-Instruct-v0.2 |
+| `POST /content/generate` — single platform | ✅ | Qwen2.5-72B or Mistral-7B-Instruct-v0.2 |
 | `POST /content/generate-all` — batch (all platforms × all webapps) | ✅ | Capped at 2 webapps per manual trigger |
 | Platform-specific prompts (12 platforms) | ✅ | Length, hashtag count, style hints |
 | Website scraper enrichment | ✅ | Live site copy fed into prompt |
-| Fallback content on HF timeout | ✅ | Template-based fallback |
+| Fallback content on API timeout | ✅ | Template-based fallback |
 | JSON response parsing with markdown fence stripping | ✅ | |
 | Title + caption + hashtags + CTA per post | ✅ | |
 | Viral score (0–100) stored per content item | ✅ | |
 | Content type detection (video / image / text) | ✅ | Platform-based auto-detect |
 | `generate_batch()` — concurrent per-platform generation | ✅ | |
+| Immediate re-generation on content rejection | ✅ | Background task on reject |
 
 ### Specialist HF Methods
 | Method | Model | Used by |

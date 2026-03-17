@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+import asyncio
+import logging
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -10,7 +12,10 @@ from slowapi.util import get_remote_address
 
 from app.core.config import settings
 from app.api.v1.router import api_router
+from app.api.v1.endpoints.amarktai_status import router as amarktai_status_router
 from app.db.session import engine, Base
+
+logger = logging.getLogger(__name__)
 
 # Rate limiter — Redis-backed in production, in-memory in dev.
 # Limits are deliberately generous because content generation runs on a schedule
@@ -25,17 +30,59 @@ limiter = Limiter(
 Base.metadata.create_all(bind=engine)
 
 
+async def _heartbeat_loop() -> None:
+    """Periodic heartbeat task — runs every 5 minutes while the app is alive."""
+    from app.services.integration import send_heartbeat
+    from app.db.session import SessionLocal
+    from sqlalchemy import text
+
+    while True:
+        try:
+            db_ok = False
+            try:
+                db = SessionLocal()
+                db.execute(text("SELECT 1"))
+                db.close()
+                db_ok = True
+            except Exception:
+                pass
+
+            await send_heartbeat(db_ok=db_ok)
+        except Exception as exc:
+            logger.warning("Heartbeat loop error: %s", exc)
+
+        await asyncio.sleep(300)  # 5 minutes
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting up Amarktai Marketing API...")
+    logger.info("Starting up Amarktai Marketing API (v%s)…", settings.APP_VERSION)
+
+    # Start the periodic heartbeat task if integration is enabled
+    heartbeat_task = None
+    if settings.AMARKTAI_INTEGRATION_ENABLED:
+        heartbeat_task = asyncio.create_task(_heartbeat_loop())
+        logger.info(
+            "Amarktai Network integration enabled — heartbeat active → %s",
+            settings.AMARKTAI_DASHBOARD_URL,
+        )
+
     yield
-    print("Shutting down...")
+
+    if heartbeat_task:
+        heartbeat_task.cancel()
+        try:
+            await heartbeat_task
+        except asyncio.CancelledError:
+            pass
+
+    logger.info("Shutting down Amarktai Marketing API…")
 
 
 app = FastAPI(
     title="Amarktai Marketing API",
     description="Autonomous AI Social Media Marketing Platform — Powered by HuggingFace",
-    version="1.0.0",
+    version=settings.APP_VERSION,
     lifespan=lifespan,
 )
 
@@ -55,12 +102,17 @@ app.add_middleware(
 # API routes
 app.include_router(api_router, prefix="/api/v1")
 
+# Also expose the status endpoint at the canonical /api/amarktai/status path
+# (in addition to /api/v1/amarktai/status) for Amarktai Network pollers that
+# use the short form.
+app.include_router(amarktai_status_router, prefix="/api/amarktai", tags=["integration"])
+
 
 @app.get("/")
 async def root():
     return {
-        "name": "Amarktai Marketing API",
-        "version": "1.0.0",
+        "name": settings.APP_NAME,
+        "version": settings.APP_VERSION,
         "status": "operational",
         "docs": "/docs",
     }
@@ -89,7 +141,7 @@ async def health_v1():
     return {
         "status": "healthy" if db_ok else "degraded",
         "database": "connected" if db_ok else "disconnected",
-        "version": "1.0.0",
+        "version": settings.APP_VERSION,
         "ai_provider": "HuggingFace",
     }
 
