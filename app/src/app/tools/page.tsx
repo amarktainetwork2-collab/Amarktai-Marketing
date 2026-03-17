@@ -9,14 +9,13 @@ import { useState } from 'react';
 import {
   RefreshCw, Shuffle, Search, MessageSquarePlus, Eye, Shield,
   TrendingUp, Zap, Users, FlaskConical, ArrowRight, CheckCircle2,
-  Clock, Play, Tag, Copy, ChevronDown, ChevronUp,
+  Clock, Play, Copy, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -144,7 +143,7 @@ async function callTool(endpoint: string, body: unknown): Promise<{ id: string; 
   return res.json();
 }
 
-async function pollResult(endpoint: string, id: string, maxWait = 60000): Promise<unknown> {
+async function pollResult(endpoint: string, id: string, maxWait = 60000): Promise<Record<string, unknown>> {
   const start = Date.now();
   while (Date.now() - start < maxWait) {
     await new Promise(r => setTimeout(r, 2500));

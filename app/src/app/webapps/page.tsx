@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import {
   Plus, ExternalLink, Edit2, Trash2, MoreVertical, Power,
   Globe, RefreshCw, CheckCircle2, AlertCircle, Loader2,
@@ -19,7 +19,7 @@ import type { WebApp } from '@/types';
 import { webAppApi, scrapeApi } from '@/lib/api';
 import { toast } from 'sonner';
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: (i: number) => ({
     opacity: 1, y: 0,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Key, Check, X, ExternalLink, RefreshCw, AlertCircle,
   Youtube, Instagram, Facebook, Twitter, Linkedin, Music, Settings, Plus,
@@ -15,7 +15,6 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface APIKey {
   id: string;
