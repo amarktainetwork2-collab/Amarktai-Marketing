@@ -234,6 +234,9 @@ APP_NAME="Amarktai Marketing"
 DEBUG=false
 FRONTEND_URL="https://yourdomain.com"
 
+# Admin email — always has full unlimited access at no cost
+ADMIN_EMAIL="amarktainetwork@gmail.com"
+
 # Database (use production values)
 DATABASE_URL="postgresql://amarktai:your-db-password@localhost:5432/amarktai_prod"
 
@@ -257,8 +260,13 @@ ENCRYPTION_KEY="GENERATE_UNIQUE_KEY_HERE"
 # Groq (FREE tier - recommended for free plan)
 GROQ_API_KEY="gsk_YOUR_KEY_HERE"
 
-# HuggingFace (FREE - for image generation)
+# HuggingFace (FREE - PRIMARY for text + image generation)
 HUGGINGFACE_TOKEN="hf_YOUR_TOKEN_HERE"
+
+# Qwen (Alibaba Cloud DashScope) — low-cost, high quality
+# Get key at: https://dashscope.aliyun.com/
+QWEN_API_KEY="YOUR_QWEN_KEY_HERE"
+QWEN_MODEL="Qwen/Qwen2.5-72B-Instruct"
 
 # OpenAI (Optional - for premium users)
 OPENAI_API_KEY="sk-YOUR_KEY_HERE"

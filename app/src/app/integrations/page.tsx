@@ -33,8 +33,9 @@ interface PlatformIntegration {
 }
 
 const AVAILABLE_API_KEYS = [
+  { key: 'HUGGINGFACE_TOKEN', name: 'Hugging Face Token', description: 'Free image & text generation (PRIMARY — required)', provider: 'Hugging Face' },
+  { key: 'QWEN_API_KEY', name: 'Qwen API Key (DashScope)', description: 'High-quality Qwen2.5 generation via HuggingFace — low cost', provider: 'Alibaba Cloud' },
   { key: 'GROQ_API_KEY', name: 'Groq API Key', description: 'Fast LLM inference for content generation', provider: 'Groq' },
-  { key: 'HUGGINGFACE_TOKEN', name: 'Hugging Face Token', description: 'Free image generation with Flux.1, SDXL', provider: 'Hugging Face' },
   { key: 'GOOGLE_GEMINI_API_KEY', name: 'Google Gemini API Key', description: 'Google AI for content and images', provider: 'Google' },
   { key: 'LEONARDO_API_KEY', name: 'Leonardo.ai Key', description: 'Premium AI image generation', provider: 'Leonardo.ai' },
   { key: 'ELEVENLABS_API_KEY', name: 'ElevenLabs API Key', description: 'High-quality voiceover generation', provider: 'ElevenLabs' },

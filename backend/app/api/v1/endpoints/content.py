@@ -1,11 +1,13 @@
 """
 Content endpoints — generate, approve, reject, manage social media content.
 
-Generation chain (HuggingFace $9/month Pro as primary engine):
-  1. HuggingFace Inference API  — primary (Mistral-7B text, SDXL/FLUX images, text-to-video)
-  2. Template-based generation  — guaranteed fallback (no API key required)
+Generation chain (lowest cost first):
+  1. Qwen/Qwen2.5-72B-Instruct via HuggingFace Serverless (QWEN_API_KEY)
+  2. HuggingFace Inference API – Mistral-7B-Instruct-v0.2 (HUGGINGFACE_TOKEN)
+  3. OpenAI polish pass (OPENAI_API_KEY, optional improvement step)
+  4. Template-based generation – guaranteed fallback (no API key required)
 
-OpenAI (OPENAI_API_KEY, optional) polishes HF output if available.
+Rejecting a post immediately triggers regeneration for the same webapp/platform.
 
 Designed and created by Amarktai Network
 """
@@ -15,7 +17,7 @@ from __future__ import annotations
 import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -40,6 +42,19 @@ def _get_hf_token(db: Session, user: User) -> str | None:
     return settings.HUGGINGFACE_TOKEN or None
 
 
+def _get_qwen_key(db: Session, user: User) -> str | None:
+    from app.core.config import settings
+    from app.models.user_api_key import UserAPIKey
+    row = db.query(UserAPIKey).filter(
+        UserAPIKey.user_id == user.id,
+        UserAPIKey.key_name == "QWEN_API_KEY",
+        UserAPIKey.is_active == True,
+    ).first()
+    if row:
+        return row.get_decrypted_key()
+    return settings.QWEN_API_KEY or None
+
+
 def _get_openai_key(db: Session, user: User) -> str | None:
     from app.core.config import settings
     from app.models.user_api_key import UserAPIKey
@@ -53,13 +68,21 @@ def _get_openai_key(db: Session, user: User) -> str | None:
     return settings.OPENAI_API_KEY or None
 
 
-async def _generate_text_content(webapp_data: dict, platform: str, hf_token: str | None, openai_key: str | None) -> dict:
-    """HuggingFace primary → OpenAI improvement (optional) → template fallback."""
+async def _generate_text_content(
+    webapp_data: dict,
+    platform: str,
+    hf_token: str | None,
+    openai_key: str | None,
+    qwen_key: str | None = None,
+) -> dict:
+    """Qwen → HuggingFace → OpenAI polish (optional) → template fallback."""
     from app.services.hf_generator import HuggingFaceGenerator
     result: dict | None = None
-    if hf_token:
+    # Use whichever token is available; qwen_key takes precedence
+    active_token = qwen_key or hf_token
+    if active_token:
         try:
-            gen = HuggingFaceGenerator(hf_token)
+            gen = HuggingFaceGenerator(hf_token or "", qwen_key=qwen_key or "")
             result = await gen.generate_content(webapp_data, platform)
             if openai_key and result and not result.get("_generation_error"):
                 try:
@@ -68,6 +91,7 @@ async def _generate_text_content(webapp_data: dict, platform: str, hf_token: str
                 except Exception:
                     pass
         except Exception:
+
             result = None
     if not result:
         from app.services.hf_generator import HuggingFaceGenerator
@@ -131,6 +155,7 @@ async def generate_content(
 
     hf_token = _get_hf_token(db, current_user)
     openai_key = _get_openai_key(db, current_user)
+    qwen_key = _get_qwen_key(db, current_user)
 
     webapp_data = {
         "name": webapp.name,
@@ -141,9 +166,10 @@ async def generate_content(
         "key_features": webapp.key_features or [],
     }
 
-    result = await _generate_text_content(webapp_data, platform, hf_token, openai_key)
-    media_urls = await get_media_url(platform, webapp_data, hf_token)
+    result = await _generate_text_content(webapp_data, platform, hf_token, openai_key, qwen_key)
+    media_urls = await get_media_url(platform, webapp_data, qwen_key or hf_token)
     content_type = "video" if platform in VIDEO_PLATFORMS else "image"
+    generator_name = "qwen" if qwen_key else ("huggingface" if hf_token else "template")
 
     db_content = ContentModel(
         id=str(uuid.uuid4()),
@@ -157,7 +183,7 @@ async def generate_content(
         hashtags=result.get("hashtags", []),
         media_urls=media_urls,
         generation_metadata={
-            "generator": "huggingface" if hf_token else "template",
+            "generator": generator_name,
             "openai_improved": bool(openai_key and not result.get("_generation_error")),
         },
     )
@@ -181,6 +207,7 @@ async def generate_all_content(
 
     hf_token = _get_hf_token(db, current_user)
     openai_key = _get_openai_key(db, current_user)
+    qwen_key = _get_qwen_key(db, current_user)
 
     webapps = db.query(WebApp).filter(WebApp.user_id == current_user.id, WebApp.is_active == True).all()
     if not webapps:
@@ -210,15 +237,17 @@ async def generate_all_content(
             "key_features": webapp.key_features or [],
         }
 
-        if hf_token:
+        active_token = qwen_key or hf_token
+        if active_token:
             try:
-                gen = HuggingFaceGenerator(hf_token)
+                gen = HuggingFaceGenerator(hf_token or "", qwen_key=qwen_key or "")
                 results = await gen.generate_batch(webapp_data, platforms)
             except Exception:
                 results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
         else:
             results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
 
+        generator_name = "qwen" if qwen_key else ("huggingface" if hf_token else "template")
         for platform, content_dict in results.items():
             if content_dict.get("_generation_error") and not content_dict.get("caption"):
                 continue
@@ -229,7 +258,7 @@ async def generate_all_content(
                 except Exception:
                     pass
 
-            media_urls = await get_media_url(platform, webapp_data, hf_token)
+            media_urls = await get_media_url(platform, webapp_data, active_token)
             content_type = "video" if platform in VIDEO_PLATFORMS else "image"
             db_content = ContentModel(
                 id=str(uuid.uuid4()),
@@ -242,7 +271,7 @@ async def generate_all_content(
                 caption=content_dict.get("caption", ""),
                 hashtags=content_dict.get("hashtags", []),
                 media_urls=media_urls,
-                generation_metadata={"source": "manual_batch", "generator": "huggingface" if hf_token else "template"},
+                generation_metadata={"source": "manual_batch", "generator": generator_name},
             )
             db.add(db_content)
             created.append(db_content)
@@ -252,7 +281,7 @@ async def generate_all_content(
         "message": f"Generated {len(created)} content items across {len(platforms)} platforms",
         "count": len(created),
         "platforms": platforms,
-        "generator": "huggingface" if hf_token else "template",
+        "generator": generator_name,
     }
 
 
@@ -274,15 +303,81 @@ async def approve_content(
 @router.post("/{content_id}/reject", response_model=Content)
 async def reject_content(
     content_id: str,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    content = db.query(ContentModel).filter(ContentModel.id == content_id, ContentModel.user_id == current_user.id).first()
+    """Reject content and immediately queue regeneration for the same webapp/platform."""
+    content = db.query(ContentModel).filter(
+        ContentModel.id == content_id, ContentModel.user_id == current_user.id
+    ).first()
     if not content:
         raise HTTPException(status_code=404, detail="Content not found")
     content.status = ContentStatus.REJECTED
     db.commit()
     db.refresh(content)
+
+    # Immediately regenerate a replacement in the background
+    rejected_webapp_id = content.webapp_id
+    rejected_platform = content.platform
+    user_id = current_user.id
+
+    async def _regen():
+        from app.db.base import SessionLocal
+        from app.models.webapp import WebApp
+        from app.services.media_service import get_media_url, VIDEO_PLATFORMS
+        async_db = SessionLocal()
+        try:
+            user = async_db.query(User).filter(User.id == user_id).first()
+            if not user:
+                return
+            webapp = async_db.query(WebApp).filter(
+                WebApp.id == rejected_webapp_id, WebApp.user_id == user_id
+            ).first()
+            if not webapp:
+                return
+            hf_token = _get_hf_token(async_db, user)
+            qwen_key = _get_qwen_key(async_db, user)
+            openai_key = _get_openai_key(async_db, user)
+            webapp_data = {
+                "name": webapp.name,
+                "url": str(webapp.url),
+                "description": webapp.description,
+                "category": webapp.category,
+                "target_audience": getattr(webapp, "target_audience", ""),
+                "key_features": webapp.key_features or [],
+            }
+            result = await _generate_text_content(
+                webapp_data, rejected_platform, hf_token, openai_key, qwen_key
+            )
+            media_urls = await get_media_url(rejected_platform, webapp_data, qwen_key or hf_token)
+            content_type = "video" if rejected_platform in VIDEO_PLATFORMS else "image"
+            generator_name = "qwen" if qwen_key else ("huggingface" if hf_token else "template")
+            new_content = ContentModel(
+                id=str(uuid.uuid4()),
+                user_id=user_id,
+                webapp_id=rejected_webapp_id,
+                platform=rejected_platform,
+                type=content_type,
+                status=ContentStatus.PENDING,
+                title=result.get("title", "Generated Content"),
+                caption=result.get("caption", ""),
+                hashtags=result.get("hashtags", []),
+                media_urls=media_urls,
+                generation_metadata={
+                    "generator": generator_name,
+                    "source": "reject_regen",
+                    "replaced_content_id": content_id,
+                },
+            )
+            async_db.add(new_content)
+            async_db.commit()
+        except Exception:
+            pass
+        finally:
+            async_db.close()
+
+    background_tasks.add_task(_regen)
     return content
 
 

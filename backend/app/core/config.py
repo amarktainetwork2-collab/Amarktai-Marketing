@@ -7,7 +7,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "Amarktai Marketing"
     DEBUG: bool = False
     FRONTEND_URL: str = "http://localhost:3000"
-    ADMIN_USER_IDS: str = ""  # comma-separated list of admin user IDs
+    ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
+    # Admin email always granted unlimited access at no cost
+    ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/amarktai"
@@ -31,6 +33,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     GROQ_API_KEY: str = ""  # Fast inference
+
+    # Qwen (Alibaba Cloud) – low-cost, high quality
+    QWEN_API_KEY: str = ""  # DashScope API key from console.aliyun.com
+    QWEN_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"  # HF model ID or DashScope model name
     
     # Google AI
     GOOGLE_GEMINI_API_KEY: str = ""
@@ -48,7 +54,7 @@ class Settings(BaseSettings):
     STABILITY_API_KEY: str = ""  # Stability AI
     
     # Free/Cheap alternatives
-    HUGGINGFACE_TOKEN: str = ""  # Hugging Face Inference API
+    HUGGINGFACE_TOKEN: str = ""  # Hugging Face Inference API (primary – free tier)
     FAL_AI_KEY: str = ""  # fal.ai
     SILICONFLOW_API_KEY: str = ""  # SiliconFlow
     REPLICATE_API_TOKEN: str = ""  # Replicate
@@ -167,6 +173,9 @@ class Settings(BaseSettings):
     MAX_CONTENT_PER_DAY: int = 10  # Per user
     MAX_ENGAGEMENT_REPLIES_PER_DAY: int = 50
     MAX_MEDIA_GENERATIONS_PER_DAY: int = 20
+
+    # ==================== BUSINESS LIMITS ====================
+    MAX_BUSINESSES_PER_USER: int = 20  # Max web apps / businesses per account
     
     class Config:
         env_file = ".env"

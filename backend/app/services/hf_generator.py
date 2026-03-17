@@ -1,15 +1,19 @@
 """
-HuggingFace-powered content generation service.
+HuggingFace + Qwen powered content generation service.
 
-Uses the free HuggingFace Inference API (Serverless) to generate
-social media content for all platforms.  Requires a HuggingFace
-token with at least the Inference API read permission.
+Primary text generation uses the HuggingFace Inference API (Serverless) or the
+Qwen (DashScope) API depending on which keys are configured.
 
-Also provides helpers used by the three power tools:
+Priority order (lowest cost first):
+  1. Qwen via HuggingFace Serverless (Qwen/Qwen2.5-72B-Instruct) – free tier
+  2. HuggingFace Serverless with Mistral-7B-Instruct-v0.2 – free tier
+  3. Template-based fallback (no API key required)
+
+Also provides helpers used by the power tools:
   - summarize()         → BART summarisation
   - analyze_sentiment() → DistilBERT sentiment
   - classify_topics()   → BART zero-shot classification
-  - extract_keywords()  → Mistral keyword extraction
+  - extract_keywords()  → Qwen/Mistral keyword extraction
 """
 
 from __future__ import annotations
@@ -22,6 +26,8 @@ import httpx
 
 # Default free model – works on the free/Pro tier without a PRO subscription
 _DEFAULT_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+# Qwen model served via HuggingFace Inference API (free serverless tier)
+_QWEN_MODEL = "Qwen/Qwen2.5-72B-Instruct"
 _HF_INFERENCE_URL = "https://api-inference.huggingface.co/models/{model}"
 
 # Specialist model handles (all free on HF Serverless)
@@ -118,13 +124,25 @@ class HuggingFaceGenerator:
     """
     Generates social media content using the HuggingFace Inference API.
 
+    When a Qwen API key (QWEN_API_KEY) is configured the generator uses the
+    Qwen/Qwen2.5-72B-Instruct model on HuggingFace Serverless for higher-quality,
+    low-cost generation.  Falls back to Mistral-7B if only a HF token is set,
+    and finally to template-based generation if no keys are available.
+
     Also provides general NLP utilities (summarise, sentiment, classify).
     """
 
-    def __init__(self, hf_token: str, model: str = _DEFAULT_MODEL):
+    def __init__(self, hf_token: str, model: str = _DEFAULT_MODEL, qwen_key: str = ""):
         self.hf_token = hf_token
-        self.model = model
-        self._inference_url = _HF_INFERENCE_URL.format(model=model)
+        self.qwen_key = qwen_key  # QWEN_API_KEY (DashScope or HF)
+        # If a Qwen key is provided, prefer the Qwen model via HF Serverless
+        if qwen_key:
+            self.model = _QWEN_MODEL
+            self._active_token = qwen_key
+        else:
+            self.model = model
+            self._active_token = hf_token
+        self._inference_url = _HF_INFERENCE_URL.format(model=self.model)
 
     # ------------------------------------------------------------------
     # Content generation
@@ -892,7 +910,7 @@ Respond ONLY with a JSON object with these exact keys:
 
     async def _post_hf(self, url: str, payload: dict) -> Any:
         headers = {
-            "Authorization": f"Bearer {self.hf_token}",
+            "Authorization": f"Bearer {self._active_token}",
             "Content-Type": "application/json",
         }
         async with httpx.AsyncClient(timeout=60) as client:
