@@ -180,7 +180,9 @@ async def get_scheduler_heatmap(
     # Build a full 24-hour map
     import math
     for hour in range(24):
-        # Sine-wave baseline (peaks ~14:00-18:00)
+        # Sine-wave model for typical audience activity:
+        #   offset -6  → trough at 6 AM, peak at ~18:00 (6 PM)
+        #   amplitude 35, midline 55 → range ≈ 20–90
         base = math.sin((hour - 6) * math.pi / 12) * 35 + 55
         score = max(20, min(95, round(base)))
 
@@ -269,7 +271,9 @@ async def predict_viral_potential(
     prediction = predictor.predict_performance(content_data, body.platform)
     scores = predictor._analyze_content_factors(content_data, body.platform)
 
-    # Compute viral sub-scores (0-100 scale)
+    # Compute viral sub-scores (0-100 scale).
+    # caption_length is used as a proxy for emotional_impact because longer
+    # captions with more narrative tend to carry stronger emotional hooks.
     hook_strength = round(scores.get("hook_strength", 0.6) * 100)
     emotional_impact = round(scores.get("caption_length", 0.6) * 100)
     shareability = round(scores.get("hashtag_count", 0.6) * 100)

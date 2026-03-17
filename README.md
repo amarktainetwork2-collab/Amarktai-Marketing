@@ -164,7 +164,7 @@ docker-compose up -d --build
    cd backend
    pip install -r requirements.txt
    alembic upgrade head
-   gunicorn app.main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
+   gunicorn app.main:app -k uvicorn.workers.UvicornWorker -b 127.0.0.1:8000
    ```
 
 3. **Nginx** — use `nginx-subdomain.conf` (proxies `/api` to backend, serves `app/dist/` for frontend)
