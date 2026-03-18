@@ -196,13 +196,13 @@ export default function BlogPage() {
             className="bg-gradient-to-r from-violet-600 to-indigo-600"
           >
             {generating ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating with HuggingFace…</>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating with AI Engine…</>
             ) : (
               <><FileText className="w-4 h-4 mr-2" /> Generate SEO Blog Post</>
             )}
           </Button>
           <p className="text-xs text-gray-400">
-            Powered by HuggingFace Mistral. Posts take ~30s to generate.
+            Powered by AI Engine. Posts take ~30s to generate.
             Each post can be remixed into social media content with one click.
           </p>
         </CardContent>

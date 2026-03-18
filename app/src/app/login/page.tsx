@@ -1,125 +1,69 @@
 import { SignIn } from '@clerk/clerk-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Rocket, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useDemoAuth } from '@/App';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { Zap } from 'lucide-react';
 
-// Check if we have a valid Clerk key
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
 
-/**
- * Request geolocation once and store in localStorage for AI targeting/leads.
- * Uses the free browser Geolocation API (no Twilio or paid service).
- * This is intentionally fire-and-forget: failures don't affect the login flow.
- */
-function requestGeolocation() {
-  if (!navigator.geolocation) return;
-  // Only ask if we don't already have a stored location
-  if (localStorage.getItem('amarktai_geo_lat')) return;
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      localStorage.setItem('amarktai_geo_lat', String(pos.coords.latitude));
-      localStorage.setItem('amarktai_geo_lon', String(pos.coords.longitude));
-      localStorage.setItem('amarktai_geo_accuracy', String(pos.coords.accuracy));
-      // Persist to backend for AI lead targeting — intentionally fire-and-forget;
-      // network errors here will not surface to the user.
-      fetch('/api/v1/users/me/location', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        }),
-      }).catch(() => {/* best-effort — network failure is non-blocking */});
-    },
-    () => {
-      // Location permission denied — inform user so they understand limited AI targeting
-      toast.info('Location access denied — AI location-based targeting will be limited.', {
-        duration: 4000,
-      });
-    },
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 86400000 }
-  );
-}
-
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { login } = useDemoAuth();
-
-  // Request location as soon as the login page loads (once per session)
-  useEffect(() => {
-    requestGeolocation();
-  }, []);
-
-  const handleDemoLogin = () => {
-    login();
-    navigate('/dashboard');
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Rocket className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                Amarktai
-              </span>
-            </Link>
-            <h1 className="mt-6 text-2xl font-bold">Welcome back</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account to continue</p>
-            <p className="text-xs mt-1" style={{ color: '#0000FF' }}>
-              Powered by <strong>AI</strong> — Autonomous Marketing Intelligence
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            {isValidClerkKey ? (
-              <SignIn 
-                routing="path"
-                path="/login"
-                signUpUrl="/register"
-                redirectUrl="/dashboard"
-                appearance={{
-                  elements: {
-                    formButtonPrimary: 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700',
-                    footerActionLink: 'text-violet-600 hover:text-violet-700',
-                  }
-                }}
-              />
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm text-amber-800 text-center">
-                    <strong>Demo Mode:</strong> No authentication required. Click below to explore the dashboard.
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleDemoLogin}
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
-                  size="lg"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Enter Demo Mode
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          <p className="text-center mt-6 text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-violet-600 hover:text-violet-700 font-medium">
-              Sign up
-            </Link>
-          </p>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4"
+      style={{
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(37,99,255,0.12) 0%, #06070A 60%)',
+      }}
+    >
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2.5 mb-6">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
+            >
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">Amarktai</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
+          <p className="text-slate-400 text-sm">Sign in to your Amarktai workspace</p>
         </div>
+
+        {/* Auth Card */}
+        <div
+          className="rounded-2xl p-6 border"
+          style={{
+            background: 'rgba(17, 24, 39, 0.72)',
+            backdropFilter: 'blur(20px)',
+            borderColor: 'rgba(255,255,255,0.10)',
+            boxShadow: '0 0 0 1px rgba(37,99,255,0.08), 0 24px 48px rgba(0,0,0,0.4)',
+          }}
+        >
+          {isValidClerkKey ? (
+            <SignIn
+              routing="path"
+              path="/login"
+              signUpUrl="/register"
+              redirectUrl="/dashboard"
+            />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-slate-400 text-sm">
+                Authentication is not configured for this environment.
+              </p>
+              <p className="text-slate-500 text-xs mt-2">
+                Set VITE_CLERK_PUBLISHABLE_KEY to enable sign-in.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <p className="text-center mt-6 text-slate-500 text-sm">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium">
+            Create account
+          </Link>
+        </p>
       </div>
     </div>
   );

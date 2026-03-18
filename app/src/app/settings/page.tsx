@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { Bell, Clock, Shield, User, CreditCard, Bot, Key, MapPin } from 'lucide-react';
+import { Bell, Clock, Shield, User, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-/** Save or update a named API key via the integrations endpoint. */
-async function saveApiKey(keyName: string, keyValue: string) {
-  const res = await fetch('/api/v1/integrations/api-keys', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key_name: keyName, key_value: keyValue }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-}
+const cardStyle = {
+  background: 'rgba(17,24,39,0.72)',
+  border: '1px solid rgba(255,255,255,0.10)',
+};
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState({
@@ -32,18 +28,9 @@ export default function SettingsPage() {
     language: 'en',
   });
 
-  // HuggingFace key management
-  const [hfKey, setHfKey] = useState('');
-  const [hfSaving, setHfSaving] = useState(false);
-
-  // Autonomous AI toggles
   const [autoPost, setAutoPost] = useState(false);
   const [autoReply, setAutoReply] = useState(false);
   const [organicMode, setOrganicMode] = useState(true);
-
-  // Stored geolocation info (from browser capture on login)
-  const geoLat = localStorage.getItem('amarktai_geo_lat');
-  const geoLon = localStorage.getItem('amarktai_geo_lon');
 
   const handleSaveNotifications = () => {
     toast.success('Notification preferences saved');
@@ -53,81 +40,56 @@ export default function SettingsPage() {
     toast.success('Preferences saved');
   };
 
-  const handleSaveHfKey = async () => {
-    if (!hfKey.trim()) {
-      toast.error('Please enter a HuggingFace API key');
-      return;
-    }
-    if (!hfKey.trim().startsWith('hf_')) {
-      toast.error('HuggingFace keys start with "hf_" — please check your key');
-      return;
-    }
-    setHfSaving(true);
-    try {
-      await saveApiKey('HUGGINGFACE_TOKEN', hfKey.trim());
-      toast.success('HuggingFace key saved securely (encrypted)');
-      setHfKey('');
-    } catch {
-      toast.error('Failed to save key — are you logged in?');
-    } finally {
-      setHfSaving(false);
-    }
-  };
-
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h2 className="text-2xl font-bold">Settings</h2>
-        <p className="text-gray-500">
-          Manage your account, <strong style={{ color: '#0000FF' }}>AI</strong> configuration, and preferences
-        </p>
+        <h2 className="text-2xl font-bold text-slate-100">Settings</h2>
+        <p className="text-slate-400">Manage your workspace, notifications, and preferences</p>
       </div>
 
       {/* Plan Info */}
-      <Card className="bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200">
+      <Card style={{ background: 'linear-gradient(135deg, rgba(37,99,255,0.15) 0%, rgba(34,211,238,0.08) 100%)', border: '1px solid rgba(37,99,255,0.25)' }}>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-violet-600 font-medium">Current Plan</p>
-              <h3 className="text-2xl font-bold text-violet-900">Pro</h3>
-              <p className="text-violet-700 text-sm mt-1">
-                $29/month • Renews on March 15, 2024
-              </p>
+              <p className="text-sm font-medium" style={{ color: '#4F7DFF' }}>Current Plan</p>
+              <h3 className="text-2xl font-bold text-white">Pro</h3>
+              <p className="text-sm mt-1 text-slate-300">$29/month</p>
             </div>
-            <Button variant="outline" className="bg-white">
+            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>
               <CreditCard className="w-4 h-4 mr-2" />
               Manage Subscription
             </Button>
           </div>
-          <div className="mt-4 pt-4 border-t border-violet-200">
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(37,99,255,0.2)' }}>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-white">5 Web Apps</Badge>
-              <Badge variant="outline" className="bg-white">6 Platforms</Badge>
-              <Badge variant="outline" className="bg-white">12 posts/day</Badge>
-              <Badge variant="outline" className="bg-white">Priority Support</Badge>
+              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>5 Web Apps</Badge>
+              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>6 Platforms</Badge>
+              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>12 posts/day</Badge>
+              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Priority Support</Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Notifications */}
-      <Card>
+      <Card style={cardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-100">
             <Bell className="w-5 h-5 mr-2" />
             Notifications
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-400">
             Choose how you want to be notified
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <h4 className="font-medium text-sm text-gray-500 uppercase tracking-wide">Email Notifications</h4>
+            <h4 className="font-medium text-xs uppercase tracking-widest text-slate-500">Email Notifications</h4>
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-daily" className="font-medium">Daily Content Ready</Label>
-                <p className="text-sm text-gray-500">Get an email when new content is generated</p>
+                <Label htmlFor="email-daily" className="font-medium text-slate-200">Daily Content Ready</Label>
+                <p className="text-sm text-slate-400">Get an email when new content is generated</p>
               </div>
               <Switch
                 id="email-daily"
@@ -137,8 +99,8 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="email-weekly" className="font-medium">Weekly Analytics</Label>
-                <p className="text-sm text-gray-500">Receive weekly performance summary</p>
+                <Label htmlFor="email-weekly" className="font-medium text-slate-200">Weekly Analytics</Label>
+                <p className="text-sm text-slate-400">Receive weekly performance summary</p>
               </div>
               <Switch
                 id="email-weekly"
@@ -148,12 +110,12 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="border-t pt-4 space-y-4">
-            <h4 className="font-medium text-sm text-gray-500 uppercase tracking-wide">Push Notifications</h4>
+          <div className="space-y-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
+            <h4 className="font-medium text-xs uppercase tracking-widest text-slate-500">Push Notifications</h4>
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="push-approval" className="font-medium">Content Approval</Label>
-                <p className="text-sm text-gray-500">Notify when content is ready for approval</p>
+                <Label htmlFor="push-approval" className="font-medium text-slate-200">Content Approval</Label>
+                <p className="text-sm text-slate-400">Notify when content is ready for approval</p>
               </div>
               <Switch
                 id="push-approval"
@@ -163,8 +125,8 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="push-posted" className="font-medium">Content Posted</Label>
-                <p className="text-sm text-gray-500">Notify when content goes live</p>
+                <Label htmlFor="push-posted" className="font-medium text-slate-200">Content Posted</Label>
+                <p className="text-sm text-slate-400">Notify when content goes live</p>
               </div>
               <Switch
                 id="push-posted"
@@ -174,42 +136,44 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <Button onClick={handleSaveNotifications} className="bg-gradient-to-r from-violet-600 to-indigo-600">
+          <Button onClick={handleSaveNotifications} style={{ background: '#2563FF' }} className="text-white hover:opacity-90">
             Save Notification Settings
           </Button>
         </CardContent>
       </Card>
 
       {/* Posting Preferences */}
-      <Card>
+      <Card style={cardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-100">
             <Clock className="w-5 h-5 mr-2" />
             Posting Preferences
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-400">
             Configure when and how your content is posted
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="posting-time">Preferred Posting Time</Label>
+              <Label htmlFor="posting-time" className="text-slate-200">Preferred Posting Time</Label>
               <Input
                 id="posting-time"
                 type="time"
                 value={preferences.postingTime}
                 onChange={(e) => setPreferences({ ...preferences, postingTime: e.target.value })}
+                style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.10)', color: '#F8FAFC' }}
               />
-              <p className="text-sm text-gray-500">Content will be posted around this time</p>
+              <p className="text-sm text-slate-400">Content will be posted around this time</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone" className="text-slate-200">Timezone</Label>
               <select
                 id="timezone"
                 value={preferences.timezone}
                 onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full rounded-lg px-3 py-2 text-sm"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: '#F8FAFC' }}
               >
                 <option value="America/New_York">Eastern Time (ET)</option>
                 <option value="America/Chicago">Central Time (CT)</option>
@@ -224,216 +188,130 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>AI Generation Schedule</Label>
-            <div className="p-4 bg-gray-50 rounded-lg">
+            <Label className="text-slate-200">Automation Schedule</Label>
+            <div className="p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Daily at 2:00 AM</p>
-                  <p className="text-sm text-gray-500">Content is generated automatically</p>
+                  <p className="font-medium text-slate-200">Daily at 2:00 AM</p>
+                  <p className="text-sm text-slate-400">Content is generated automatically</p>
                 </div>
-                <Badge variant="outline">Active</Badge>
+                <Badge variant="outline" style={{ borderColor: 'rgba(16,185,129,0.4)', color: '#10B981' }}>Active</Badge>
               </div>
             </div>
           </div>
 
-          <Button onClick={handleSavePreferences} className="bg-gradient-to-r from-violet-600 to-indigo-600">
+          <Button onClick={handleSavePreferences} style={{ background: '#2563FF' }} className="text-white hover:opacity-90">
             Save Preferences
           </Button>
         </CardContent>
       </Card>
 
       {/* Security */}
-      <Card>
+      <Card style={cardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-100">
             <Shield className="w-5 h-5 mr-2" />
             Security
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
             <div>
-              <p className="font-medium">Two-Factor Authentication</p>
-              <p className="text-sm text-gray-500">Add an extra layer of security</p>
+              <p className="font-medium text-slate-200">Two-Factor Authentication</p>
+              <p className="text-sm text-slate-400">Add an extra layer of security</p>
             </div>
-            <Button variant="outline">Enable</Button>
+            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Enable</Button>
           </div>
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
             <div>
-              <p className="font-medium">Change Password</p>
-              <p className="text-sm text-gray-500">Last changed 30 days ago</p>
+              <p className="font-medium text-slate-200">Change Password</p>
+              <p className="text-sm text-slate-400">Last changed 30 days ago</p>
             </div>
-            <Button variant="outline">Change</Button>
+            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Change</Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Connected Accounts */}
-      <Card>
+      <Card style={cardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-100">
             <User className="w-5 h-5 mr-2" />
             Connected Accounts
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3"
+                style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
+              >
                 JD
               </div>
               <div>
-                <p className="font-medium">john.doe@example.com</p>
-                <p className="text-sm text-gray-500">Clerk Account</p>
+                <p className="font-medium text-slate-200">john.doe@example.com</p>
+                <p className="text-sm text-slate-400">Clerk Account</p>
               </div>
             </div>
-            <Badge>Connected</Badge>
+            <Badge style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}>Connected</Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* AI Configuration — HuggingFace API key */}
-      <Card>
+      {/* Automation Preferences */}
+      <Card style={cardStyle}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="w-5 h-5" style={{ color: '#0000FF' }} />
-            <span style={{ color: '#0000FF' }}>AI</span> Content Generation
+          <CardTitle className="flex items-center gap-2 text-slate-100">
+            <Sparkles className="w-5 h-5" style={{ color: '#2563FF' }} />
+            Automation Preferences
           </CardTitle>
-          <CardDescription>
-            Enter your free HuggingFace API key so <strong style={{ color: '#0000FF' }}>AI</strong> can generate
-            text, images, and captions for all 12 social channels. Key is stored encrypted.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-            Get a free key at{' '}
-            <a
-              href="https://huggingface.co/settings/tokens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-medium"
-            >
-              huggingface.co/settings/tokens
-            </a>{' '}
-            (Read permission is sufficient).
-          </div>
-          <div className="flex gap-2">
-            <Input
-              type="password"
-              placeholder="hf_..."
-              value={hfKey}
-              onChange={(e) => setHfKey(e.target.value)}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleSaveHfKey}
-              disabled={hfSaving}
-              style={{ background: '#0000FF' }}
-              className="text-white hover:opacity-90"
-            >
-              <Key className="w-4 h-4 mr-2" />
-              {hfSaving ? 'Saving…' : 'Save Key'}
-            </Button>
-          </div>
-          <p className="text-xs text-gray-500">
-            Your key is encrypted with AES-256 (Fernet) and never logged or exposed.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* AI Autonomy Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="w-5 h-5" style={{ color: '#0000FF' }} />
-            <span style={{ color: '#0000FF' }}>AI</span> Autonomy &amp; Budget
-          </CardTitle>
-          <CardDescription>
-            Control how much autonomy the <strong style={{ color: '#0000FF' }}>AI</strong> has and whether to
-            use organic-only or paid boost mode.
+          <CardDescription className="text-slate-400">
+            Control how much autonomy the automation engine has and whether to use organic-only or paid boost mode.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="font-medium">Auto-Post (Full Autonomy)</Label>
-              <p className="text-sm text-gray-500">
-                <strong style={{ color: '#0000FF' }}>AI</strong> posts approved content automatically without manual review
+              <Label className="font-medium text-slate-200">Auto-Post (Full Autonomy)</Label>
+              <p className="text-sm text-slate-400">
+                Posts approved content automatically without manual review
               </p>
             </div>
             <Switch checked={autoPost} onCheckedChange={setAutoPost} />
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label className="font-medium">Auto-Reply to DMs &amp; Comments</Label>
-              <p className="text-sm text-gray-500">
-                <strong style={{ color: '#0000FF' }}>AI</strong> replies to incoming messages with tone-matched responses (TOS-compliant)
+              <Label className="font-medium text-slate-200">Auto-Reply to DMs &amp; Comments</Label>
+              <p className="text-sm text-slate-400">
+                Replies to incoming messages with tone-matched responses (TOS-compliant)
               </p>
             </div>
             <Switch checked={autoReply} onCheckedChange={setAutoReply} />
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label className="font-medium">Organic Zero-Budget Mode</Label>
-              <p className="text-sm text-gray-500">
+              <Label className="font-medium text-slate-200">Organic Zero-Budget Mode</Label>
+              <p className="text-sm text-slate-400">
                 Default ON — use only free organic growth. Toggle OFF to enable paid boost connectors.
               </p>
             </div>
             <Switch checked={organicMode} onCheckedChange={setOrganicMode} />
           </div>
           {!organicMode && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <div className="p-3 rounded-lg text-sm" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', color: '#FCD34D' }}>
               Paid boost mode enabled. Connect your ad accounts in <strong>Integrations</strong> to use budget.
             </div>
           )}
           <Button
-            onClick={() => toast.success('AI autonomy settings saved')}
-            style={{ background: '#0000FF' }}
+            onClick={() => toast.success('Automation settings saved')}
+            style={{ background: '#2563FF' }}
             className="text-white hover:opacity-90"
           >
-            Save AI Settings
+            Save Automation Settings
           </Button>
         </CardContent>
       </Card>
-
-      {/* Location Info (from browser Geolocation API) */}
-      {(geoLat || geoLon) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-green-600" />
-              Location Targeting
-            </CardTitle>
-            <CardDescription>
-              Your approximate location is used by <strong style={{ color: '#0000FF' }}>AI</strong> to optimise
-              posting times, hashtags, and lead geo-targeting.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
-              <MapPin className="w-4 h-4 shrink-0" />
-              <span>
-                Location captured:{' '}
-                {Math.abs(Number(geoLat)).toFixed(4)}°{Number(geoLat) >= 0 ? 'N' : 'S'},{' '}
-                {Math.abs(Number(geoLon)).toFixed(4)}°{Number(geoLon) >= 0 ? 'E' : 'W'}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto text-xs text-red-600 hover:text-red-700"
-                onClick={() => {
-                  localStorage.removeItem('amarktai_geo_lat');
-                  localStorage.removeItem('amarktai_geo_lon');
-                  localStorage.removeItem('amarktai_geo_accuracy');
-                  toast.success('Location data cleared');
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

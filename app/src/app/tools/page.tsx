@@ -1,7 +1,7 @@
 /**
  * Power Tools Hub – All 10 AI Add-On Tools
  *
- * Each tool runs entirely via HuggingFace Inference API.
+ * Each tool runs entirely via the AI Engine Inference API.
  * Designed and created by Amarktai Network
  */
 
@@ -548,7 +548,7 @@ export default function ToolsPage() {
           Power Tools Hub
         </h2>
         <p className="text-gray-500 text-sm mt-1">
-          10 autonomous AI add-ons powered entirely by HuggingFace — Designed and created by Amarktai Network
+          10 autonomous AI add-ons powered entirely by AI Engine — Designed and created by Amarktai Network
         </p>
       </div>
 
@@ -557,7 +557,7 @@ export default function ToolsPage() {
         <CardContent className="p-4 flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 text-sm text-violet-700">
             <CheckCircle2 className="w-4 h-4" />
-            <span>All tools run via <strong>HuggingFace Inference API</strong> only</span>
+            <span>All tools run via <strong>AI Engine Inference API</strong> only</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-violet-700">
             <Clock className="w-4 h-4" />

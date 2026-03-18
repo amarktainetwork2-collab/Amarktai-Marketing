@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-react';
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { Toaster } from '@/components/ui/sonner';
-import { Suspense, lazy, createContext, useContext, useState } from 'react';
+import { Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 
-// Lazy load pages for better performance
+// Lazy load pages
 const LandingPage = lazy(() => import('@/app/page'));
 const LoginPage = lazy(() => import('@/app/login/page'));
 const RegisterPage = lazy(() => import('@/app/register/page'));
@@ -27,178 +27,111 @@ const LeadsPage = lazy(() => import('@/app/leads/page'));
 const BlogPage = lazy(() => import('@/app/blog/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
 
-// Demo auth context
-interface DemoAuthContextType {
-  isDemoMode: boolean;
-  isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
-}
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
 
-const DemoAuthContext = createContext<DemoAuthContextType>({
-  isDemoMode: false,
-  isAuthenticated: false,
-  login: () => {},
-  logout: () => {},
-});
-
-export const useDemoAuth = () => useContext(DemoAuthContext);
-
-// Loading component
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-        <p className="mt-4 text-gray-500">Loading...</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#06070A' }}>
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#2563FF' }} />
     </div>
   );
 }
 
-// Check if we have a valid Clerk key
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
-
-// Demo Auth Provider
-function DemoAuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
-    <DemoAuthContext.Provider value={{
-      isDemoMode: true,
-      isAuthenticated,
-      login: () => setIsAuthenticated(true),
-      logout: () => setIsAuthenticated(false),
-    }}>
-      {children}
-    </DemoAuthContext.Provider>
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut><RedirectToSignIn /></SignedOut>
+    </>
   );
-}
-
-// Demo route wrapper
-function DemoRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useDemoAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 function AppRoutes() {
   const location = useLocation();
-  
-  if (isValidClerkKey) {
-    // Use Clerk authentication
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Routes location={location}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <SignedIn>
-                <DashboardLayout />
-              </SignedIn>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="webapps" element={<WebAppsPage />} />
-            <Route path="webapps/new" element={<NewWebAppPage />} />
-            <Route path="webapps/edit/:id" element={<EditWebAppPage />} />
-            <Route path="platforms" element={<PlatformsPage />} />
-            <Route path="content" element={<ContentPage />} />
-            <Route path="approval" element={<ApprovalPage />} />
-            <Route path="scheduler" element={<SchedulerPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="integrations" element={<IntegrationsPage />} />
-            <Route path="engagement" element={<EngagementPage />} />
-            <Route path="tools" element={<ToolsPage />} />
-            <Route path="leads" element={<LeadsPage />} />
-            <Route path="blog" element={<BlogPage />} />
-            <Route path="groups" element={<GroupsPage />} />
-            <Route path="admin" element={<AdminPage />} />
-          </Route>
-          <Route
-            path="*"
-            element={
-              <SignedOut>
-                <Navigate to="/login" replace />
-              </SignedOut>
-            }
-          />
-        </Routes>
-      </Suspense>
-    );
-  }
-  
-  // Use demo authentication
   return (
-    <DemoAuthProvider>
-      <Suspense fallback={<PageLoader />}>
-        <Routes location={location}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <DemoRoute>
-                <DashboardLayout />
-              </DemoRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="webapps" element={<WebAppsPage />} />
-            <Route path="webapps/new" element={<NewWebAppPage />} />
-            <Route path="webapps/edit/:id" element={<EditWebAppPage />} />
-            <Route path="platforms" element={<PlatformsPage />} />
-            <Route path="content" element={<ContentPage />} />
-            <Route path="approval" element={<ApprovalPage />} />
-            <Route path="scheduler" element={<SchedulerPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="integrations" element={<IntegrationsPage />} />
-            <Route path="engagement" element={<EngagementPage />} />
-            <Route path="tools" element={<ToolsPage />} />
-            <Route path="leads" element={<LeadsPage />} />
-            <Route path="blog" element={<BlogPage />} />
-            <Route path="groups" element={<GroupsPage />} />
-            <Route path="admin" element={<AdminPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Suspense>
-    </DemoAuthProvider>
+    <Suspense fallback={<PageLoader />}>
+      <Routes location={location}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            isValidClerkKey ? (
+              <ProtectedRoute><DashboardLayout /></ProtectedRoute>
+            ) : (
+              <DashboardLayout />
+            )
+          }
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="webapps" element={<WebAppsPage />} />
+          <Route path="webapps/new" element={<NewWebAppPage />} />
+          <Route path="webapps/edit/:id" element={<EditWebAppPage />} />
+          <Route path="platforms" element={<PlatformsPage />} />
+          <Route path="content" element={<ContentPage />} />
+          <Route path="approval" element={<ApprovalPage />} />
+          <Route path="scheduler" element={<SchedulerPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="integrations" element={<IntegrationsPage />} />
+          <Route path="engagement" element={<EngagementPage />} />
+          <Route path="tools" element={<ToolsPage />} />
+          <Route path="leads" element={<LeadsPage />} />
+          <Route path="blog" element={<BlogPage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="admin" element={<AdminPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 
 function App() {
+  const content = (
+    <BrowserRouter>
+      <AppRoutes />
+      <Toaster position="top-right" richColors theme="dark" />
+    </BrowserRouter>
+  );
+
   if (isValidClerkKey) {
     return (
-      <ClerkProvider 
+      <ClerkProvider
         publishableKey={clerkPubKey}
         appearance={{
           elements: {
-            formButtonPrimary: 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700',
-            footerActionLink: 'text-violet-600 hover:text-violet-700',
-          }
+            formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
+            footerActionLink: 'text-blue-400 hover:text-blue-300',
+            card: 'bg-[#0B0F14] border border-white/10',
+            headerTitle: 'text-white',
+            headerSubtitle: 'text-slate-400',
+            formFieldLabel: 'text-slate-300',
+            formFieldInput: 'bg-[#111827] border-white/10 text-white',
+            identityPreviewText: 'text-slate-300',
+            dividerLine: 'bg-white/10',
+            dividerText: 'text-slate-500',
+            socialButtonsBlockButton: 'bg-[#111827] border-white/10 text-white hover:bg-[#1a2332]',
+          },
+          variables: {
+            colorPrimary: '#2563FF',
+            colorBackground: '#0B0F14',
+            colorText: '#F8FAFC',
+            colorTextSecondary: '#94A3B8',
+            colorInputBackground: '#111827',
+            colorInputText: '#F8FAFC',
+            borderRadius: '0.75rem',
+          },
         }}
       >
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster position="top-right" richColors />
-        </BrowserRouter>
+        {content}
       </ClerkProvider>
     );
   }
-  
-  return (
-    <BrowserRouter>
-      <AppRoutes />
-      <Toaster position="top-right" richColors />
-    </BrowserRouter>
-  );
+
+  return content;
 }
 
 export default App;

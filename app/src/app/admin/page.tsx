@@ -53,7 +53,7 @@ interface SystemKeys {
 
 const KEY_GROUPS: { label: string; keys: string[] }[] = [
   {
-    label: 'AI / LLM',
+    label: 'AI Engine / LLM',
     keys: [
       'HUGGINGFACE_TOKEN',
       'OPENAI_API_KEY',

@@ -34,13 +34,13 @@ interface PlatformIntegration {
 }
 
 const AVAILABLE_API_KEYS = [
-  { key: 'HUGGINGFACE_TOKEN', name: 'Hugging Face Token', description: 'Free image & text generation (PRIMARY — required)', provider: 'Hugging Face' },
-  { key: 'QWEN_API_KEY', name: 'Qwen API Key (DashScope)', description: 'High-quality Qwen2.5 generation via HuggingFace — low cost', provider: 'Alibaba Cloud' },
+  { key: 'HUGGINGFACE_TOKEN', name: 'AI Engine Token (Primary)', description: 'Free image & text generation (PRIMARY — required)', provider: 'AI Engine' },
+  { key: 'QWEN_API_KEY', name: 'AI Engine API Key (Secondary)', description: 'High-quality AI generation — low cost', provider: 'AI Engine' },
   { key: 'GROQ_API_KEY', name: 'Groq API Key', description: 'Fast LLM inference for content generation', provider: 'Groq' },
-  { key: 'GOOGLE_GEMINI_API_KEY', name: 'Google Gemini API Key', description: 'Google AI for content and images', provider: 'Google' },
+  { key: 'GOOGLE_GEMINI_API_KEY', name: 'AI Engine API Key (Google)', description: 'AI Engine for content and images', provider: 'AI Engine' },
   { key: 'LEONARDO_API_KEY', name: 'Leonardo.ai Key', description: 'Premium AI image generation', provider: 'Leonardo.ai' },
   { key: 'ELEVENLABS_API_KEY', name: 'ElevenLabs API Key', description: 'High-quality voiceover generation', provider: 'ElevenLabs' },
-  { key: 'OPENAI_API_KEY', name: 'OpenAI API Key', description: 'GPT-4, DALL-E, and more', provider: 'OpenAI' },
+  { key: 'OPENAI_API_KEY', name: 'AI Engine API Key (OpenAI)', description: 'AI Engine generation and more', provider: 'AI Engine' },
   { key: 'REPLICATE_API_TOKEN', name: 'Replicate API Token', description: 'Run ML models in the cloud', provider: 'Replicate' },
   { key: 'FAL_AI_KEY', name: 'fal.ai API Key', description: 'Fast image and video generation', provider: 'fal.ai' },
   { key: 'SILICONFLOW_API_KEY', name: 'SiliconFlow API Key', description: 'Free tier image generation', provider: 'SiliconFlow' },
@@ -234,15 +234,15 @@ export default function IntegrationsPage() {
                   {
                     step: '1',
                     icon: Key,
-                    title: 'Add your HuggingFace Token',
-                    desc: 'Free — get yours at huggingface.co/settings/tokens. This is the PRIMARY key required for all AI generation.',
+                    title: 'Add your AI Engine Token',
+                    desc: 'Free — required for all AI generation.',
                     link: 'https://huggingface.co/settings/tokens',
                     done: apiKeys.some(k => k.key_name === 'HUGGINGFACE_TOKEN' && k.is_active),
                   },
                   {
                     step: '2',
                     icon: Globe,
-                    title: 'Add your Qwen API Key (optional but recommended)',
+                    title: 'Add your AI Engine API Key (optional but recommended)',
                     desc: 'Low-cost, high-quality generation. Get your key at dashscope.aliyun.com.',
                     link: 'https://dashscope.aliyun.com/',
                     done: apiKeys.some(k => k.key_name === 'QWEN_API_KEY' && k.is_active),

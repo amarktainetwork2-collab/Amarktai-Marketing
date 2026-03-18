@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useUser, UserButton } from '@clerk/clerk-react';
 import {
   LayoutDashboard,
@@ -8,14 +8,10 @@ import {
   Settings,
   Menu,
   X,
-  Rocket,
+  Zap,
   Bell,
   Clock,
   Sparkles,
-  Zap,
-  LogOut,
-  User,
-  Key,
   MessageSquare,
   ShieldCheck,
   Wrench,
@@ -25,35 +21,47 @@ import {
   ChevronDown,
   Building2,
   Plus,
+  Key,
+  CheckSquare,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useDemoAuth } from '@/App';
 
-// Check if we have a valid Clerk key
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Web Apps', href: '/dashboard/webapps', icon: Globe },
-  { name: 'Platforms', href: '/dashboard/platforms', icon: Share2 },
-  { name: 'Content Studio', href: '/dashboard/content', icon: Sparkles },
-  { name: 'Review & Optimize', href: '/dashboard/approval', icon: Zap, badge: 5 },
-  { name: 'Smart Scheduler', href: '/dashboard/scheduler', icon: Clock },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-  { name: 'Leads', href: '/dashboard/leads', icon: Users },
-  { name: 'Blog Generator', href: '/dashboard/blog', icon: FileText },
-  { name: 'Communities', href: '/dashboard/groups', icon: UsersRound },
-  { name: 'Integrations', href: '/dashboard/integrations', icon: Key },
-  { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare },
-  { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  { name: 'Admin', href: '/dashboard/admin', icon: ShieldCheck },
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  group: string;
+  badge?: number;
+}
+
+const navigation: NavItem[] = [
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, group: 'main' },
+  { name: 'Web Apps', href: '/dashboard/webapps', icon: Globe, group: 'main' },
+  { name: 'Platforms', href: '/dashboard/platforms', icon: Share2, group: 'main' },
+  { name: 'Content Studio', href: '/dashboard/content', icon: Sparkles, group: 'create' },
+  { name: 'Review & Approve', href: '/dashboard/approval', icon: CheckSquare, badge: 5, group: 'create' },
+  { name: 'Scheduler', href: '/dashboard/scheduler', icon: Clock, group: 'create' },
+  { name: 'Blog Generator', href: '/dashboard/blog', icon: FileText, group: 'create' },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, group: 'insights' },
+  { name: 'Leads', href: '/dashboard/leads', icon: Users, group: 'insights' },
+  { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare, group: 'insights' },
+  { name: 'Communities', href: '/dashboard/groups', icon: UsersRound, group: 'insights' },
+  { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench, group: 'system' },
+  { name: 'Integrations', href: '/dashboard/integrations', icon: Key, group: 'system' },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings, group: 'system' },
+  { name: 'Admin', href: '/dashboard/admin', icon: ShieldCheck, group: 'system' },
 ];
 
-/** Workspace switcher — reads/writes to localStorage for demo; wired to API in production. */
+const navGroups = [
+  { key: 'main', label: 'Platform' },
+  { key: 'create', label: 'Create' },
+  { key: 'insights', label: 'Insights' },
+  { key: 'system', label: 'System' },
+];
+
 function WorkspaceSwitcher() {
   const [workspaces, setWorkspaces] = useState<string[]>(() => {
     try {
@@ -85,33 +93,42 @@ function WorkspaceSwitcher() {
   };
 
   return (
-    <div className="relative px-4 py-2 border-b">
+    <div className="relative px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
       <button
-        className="w-full flex items-center justify-between text-sm font-medium text-gray-700 hover:text-gray-900 py-1"
+        className="w-full flex items-center justify-between text-sm font-medium py-1.5 px-2 rounded-lg transition-colors hover:bg-white/5 text-slate-300"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="flex items-center gap-2 truncate">
-          <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
+          <Building2 className="w-4 h-4 text-blue-400 shrink-0" />
           <span className="truncate">{active}</span>
         </span>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 mx-2">
+        <div
+          className="absolute left-2 right-2 mt-1 rounded-xl z-50 overflow-hidden"
+          style={{
+            background: '#111827',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: '0 16px 32px rgba(0,0,0,0.5)',
+          }}
+        >
           {workspaces.map((ws) => (
             <button
               key={ws}
-              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${ws === active ? 'text-violet-700 font-semibold' : 'text-gray-700'}`}
+              className="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-white/5"
+              style={{ color: ws === active ? '#2563FF' : '#CBD5E1' }}
               onClick={() => switchTo(ws)}
             >
               {ws}
             </button>
           ))}
           <button
-            className="w-full text-left px-3 py-2 text-sm text-violet-600 hover:bg-violet-50 flex items-center gap-2 border-t"
+            className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-white/5"
+            style={{ color: '#22D3EE', borderTop: '1px solid rgba(255,255,255,0.06)' }}
             onClick={addWorkspace}
           >
-            <Plus className="w-4 h-4" /> Add Workspace
+            <Plus className="w-3.5 h-3.5" /> Add Workspace
           </button>
         </div>
       )}
@@ -119,55 +136,20 @@ function WorkspaceSwitcher() {
   );
 }
 
-/** AI badge shown in the header — branded as "AI" in blue (#0000FF) per spec. */
-function AIBadge() {
-  return (
-    <span
-      className="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border"
-      style={{ color: '#0000FF', borderColor: '#0000FF', background: '#eff6ff' }}
-    >
-      <Sparkles className="w-3 h-3" style={{ color: '#0000FF' }} />
-      AI Powered
-    </span>
-  );
-}
-
-function DemoUserProfile() {
-  const { logout } = useDemoAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  return (
-    <div className="flex items-center space-x-3">
-      <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center">
-        <User className="w-4 h-4 text-white" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">Demo User</p>
-        <p className="text-xs text-gray-500">Pro Plan</p>
-      </div>
-      <Button variant="ghost" size="sm" onClick={handleLogout}>
-        <LogOut className="w-4 h-4" />
-      </Button>
-    </div>
-  );
-}
-
-function ClerkUserProfile() {
+function UserArea() {
   const { user } = useUser();
-
+  if (!isValidClerkKey) return null;
   return (
-    <div className="flex items-center space-x-3">
+    <div
+      className="flex items-center gap-3 p-3"
+      style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+    >
       <UserButton afterSignOutUrl="/" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">
-          {user?.fullName || user?.primaryEmailAddress?.emailAddress}
+        <p className="text-sm font-medium text-slate-200 truncate">
+          {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Account'}
         </p>
-        <p className="text-xs text-gray-500">Pro Plan</p>
+        <p className="text-xs text-slate-500">Amarktai Pro</p>
       </div>
     </div>
   );
@@ -177,118 +159,154 @@ export default function DashboardLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const currentPage = navigation.find((n) => n.href === location.pathname)?.name || 'Dashboard';
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile Sidebar Overlay */}
+    <div className="min-h-screen" style={{ background: '#06070A' }}>
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-60 flex flex-col transform transition-transform lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          background: '#0B0F14',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+        }}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Rocket className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                Amarktai
-              </span>
-            </Link>
-            <button
-              className="lg:hidden p-2"
-              onClick={() => setSidebarOpen(false)}
+        {/* Logo */}
+        <div
+          className="flex items-center justify-between px-4 py-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <Link to="/dashboard" className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Multi-business Workspace Switcher */}
-          <WorkspaceSwitcher />
-
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-4">
-            <ul className="space-y-1">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                        isActive
-                          ? 'bg-violet-50 text-violet-700'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <div className="flex items-center">
-                        <item.icon className={`w-5 h-5 mr-3 ${isActive ? 'text-violet-600' : ''}`} />
-                        <span>{item.name}</span>
-                      </div>
-                      {item.badge && (
-                        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* AI branding footer */}
-          <div className="px-4 py-2 border-t border-b text-center">
-            <p className="text-xs font-semibold" style={{ color: '#0000FF' }}>
-              AI — Amarktai Network © 2026
-            </p>
-          </div>
-
-          {/* User Profile */}
-          <div className="p-4">
-            {isValidClerkKey ? <ClerkUserProfile /> : <DemoUserProfile />}
-          </div>
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-base font-bold text-white tracking-tight">Amarktai</span>
+          </Link>
+          <button
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 text-slate-400"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
+
+        {/* Workspace Switcher */}
+        <WorkspaceSwitcher />
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2">
+          {navGroups.map((group) => {
+            const items = navigation.filter((n) => n.group === group.key);
+            return (
+              <div key={group.key} className="mb-4">
+                <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-1.5" style={{ color: '#475569' }}>
+                  {group.label}
+                </p>
+                <ul className="space-y-0.5">
+                  {items.map((item) => {
+                    const isActive = location.pathname === item.href;
+                    return (
+                      <li key={item.name}>
+                        <Link
+                          to={item.href}
+                          className="flex items-center justify-between px-3 py-2 rounded-lg transition-all text-sm"
+                          style={{
+                            background: isActive ? 'rgba(37,99,255,0.15)' : 'transparent',
+                            color: isActive ? '#4F7DFF' : '#94A3B8',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.04)';
+                              (e.currentTarget as HTMLAnchorElement).style.color = '#CBD5E1';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
+                              (e.currentTarget as HTMLAnchorElement).style.color = '#94A3B8';
+                            }
+                          }}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <item.icon
+                              className="w-4 h-4 shrink-0"
+                              style={{ color: isActive ? '#2563FF' : 'inherit' }}
+                            />
+                            <span>{item.name}</span>
+                          </div>
+                          {item.badge && (
+                            <span
+                              className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(37,99,255,0.2)', color: '#4F7DFF' }}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* User area */}
+        <UserArea />
       </aside>
 
-      {/* Main Content */}
-      <div className="lg:ml-64">
+      {/* Main content */}
+      <div className="lg:ml-60">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white border-b px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <header
+          className="sticky top-0 z-30 px-4 sm:px-6"
+          style={{
+            background: 'rgba(6,7,10,0.85)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
+          <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
               <button
-                className="lg:hidden p-2 mr-2"
+                className="lg:hidden p-2 rounded-lg hover:bg-white/5 text-slate-400"
                 onClick={() => setSidebarOpen(true)}
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5" />
               </button>
-              <h1 className="text-xl font-semibold">
-                {navigation.find((n) => n.href === location.pathname)?.name || 'Dashboard'}
-              </h1>
-              <AIBadge />
+              <h1 className="text-base font-semibold text-slate-100">{currentPage}</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-500 hover:text-gray-700">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            <div className="flex items-center gap-2">
+              <button
+                className="relative p-2 rounded-lg hover:bg-white/5 text-slate-400 transition-colors"
+              >
+                <Bell className="w-4 h-4" />
+                <span
+                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+                  style={{ background: '#EF4444' }}
+                />
               </button>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        {/* Page content */}
+        <main className="p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
