@@ -182,7 +182,7 @@ export const pricingPlans: PricingPlan[] = [
       '5 Web Apps',
       'All 6 Platforms',
       '12 posts per day',
-      'Advanced AI with Grok/Claude',
+      'Advanced AI Engine',
       'A/B testing & optimization',
       'Priority email support',
       'Hashtag research',

@@ -2,7 +2,7 @@
  * Admin Panel – System Configuration
  *
  * Allows the administrator to:
- * - Set system-level API keys (HuggingFace, social platforms, etc.)
+ * - Set system-level API keys (AI engine, social platforms, etc.)
  * - Toggle feature flags
  * - View live system health stats
  * - Trigger manual content generation
@@ -53,7 +53,7 @@ interface SystemKeys {
 
 const KEY_GROUPS: { label: string; keys: string[] }[] = [
   {
-    label: 'AI / LLM',
+    label: 'AI Engine / LLM',
     keys: [
       'HUGGINGFACE_TOKEN',
       'OPENAI_API_KEY',
@@ -236,7 +236,7 @@ export default function AdminPage() {
           <div>
             <p className="font-semibold text-violet-900">Manual Content Generation</p>
             <p className="text-sm text-violet-700">
-              Trigger a content generation run for all users right now (uses HuggingFace).
+              Trigger a content generation run for all users right now.
             </p>
           </div>
           <Button

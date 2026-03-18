@@ -1,5 +1,5 @@
 """
-Power Tools Unified Endpoint – all 10 AI add-on tools via HuggingFace.
+Power Tools Unified Endpoint – all 10 AI add-on tools.
 
 Tools:
   1. remix          – Content Remix Engine (handled separately in remix.py too)
@@ -13,7 +13,6 @@ Tools:
   9. audience_map   – Audience Mirage Mapper
  10. ad_alchemy     – Ad Alchemy Optimizer
 
-All AI processing is powered exclusively by HuggingFace Inference API.
 Designed and created by Amarktai Network
 """
 
@@ -59,7 +58,7 @@ def _require_hf(db: Session, user: User) -> str:
     if not token:
         raise HTTPException(
             status_code=503,
-            detail="No HuggingFace token configured. Add HUGGINGFACE_TOKEN in Integrations → Admin.",
+            detail="AI content generation is not configured. Add your AI token in Integrations or contact your admin.",
         )
     return token
 

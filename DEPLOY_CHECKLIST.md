@@ -1,6 +1,6 @@
 # Amarktai Marketing — Deployment & Integration Checklist
 
-> **Target subdomain:** `amarktai-marketing.amarktai.com`
+> **Target subdomain:** `marketing.amarktai.com`
 
 ---
 
@@ -15,7 +15,7 @@
 | `backend/app/services/integration.py` | **NEW** — `send_heartbeat()`, `send_metrics()`, `send_event()` (server-side only, bearer token auth) |
 | `backend/.env.example` | Added all integration env vars + `APP_VERSION`, `APP_ENVIRONMENT` |
 | `app/.env.example` | Added `VITE_APP_VERSION`, `VITE_APP_ENVIRONMENT` |
-| `nginx-subdomain.conf` | **NEW** — production Nginx config for `amarktai-marketing.amarktai.com` with HTTPS |
+| `nginx-subdomain.conf` | **NEW** — production Nginx config for `marketing.amarktai.com` with HTTPS |
 | `deploy/deploy.sh` | **NEW** — VPS deploy script (pull → build frontend → install backend → migrate → PM2 restart → Nginx reload) |
 | `deploy/ecosystem.config.cjs` | **NEW** — PM2 config for API, Celery worker, Celery Beat |
 | `deploy/app-registration.json` | **NEW** — app registration record for Amarktai Network dashboard |
@@ -40,7 +40,7 @@
 
 /etc/nginx/sites-available/amarktai-marketing   ← nginx-subdomain.conf
 /etc/nginx/sites-enabled/amarktai-marketing     ← symlink
-/etc/letsencrypt/live/amarktai-marketing.amarktai.com/  ← SSL certs (certbot)
+/etc/letsencrypt/live/marketing.amarktai.com/  ← SSL certs (certbot)
 /var/log/pm2/                    ← PM2 logs
 /var/log/nginx/amarktai-marketing.*  ← Nginx logs
 ```
@@ -67,8 +67,8 @@ AMARKTAI_INTEGRATION_ENABLED=true
 # ── Core ──────────────────────────────────────────────────────────────────────
 DATABASE_URL="postgresql://amarktai:<pw>@localhost:5432/amarktai"
 REDIS_URL="redis://localhost:6379"
-CORS_ORIGINS='["https://amarktai-marketing.amarktai.com"]'
-FRONTEND_URL="https://amarktai-marketing.amarktai.com"
+CORS_ORIGINS='["https://marketing.amarktai.com"]'
+FRONTEND_URL="https://marketing.amarktai.com"
 
 # ... (all other vars from backend/.env.example)
 ```
@@ -107,7 +107,7 @@ Heartbeat cadence: every 5 minutes (asyncio background task in FastAPI lifespan)
 
 The status endpoint the dashboard polls:
 ```
-GET https://amarktai-marketing.amarktai.com/api/amarktai/status
+GET https://marketing.amarktai.com/api/amarktai/status
 → { app_id, app_name, version, environment, health, integration.enabled,
      integration.last_heartbeat, supported_metric_keys, ... }
 ```
@@ -128,7 +128,7 @@ GET https://amarktai-marketing.amarktai.com/api/amarktai/status
    AMARKTAI_INTEGRATION_ENABLED=true
    ```
 8. Restart the backend: `pm2 reload amarktai-marketing-api`
-9. Verify: `curl https://amarktai-marketing.amarktai.com/api/amarktai/status | jq`
+9. Verify: `curl https://marketing.amarktai.com/api/amarktai/status | jq`
 
 ---
 
@@ -179,7 +179,7 @@ ln -s /etc/nginx/sites-available/amarktai-marketing \
 nginx -t && systemctl reload nginx
 
 # 9 — HTTPS / SSL
-certbot --nginx -d amarktai-marketing.amarktai.com
+certbot --nginx -d marketing.amarktai.com
 
 # 10 — PM2 on boot
 pm2 startup   # copy and run the printed command
@@ -207,7 +207,7 @@ bash deploy/deploy.sh
 DNS record required:
 ```
 Type  Name                             Value
-A     amarktai-marketing.amarktai.com  <VPS IPv4>
+A     marketing.amarktai.com  <VPS IPv4>
 ```
 
 ---
@@ -216,19 +216,19 @@ A     amarktai-marketing.amarktai.com  <VPS IPv4>
 
 ### Deployment
 
-- [ ] DNS A record pointing `amarktai-marketing.amarktai.com` → VPS IP
-- [ ] `curl http://amarktai-marketing.amarktai.com` → redirects to HTTPS
-- [ ] `curl https://amarktai-marketing.amarktai.com/health` → `{"status":"healthy"}`
-- [ ] `curl https://amarktai-marketing.amarktai.com/api/v1/health` → `{"status":"healthy","database":"connected",...}`
+- [ ] DNS A record pointing `marketing.amarktai.com` → VPS IP
+- [ ] `curl http://marketing.amarktai.com` → redirects to HTTPS
+- [ ] `curl https://marketing.amarktai.com/health` → `{"status":"healthy"}`
+- [ ] `curl https://marketing.amarktai.com/api/v1/health` → `{"status":"healthy","database":"connected",...}`
 - [ ] HTTPS certificate valid (no browser warnings)
-- [ ] HSTS header present: `curl -I https://amarktai-marketing.amarktai.com | grep Strict`
-- [ ] Frontend loads at `https://amarktai-marketing.amarktai.com`
+- [ ] HSTS header present: `curl -I https://marketing.amarktai.com | grep Strict`
+- [ ] Frontend loads at `https://marketing.amarktai.com`
 - [ ] Login / register flow works
 - [ ] API calls from frontend succeed (check browser Network tab)
 
 ### Integration Status Endpoint
 
-- [ ] `curl https://amarktai-marketing.amarktai.com/api/amarktai/status | jq`
+- [ ] `curl https://marketing.amarktai.com/api/amarktai/status | jq`
   - Returns `app_id: "amarktai-marketing"`
   - Returns `health: "healthy"`
   - Returns `integration.enabled: true` (after token is set)

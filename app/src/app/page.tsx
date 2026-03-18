@@ -57,7 +57,7 @@ const features = [
   {
     icon: <Zap className="w-6 h-6" />,
     title: 'AI-Powered Content',
-    description: 'Qwen2.5 + HuggingFace Mistral generates platform-native posts, scripts and captions for all 12 channels — 3× daily.',
+    description: 'AI Engine generates platform-native posts, scripts and captions for all 12 channels — 3× daily.',
   },
   {
     icon: <Clock className="w-6 h-6" />,
@@ -210,7 +210,7 @@ export default function LandingPage() {
               <motion.div variants={fadeUp}>
                 <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  Powered by Qwen2.5 + HuggingFace
+                  Powered by AI Engine
                 </Badge>
               </motion.div>
               <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
@@ -340,7 +340,7 @@ export default function LandingPage() {
                 </span>
               </motion.h2>
               <motion.p variants={fadeUp} className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Powered by Qwen2.5 + HuggingFace — low cost, high quality, fully autonomous.
+                Powered by AI Engine — low cost, high quality, fully autonomous.
               </motion.p>
             </motion.div>
           </Section>

@@ -155,7 +155,7 @@ async def receive_engagement(
     }
 
 async def generate_reply_background(engagement_id: str, user_id: str):
-    """Background task to generate AI reply using HuggingFace."""
+    """Background task to generate an AI reply."""
     from app.db.session import SessionLocal
 
     db = SessionLocal()

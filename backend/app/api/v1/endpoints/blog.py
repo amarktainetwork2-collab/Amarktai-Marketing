@@ -1,8 +1,8 @@
 """
 SEO Blog Post Generator Endpoints
 
-Uses HuggingFace Mistral to generate long-form SEO blog posts from webapp data.
-Each post can be used to drive organic Google/Bing traffic to the user's site.
+Generates long-form SEO blog posts from webapp data using the Amarktai AI engine.
+Each post can be used to drive organic search traffic to the user's site.
 """
 
 from __future__ import annotations
@@ -95,7 +95,7 @@ async def generate_blog_post(
     if not hf_token:
         raise HTTPException(
             status_code=503,
-            detail="No HuggingFace API key configured. Add HUGGINGFACE_TOKEN in Integrations.",
+            detail="AI content generation is not configured. Add your AI token in Integrations or contact your admin.",
         )
 
     webapp_data = {
@@ -229,7 +229,7 @@ async def remix_blog_to_social(
     if not hf_token:
         hf_token = settings.HUGGINGFACE_TOKEN
     if not hf_token:
-        raise HTTPException(status_code=503, detail="No HuggingFace API key configured")
+        raise HTTPException(status_code=503, detail="AI content generation is not configured")
 
     connected = db.query(UserIntegration).filter(
         UserIntegration.user_id == current_user.id, UserIntegration.is_connected == True

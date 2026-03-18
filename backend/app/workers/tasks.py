@@ -1097,7 +1097,7 @@ def post_to_active_groups():
         from app.models.webapp import WebApp
         from app.models.business_group import BusinessGroup, GroupStatus
         from app.models.user_api_key import UserIntegration
-        from app.services.hf_generator import HFGenerator
+        from app.services.hf_generator import HuggingFaceGenerator as HFGenerator
         from app.services.posting_service import (
             post_to_facebook_group,
             post_to_reddit,
