@@ -234,17 +234,17 @@ export default function IntegrationsPage() {
                   {
                     step: '1',
                     icon: Key,
-                    title: 'Add your AI Engine Token',
-                    desc: 'Free — required for all AI generation.',
-                    link: 'https://huggingface.co/settings/tokens',
+                    title: 'Activate AI Content Generation',
+                    desc: 'Contact support to provision your AI engine access token.',
+                    link: '/dashboard/settings',
                     done: apiKeys.some(k => k.key_name === 'HUGGINGFACE_TOKEN' && k.is_active),
                   },
                   {
                     step: '2',
                     icon: Globe,
-                    title: 'Add your AI Engine API Key (optional but recommended)',
-                    desc: 'Low-cost, high-quality generation. Get your key at dashscope.aliyun.com.',
-                    link: 'https://dashscope.aliyun.com/',
+                    title: 'Configure AI API Access (optional)',
+                    desc: 'Enhance generation quality with an optional secondary AI API key.',
+                    link: '/dashboard/settings',
                     done: apiKeys.some(k => k.key_name === 'QWEN_API_KEY' && k.is_active),
                   },
                   {
