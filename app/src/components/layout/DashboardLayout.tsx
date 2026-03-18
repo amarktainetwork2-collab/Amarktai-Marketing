@@ -159,7 +159,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const currentPage = navigation.find((n) => n.href === location.pathname)?.name || 'Dashboard';
+  const currentPage = navigation.find((n) => n.href === location.pathname)?.name || 'Overview';
 
   return (
     <div className="min-h-screen" style={{ background: '#06070A' }}>

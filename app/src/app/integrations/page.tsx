@@ -40,7 +40,7 @@ const AVAILABLE_API_KEYS = [
   { key: 'GOOGLE_GEMINI_API_KEY', name: 'AI Engine API Key (Google)', description: 'AI Engine for content and images', provider: 'AI Engine' },
   { key: 'LEONARDO_API_KEY', name: 'Leonardo.ai Key', description: 'Premium AI image generation', provider: 'Leonardo.ai' },
   { key: 'ELEVENLABS_API_KEY', name: 'ElevenLabs API Key', description: 'High-quality voiceover generation', provider: 'ElevenLabs' },
-  { key: 'OPENAI_API_KEY', name: 'AI Engine API Key (OpenAI)', description: 'AI Engine generation and more', provider: 'AI Engine' },
+  { key: 'OPENAI_API_KEY', name: 'AI Engine API Key', description: 'AI content generation and automation', provider: 'AI Engine' },
   { key: 'REPLICATE_API_TOKEN', name: 'Replicate API Token', description: 'Run ML models in the cloud', provider: 'Replicate' },
   { key: 'FAL_AI_KEY', name: 'fal.ai API Key', description: 'Fast image and video generation', provider: 'fal.ai' },
   { key: 'SILICONFLOW_API_KEY', name: 'SiliconFlow API Key', description: 'Free tier image generation', provider: 'SiliconFlow' },
