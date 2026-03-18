@@ -6,6 +6,11 @@ import { Loader2 } from 'lucide-react';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/app/page'));
+const AboutPage = lazy(() => import('@/app/about/page'));
+const PricingPage = lazy(() => import('@/app/pricing/page'));
+const ContactPage = lazy(() => import('@/app/contact/page'));
+const PrivacyPage = lazy(() => import('@/app/privacy/page'));
+const TermsPage = lazy(() => import('@/app/terms/page'));
 const LoginPage = lazy(() => import('@/app/login/page'));
 const RegisterPage = lazy(() => import('@/app/register/page'));
 const DashboardLayout = lazy(() => import('@/components/layout/DashboardLayout'));
@@ -53,6 +58,11 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes location={location}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route

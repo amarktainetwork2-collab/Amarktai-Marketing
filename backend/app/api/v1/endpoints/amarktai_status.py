@@ -79,7 +79,7 @@ async def amarktai_status() -> dict[str, Any]:
         },
         "supported_metric_keys": SUPPORTED_METRIC_KEYS,
         "deployment": {
-            "subdomain": "amarktai-marketing.amarktai.com",
+            "subdomain": "marketing.amarktai.com",
             "hosting_scope": "subdomain",
             "hosted_here": True,
         },
