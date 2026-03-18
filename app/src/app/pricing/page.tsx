@@ -63,7 +63,7 @@ const plans = [
       'All 12 Platforms',
       '12 posts per day',
       'Advanced AI Engine',
-      'A/B testing & optimisation',
+      'A/B testing & optimization',
       'Lead capture & AI scoring',
       'SEO blog generator',
       'Content remix engine',
