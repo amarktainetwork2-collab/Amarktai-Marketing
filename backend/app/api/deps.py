@@ -1,9 +1,8 @@
 """
 Authentication dependency for FastAPI endpoints.
 
-Supports two modes:
-1. Clerk JWT verification (production) – set CLERK_SECRET_KEY in .env
-2. Demo mode (development) – passes a fixed demo user when no Clerk key is set
+Requires Clerk JWT verification (production).
+Set CLERK_SECRET_KEY in .env to enable authentication.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.base import get_db
-from app.models.user import User, PlanType
+from app.models.user import User
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -95,18 +94,16 @@ def _verify_clerk_token(token: str) -> Optional[str]:
 # Dependency
 # ---------------------------------------------------------------------------
 
-DEMO_USER_ID = "demo-user-1"
 _CLERK_ENABLED = bool(settings.CLERK_SECRET_KEY and settings.CLERK_SECRET_KEY != "sk_test_...")
 
 
 def is_admin_user(user: User) -> bool:
     """Return True if the user has admin privileges (unlimited access, no cost).
 
-    The default fallback (amarktainetwork@gmail.com) is intentional: this is the
-    platform owner's email, as specified in the system requirements.  Set the
-    ADMIN_EMAIL environment variable to override this for a different deployment.
+    Admin status is determined by:
+      1. The user's email matching ADMIN_EMAIL (set via env var), OR
+      2. The user's Clerk ID appearing in ADMIN_USER_IDS (comma-separated env var).
     """
-    # ADMIN_EMAIL defaults to the platform owner; override via env in production
     admin_email = (settings.ADMIN_EMAIL or "amarktainetwork@gmail.com").lower()
     if user.email and user.email.lower() == admin_email:
         return True
@@ -122,46 +119,37 @@ async def get_current_user(
     """
     FastAPI dependency that returns the authenticated User model.
 
-    - In production (CLERK_SECRET_KEY configured): validates the Bearer JWT.
-    - In demo/dev mode: accepts any request and upserts a demo user.
+    Requires a valid Clerk JWT Bearer token.  Raises HTTP 401 if the token is
+    missing or invalid, and HTTP 404 if the user has not been created via the
+    Clerk webhook yet.
     """
+    if not _CLERK_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service is not available. Please contact support.",
+        )
 
-    if _CLERK_ENABLED:
-        if credentials is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        user_id = _verify_clerk_token(credentials.credentials)
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    else:
-        # Demo / development mode – use a fixed user
-        user_id = DEMO_USER_ID
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    # Fetch or create user record
+    user_id = _verify_clerk_token(credentials.credentials)
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        if _CLERK_ENABLED:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found. Ensure the Clerk webhook is configured.",
-            )
-        # Auto-create demo user
-        user = User(
-            id=DEMO_USER_ID,
-            email="demo@amarktai.com",
-            name="Demo User",
-            plan=PlanType.PRO,
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found. Ensure the Clerk webhook is configured.",
         )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
 
     return user
 
@@ -173,25 +161,10 @@ async def get_admin_user(
     Dependency that ensures the current user is an admin.
     Admin status is determined by:
       1. The ADMIN_USER_IDS env var (comma-separated Clerk user IDs), OR
-      2. The user's email matching ADMIN_EMAIL (platform owner — defaults to amarktainetwork@gmail.com).
-    In demo mode (no Clerk key) the demo user is always admin.
+      2. The user's email matching ADMIN_EMAIL (platform owner).
     Admin users bypass all cost/quota restrictions.
     """
-    admin_ids_raw = os.getenv("ADMIN_USER_IDS", "")
-    admin_ids = [uid.strip() for uid in admin_ids_raw.split(",") if uid.strip()]
-
-    if not _CLERK_ENABLED:
-        # In demo mode, the demo user is always admin
-        return current_user
-
-    # Allow by Clerk user ID or by email (platform owner always has access)
-    admin_email = settings.ADMIN_EMAIL or "amarktainetwork@gmail.com"
-    is_admin = (
-        current_user.id in admin_ids
-        or (current_user.email and current_user.email.lower() == admin_email.lower())
-    )
-
-    if not is_admin:
+    if not is_admin_user(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",

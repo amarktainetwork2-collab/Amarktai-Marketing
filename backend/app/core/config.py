@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "Amarktai Marketing"
     DEBUG: bool = False
-    FRONTEND_URL: str = "http://localhost:3000"
+    FRONTEND_URL: str = "https://marketing.amarktai.com"
     ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
     # Platform owner's email — always granted unlimited access at no cost.
     # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
@@ -18,8 +18,12 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
     
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # CORS — include localhost for development and the production domain
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://marketing.amarktai.com",
+    ]
     
     # Clerk Auth
     CLERK_SECRET_KEY: str = ""

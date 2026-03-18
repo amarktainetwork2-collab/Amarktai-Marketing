@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Amarktai Marketing API",
-    description="Autonomous AI Social Media Marketing Platform — Powered by HuggingFace",
+    description="Autonomous AI Social Media Marketing Platform — Amarktai Network",
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
@@ -142,7 +142,6 @@ async def health_v1():
         "status": "healthy" if db_ok else "degraded",
         "database": "connected" if db_ok else "disconnected",
         "version": settings.APP_VERSION,
-        "ai_provider": "HuggingFace",
     }
 
 

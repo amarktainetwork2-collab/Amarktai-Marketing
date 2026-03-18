@@ -5,7 +5,7 @@
 Amarktai Marketing is a fully autonomous AI-powered social media marketing SaaS platform.
 It generates, schedules, and publishes content across social platforms with **zero manual effort** beyond a single approval step per post.
 
-**Deployment target:** `amarktai-marketing.amarktai.com`
+**Deployment target:** `marketing.amarktai.com`
 
 ---
 
@@ -141,7 +141,7 @@ celery -A app.workers.celery_app beat --loglevel=info
 
 ---
 
-## VPS Deployment (amarktai-marketing.amarktai.com)
+## VPS Deployment (marketing.amarktai.com)
 
 ### With Docker Compose
 

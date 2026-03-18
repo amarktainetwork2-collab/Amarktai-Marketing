@@ -149,7 +149,7 @@ async def create_remix(
     if not hf_token:
         raise HTTPException(
             status_code=503,
-            detail="No HuggingFace token configured. Add HUGGINGFACE_TOKEN in Integrations or Admin.",
+            detail="AI content generation is not configured. Add your AI token in Integrations or contact your admin.",
         )
 
     if body.source_type == "url" and not body.source_url:

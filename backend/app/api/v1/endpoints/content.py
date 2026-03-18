@@ -1,11 +1,8 @@
 """
 Content endpoints — generate, approve, reject, manage social media content.
 
-Generation chain (lowest cost first):
-  1. Qwen/Qwen2.5-72B-Instruct via HuggingFace Serverless (QWEN_API_KEY)
-  2. HuggingFace Inference API – Mistral-7B-Instruct-v0.2 (HUGGINGFACE_TOKEN)
-  3. OpenAI polish pass (OPENAI_API_KEY, optional improvement step)
-  4. Template-based generation – guaranteed fallback (no API key required)
+AI generation uses a tiered provider stack (primary → fallback → template).
+Template-based generation is always available as a guaranteed fallback.
 
 Rejecting a post immediately triggers regeneration for the same webapp/platform.
 
@@ -75,7 +72,7 @@ async def _generate_text_content(
     openai_key: str | None,
     qwen_key: str | None = None,
 ) -> dict:
-    """Qwen → HuggingFace → OpenAI polish (optional) → template fallback."""
+    """AI provider chain: primary → fallback → optional polish → template fallback."""
     from app.services.hf_generator import HuggingFaceGenerator
     result: dict | None = None
     # Use whichever token is available; qwen_key takes precedence
@@ -144,7 +141,7 @@ async def generate_content(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Generate AI content via HuggingFace (text + image/video). Falls back to templates."""
+    """Generate AI content (text + image/video). Falls back to templates if no AI key configured."""
     from app.models.webapp import WebApp
     from app.services.media_service import get_media_url, VIDEO_PLATFORMS
 
@@ -168,7 +165,8 @@ async def generate_content(
     result = await _generate_text_content(webapp_data, platform, hf_token, openai_key, qwen_key)
     media_urls = await get_media_url(platform, webapp_data, qwen_key or hf_token)
     content_type = "video" if platform in VIDEO_PLATFORMS else "image"
-    generator_name = "qwen" if qwen_key else ("huggingface" if hf_token else "template")
+    # Determine whether AI generation was used (internal flag, not exposed to users)
+    ai_used = not result.get("_generation_error") and bool(qwen_key or hf_token)
 
     db_content = ContentModel(
         id=str(uuid.uuid4()),
@@ -182,8 +180,7 @@ async def generate_content(
         hashtags=result.get("hashtags", []),
         media_urls=media_urls,
         generation_metadata={
-            "generator": generator_name,
-            "openai_improved": bool(openai_key and not result.get("_generation_error")),
+            "ai_generated": ai_used,
         },
     )
     db.add(db_content)
@@ -197,7 +194,7 @@ async def generate_all_content(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Batch generate for all active platforms + webapps via HuggingFace."""
+    """Batch generate AI content for all active platforms + webapps."""
     from app.models.user_api_key import UserIntegration
     from app.models.webapp import WebApp
     from app.services.hf_generator import HuggingFaceGenerator
@@ -246,7 +243,7 @@ async def generate_all_content(
         else:
             results = {p: HuggingFaceGenerator._fallback_content(webapp_data, p) for p in platforms}
 
-        generator_name = "qwen" if qwen_key else ("huggingface" if hf_token else "template")
+        ai_used = bool(active_token)
         for platform, content_dict in results.items():
             if content_dict.get("_generation_error") and not content_dict.get("caption"):
                 continue
@@ -270,7 +267,7 @@ async def generate_all_content(
                 caption=content_dict.get("caption", ""),
                 hashtags=content_dict.get("hashtags", []),
                 media_urls=media_urls,
-                generation_metadata={"source": "manual_batch", "generator": generator_name},
+                generation_metadata={"source": "manual_batch", "ai_generated": ai_used},
             )
             db.add(db_content)
             created.append(db_content)
