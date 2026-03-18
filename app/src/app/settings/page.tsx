@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Bell, Clock, Shield, User, CreditCard } from 'lucide-react';
+import { Bell, Clock, Shield, User, CreditCard, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 const cardStyle = {
