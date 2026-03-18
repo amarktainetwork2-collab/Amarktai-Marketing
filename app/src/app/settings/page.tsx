@@ -266,7 +266,7 @@ export default function SettingsPage() {
             Automation Preferences
           </CardTitle>
           <CardDescription className="text-slate-400">
-            Control how much autonomy the automation engine has and whether to use organic-only or paid boost mode.
+            Control automation behavior and organic vs. paid distribution strategy.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
