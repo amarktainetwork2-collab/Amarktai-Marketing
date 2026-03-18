@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
@@ -12,7 +12,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
 
-// ─── Animation helpers ────────────────────────────────────────────────────────
+const BG = '#05070B';
+const SURFACE = '#0B1220';
+const BORDER = 'rgba(255,255,255,0.08)';
+const ACCENT = '#2563FF';
+const CYAN = '#22D3EE';
+const TEXT = '#F8FAFC';
+const MUTED = '#94A3B8';
+const SUB = '#CBD5E1';
+
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE_OUT_CURVE } },
@@ -48,18 +56,7 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   );
 }
 
-// ─── Colours ──────────────────────────────────────────────────────────────────
-const BG = '#05070B';
-const SURFACE = '#0B1220';
-const GLASS = 'rgba(15,23,42,0.72)';
-const BORDER = 'rgba(255,255,255,0.08)';
-const ACCENT = '#2563FF';
-const CYAN = '#22D3EE';
-const TEXT = '#F8FAFC';
-const MUTED = '#94A3B8';
-const SUB = '#CBD5E1';
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Data (same as landing page) ─────────────────────────────────────────────────────
 const features = [
   {
     icon: <Zap className="w-5 h-5" />,
@@ -148,12 +145,6 @@ const testimonials = [
   },
 ];
 
-const platforms = [
-  'YouTube', 'TikTok', 'Instagram', 'Facebook',
-  'X / Twitter', 'LinkedIn', 'Pinterest', 'Reddit',
-  'Bluesky', 'Threads', 'Telegram', 'Snapchat',
-];
-
 const stats = [
   { value: '12', label: 'Platforms supported', suffix: '' },
   { value: '3×', label: 'Daily content batches', suffix: '' },
@@ -217,23 +208,11 @@ const pricingPlans = [
   },
 ];
 
-// ─── Nav links ────────────────────────────────────────────────────────────────
-const NAV_LINKS = [
-  { label: 'Home',       to: '/' },
-  { label: 'About Us',   to: '/about' },
-  { label: 'Features',   to: '/features' },
-  { label: 'Pricing',    to: '/pricing' },
-  { label: 'Contact Us', to: '/contact' },
-];
-
-export default function LandingPage() {
+export default function FeaturesPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: BG, color: TEXT }}>
-      {/* Animated Background */}
-      <AnimatedBackground dotCount={50} size={2} opacity={0.02} color={ACCENT} />
-
       {/* ── Navigation ────────────────────────────────────────────────────── */}
       <motion.nav
         initial={{ y: -64, opacity: 0 }}
@@ -261,7 +240,13 @@ export default function LandingPage() {
 
             {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-8">
-              {NAV_LINKS.map((l) => (
+              {[
+                { label: 'Home', to: '/' },
+                { label: 'About Us', to: '/about' },
+                { label: 'Features', to: '/features' },
+                { label: 'Pricing', to: '/pricing' },
+                { label: 'Contact Us', to: '/contact' },
+              ].map((l) => (
                 <Link
                   key={l.to}
                   to={l.to}
@@ -277,11 +262,7 @@ export default function LandingPage() {
 
             <div className="hidden md:flex items-center gap-3">
               <Link to="/login">
-                <Button
-                  variant="ghost"
-                  className="text-sm"
-                  style={{ color: SUB }}
-                >
+                <Button variant="ghost" className="text-sm" style={{ color: SUB }}>
                   Login
                 </Button>
               </Link>
@@ -318,7 +299,13 @@ export default function LandingPage() {
             style={{ background: SURFACE, borderTop: `1px solid ${BORDER}` }}
           >
             <div className="px-4 py-5 space-y-4">
-              {NAV_LINKS.map((l) => (
+              {[
+                { label: 'Home', to: '/' },
+                { label: 'About Us', to: '/about' },
+                { label: 'Features', to: '/features' },
+                { label: 'Pricing', to: '/pricing' },
+                { label: 'Contact Us', to: '/contact' },
+              ].map((l) => (
                 <Link
                   key={l.to}
                   to={l.to}
@@ -348,29 +335,24 @@ export default function LandingPage() {
       <main className="pt-16 pb-24 px-4 sm:px-6 lg:px-8">
         {/* Hero */}
         <section className="relative pt-20 pb-20">
+          <AnimatedBackground dotCount={30} size={3} opacity={0.03} color={ACCENT} />
           <div className="relative max-w-4xl mx-auto text-center">
             <motion.div variants={staggerContainer(0.12, 0.05)} initial="hidden" animate="show">
               <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
                 style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}
               >
-                <Sparkles className="w-3.5 h-3.5" />
                 Amarktai Network — AI Marketing Platform
               </motion.div>
 
-              <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight mb-6" style={{ color: TEXT }}>
-                Autonomous AI Marketing
-                <br />
-                <span style={{ background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  That Scales Itself
-                </span>
+              <motion.h1 variants={fadeUp} className="text-3xl sm:text-4xl font-bold leading-[1.1] mb-6" style={{ color: TEXT }}>
+                The Complete AI Marketing Platform
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: SUB }}>
-                Create, schedule, optimise, and scale content across 12 platforms with zero manual effort.
-                AI generates your posts, captures leads, and improves performance daily — all on autopilot.
+              <motion.p variants={fadeUp} className="text-lg max-w-2xl mx-auto mb-8 leading-relaxed" style={{ color: SUB }}>
+                Everything you need to generate, schedule, optimize, and scale content across every platform — autonomously.
               </motion.p>
 
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                 <Link to="/register">
                   <Button
                     size="lg"
@@ -411,7 +393,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Trust / Value Snapshot */}
+        {/* Trust Snapshot (concise) */}
         <Section className="py-12">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div variants={fadeUp} className="mb-6">
@@ -433,40 +415,214 @@ export default function LandingPage() {
               ))}
             </motion.div>
           </div>
-        </section>
+        </Section>
 
-        {/* Product Highlight / Platform Preview */}
+        {/* Core Features */}
         <Section className="py-20">
           <div className="max-w-5xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>
-                Every Platform. One Intelligence.
+                Core Features
               </h2>
-              <p className="text-base max-w-2xl mx-auto" style={{ color: MUTED }}>
-                Native content for all 12 major platforms — each optimised for its own algorithm.
+              <p className="text-lg max-w-2xl mx-auto" style={{ color: MUTED }}>
+                Everything you need to generate, schedule, and scale content across every platform — without lifting a finger.
               </p>
             </motion.div>
-            <motion.div variants={staggerContainer(0.04)} className="flex flex-wrap justify-center gap-3">
-              {platforms.map((p) => (
-                <motion.div
-                  key={p}
-                  variants={scaleIn}
-                  className="px-4 py-2 rounded-full text-sm font-medium"
-                  style={{
-                    background: GLASS,
-                    border: `1px solid ${BORDER}`,
-                    color: SUB,
-                    backdropFilter: 'blur(12px)',
-                  }}
+            <motion.div variants={staggerContainer(0.07)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {features.map((f) => (
+                <motion.div key={f.title} variants={fadeUp} className="rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5"
+                  style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
                 >
-                  {p}
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: `${f.color}1A`, color: f.color }}
+                  >
+                    {f.icon}
+                  </div>
+                  <h3 className="font-semibold mb-2 text-sm" style={{ color: TEXT }}>{f.title}</h3>
+                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{f.description}</p>
                 </motion.div>
               ))}
             </motion.div>
           </div>
-        </section>
+        </Section>
 
-        {/* CTA Section */}
+        {/* How It Works */}
+        <Section className="py-20">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>
+                How It Works
+              </h2>
+              <p className="text-lg max-w-2xl mx-auto" style={{ color: MUTED }}>
+                From setup to scale in four simple steps.
+              </p>
+            </motion.div>
+            <motion.div variants={staggerContainer(0.1)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {howItWorks.map((step) => (
+                <motion.div key={step.step} variants={fadeUp} className="relative">
+                  <div className="rounded-2xl p-8"
+                    style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+                  >
+                    <div className="text-4xl font-black mb-6"
+                      style={{ background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+                    >
+                      {step.step}
+                    </div>
+                    <h3 className="font-semibold mb-3" style={{ color: TEXT }}>{step.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </Section>
+
+        {/* Intelligence Suite */}
+        <Section className="py-20">
+          <div className="max-w-6xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>
+                Intelligence Suite
+              </h2>
+              <p className="text-lg max-w-2xl mx-auto" style={{ color: MUTED }}>
+                Six AI engines working for you 24/7.
+              </p>
+            </motion.div>
+            <motion.div variants={staggerContainer(0.07)} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {powerTools.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <motion.div
+                    key={tool.title}
+                    variants={fadeUp}
+                    className="rounded-2xl p-6 flex gap-4 transition-all duration-300 hover:-translate-y-0.5"
+                    style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(37,99,255,0.12)', color: ACCENT }}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1 text-sm" style={{ color: TEXT }}>{tool.title}</h3>
+                      <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{tool.description}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </Section>
+
+        {/* Testimonials */}
+        <Section className="py-20">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>
+                Trusted by Founders and Marketers
+              </h2>
+            </motion.div>
+            <motion.div variants={staggerContainer(0.1)} className="grid md:grid-cols-3 gap-6">
+              {testimonials.map((t) => (
+                <motion.div
+                  key={t.name}
+                  variants={fadeUp}
+                  className="rounded-2xl p-6"
+                  style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+                >
+                  <div className="flex mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4" style={{ color: '#F59E0B', fill: '#F59E0B' }} />
+                    ))}
+                  </div>
+                  <p className="text-sm leading-relaxed mb-6" style={{ color: SUB }}>"{t.content}"</p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, color: '#fff' }}
+                    >
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: TEXT }}>{t.name}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>{t.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </Section>
+
+        {/* Pricing Teaser */}
+        <Section className="py-20">
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>
+                Simple, Transparent Pricing
+              </h2>
+              <p className="text-lg" style={{ color: MUTED }}>
+                Start your 7-day free trial. No credit card required.
+              </p>
+            </motion.div>
+            <motion.div variants={staggerContainer(0.08)} className="grid md:grid-cols-3 gap-6">
+              {pricingPlans.map((plan) => (
+                <motion.div
+                  key={plan.id}
+                  variants={scaleIn}
+                  className="rounded-2xl p-6 flex flex-col"
+                  style={{
+                    background: plan.highlighted
+                      ? `linear-gradient(135deg, rgba(37,99,255,0.18) 0%, rgba(34,211,238,0.10) 100%)`
+                      : SURFACE,
+                    border: plan.highlighted ? `1px solid rgba(37,99,255,0.4)` : `1px solid ${BORDER}`,
+                    boxShadow: plan.highlighted ? `0 0 40px rgba(37,99,255,0.12)` : 'none',
+                  }}
+                >
+                  {plan.highlighted && (
+                    <div className="text-xs font-semibold px-3 py-1 rounded-full mb-4 self-start"
+                      style={{ background: 'rgba(37,99,255,0.2)', color: '#93c5fd', border: '1px solid rgba(37,99,255,0.3)' }}
+                    >
+                      Most Popular
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold mb-1" style={{ color: TEXT }}>{plan.name}</h3>
+                  <p className="text-sm mb-5" style={{ color: MUTED }}>{plan.description}</p>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-black" style={{ color: TEXT }}>${plan.price}</span>
+                    <span className="text-sm" style={{ color: MUTED }}>{plan.period}</span>
+                  </div>
+                  <ul className="space-y-2.5 mb-8 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: SUB }}>
+                        <Check className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#10B981' }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/register">
+                    <Button
+                      className="w-full font-semibold"
+                      style={plan.highlighted
+                        ? { background: ACCENT, color: '#fff' }
+                        : { background: 'transparent', border: `1px solid ${BORDER}`, color: TEXT }
+                      }
+                    >
+                      {plan.cta}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+            <motion.div variants={fadeIn} className="text-center mt-8 text-sm" style={{ color: MUTED }}>
+              All plans include a 7-day free trial.{' '}
+              <Link to="/pricing" style={{ color: ACCENT }} className="hover:underline">View full pricing details →</Link>
+            </motion.div>
+          </div>
+        </Section>
+
+        {/* CTA */}
         <Section className="py-24">
           <div className="max-w-3xl mx-auto text-center">
             <motion.div
@@ -510,7 +666,7 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
           </div>
-        </section>
+        </Section>
       </main>
 
       {/* ── Footer ────────────────────────────────────────────────────── */}
@@ -566,7 +722,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </div
+            </div>
 
             {/* Legal */}
             <div>

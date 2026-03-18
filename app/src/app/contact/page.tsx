@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 import { Zap, Mail, MessageSquare, Building2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -18,6 +19,7 @@ const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE_OUT_CURVE } },
 };
+
 const staggerContainer = (stagger = 0.1, delay = 0): Variants => ({
   hidden: {},
   show: { transition: { staggerChildren: stagger, delayChildren: delay } },
@@ -27,7 +29,12 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
-    <motion.div ref={ref} initial="hidden" animate={inView ? 'show' : 'hidden'} className={className}>
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={inView ? 'show' : 'hidden'}
+      className={className}
+    >
       {children}
     </motion.div>
   );
@@ -67,6 +74,8 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen" style={{ background: BG, color: TEXT }}>
+      {/* Animated Background */}
+      <AnimatedBackground dotCount={30} size={3} opacity={0.03} color={ACCENT} />
 
       {/* Nav */}
       <nav
@@ -113,6 +122,28 @@ export default function ContactPage() {
             <motion.p variants={fadeUp} className="text-lg" style={{ color: SUB }}>
               Whether you have a question, a billing issue, or a business enquiry — we respond fast.
             </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+              <Link to="/register">
+                <Button
+                  size="lg"
+                  className="px-8 font-semibold text-base"
+                  style={{ background: ACCENT, color: '#fff' }}
+                >
+                  Start Free
+                  <ChevronRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 font-medium text-base"
+                  style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}
+                >
+                  Login
+                </Button>
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>

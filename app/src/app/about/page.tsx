@@ -2,7 +2,11 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
-import { Zap, Brain, Globe, Shield, Target, ArrowRight, ChevronRight } from 'lucide-react';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
+import {
+  Zap, Brain, Globe, Shield, Target, ArrowRight, ChevronRight,
+  Sparkles, Layers, Users, TrendingUp
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const BG = '#05070B';
@@ -18,6 +22,7 @@ const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE_OUT_CURVE } },
 };
+
 const staggerContainer = (stagger = 0.1, delay = 0): Variants => ({
   hidden: {},
   show: { transition: { staggerChildren: stagger, delayChildren: delay } },
@@ -27,22 +32,23 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
-    <motion.div ref={ref} initial="hidden" animate={inView ? 'show' : 'hidden'} className={className}>
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={inView ? 'show' : 'hidden'}
+      className={className}
+    >
       {children}
     </motion.div>
   );
 }
 
-const values = [
-  { icon: Brain,  title: 'Intelligence First',  description: 'Every feature is designed around AI-driven decision making. We do not add tools for the sake of it — only what drives real marketing outcomes.' },
-  { icon: Target, title: 'Outcome-Oriented',    description: 'We measure success by what you achieve — more reach, more leads, more conversions. Not by feature count.' },
-  { icon: Shield, title: 'Reliable & Transparent', description: 'No hidden limits, no surprise billing, no black-box automation. You always see what the AI is doing and why.' },
-  { icon: Globe,  title: 'Built for Scale',     description: 'Whether you run one brand or twenty, the platform is designed to scale with you without adding operational overhead.' },
-];
-
 export default function AboutPage() {
   return (
     <div className="min-h-screen" style={{ background: BG, color: TEXT }}>
+      
+      {/* Animated Background */}
+      <AnimatedBackground dotCount={40} size={2} opacity={0.02} color={ACCENT} />
 
       {/* Nav */}
       <nav
@@ -116,6 +122,20 @@ export default function AboutPage() {
                 scores them, and continuously improves based on real performance data. You stay in control while
                 the system runs itself.
               </motion.p>
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+                <Link to="/register">
+                  <Button className="font-semibold" style={{ background: ACCENT, color: '#fff' }}>
+                    Start Free
+                    <ChevronRight className="w-4 h-4 ml-1.5" />
+                  </Button>
+                </Link>
+                <Link to="/features">
+                  <Button variant="outline" className="font-semibold" style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
+                    Explore Features
+                    <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </Button>
+                </Link>
+              </motion.div>
             </motion.div>
             <motion.div
               variants={fadeUp}
@@ -147,7 +167,12 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold mb-4" style={{ color: TEXT }}>What we stand for</h2>
           </motion.div>
           <motion.div variants={staggerContainer(0.08)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((v) => {
+            {[
+              { icon: Brain,  title: 'Intelligence First',  description: 'Every feature is designed around AI-driven decision making. We do not add tools for the sake of it — only what drives real marketing outcomes.' },
+              { icon: Target, title: 'Outcome-Oriented',    description: 'We measure success by what you achieve — more reach, more leads, more conversions. Not by feature count.' },
+              { icon: Shield, title: 'Reliable & Transparent', description: 'No hidden limits, no surprise billing, no black-box automation. You always see what the AI is doing and why.' },
+              { icon: Globe,  title: 'Built for Scale',     description: 'Whether you run one brand or twenty, the platform is designed to scale with you without adding operational overhead.' },
+            ].map((v) => {
               const Icon = v.icon;
               return (
                 <motion.div key={v.title} variants={fadeUp} className="rounded-2xl p-6"
@@ -183,7 +208,7 @@ export default function AboutPage() {
               Amarktai Marketing is one product in a growing family of AI-powered business tools under the Amarktai Network.
               Every product in the network is built to the same standard: serious, reliable, and genuinely useful.
             </motion.p>
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
               <Link to="/register">
                 <Button className="font-semibold" style={{ background: ACCENT, color: '#fff' }}>
                   Start Free
