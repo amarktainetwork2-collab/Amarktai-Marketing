@@ -67,7 +67,7 @@ export default function PrivacyPage() {
           <div className="rounded-2xl p-8" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
 
             <Section title="1. Data We Collect">
-              <p><strong style={{ color: TEXT }}>Account data.</strong> When you register, we collect your name, email address, and any profile information you provide. Authentication is handled by Clerk. We do not store raw passwords.</p>
+              <p><strong style={{ color: TEXT }}>Account data.</strong> When you register, we collect your name, email address, and any profile information you provide. Passwords are hashed using bcrypt and never stored in plaintext.</p>
               <p><strong style={{ color: TEXT }}>Platform connection data.</strong> When you connect social media accounts (e.g. Instagram, YouTube, TikTok), we store OAuth tokens necessary to publish content on your behalf. We access only the permissions you explicitly grant.</p>
               <p><strong style={{ color: TEXT }}>Business and content data.</strong> We store information about the businesses you add to the platform (name, URL, description) and the AI-generated content associated with them.</p>
               <p><strong style={{ color: TEXT }}>Usage data.</strong> We collect anonymised data about how you use the platform — pages visited, features used, and errors encountered. This is used solely for product improvement.</p>
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
             </Section>
 
             <Section title="3. Data Sharing">
-              <p>We share data with trusted third-party service providers only as necessary to operate the platform. These include: authentication providers (Clerk), cloud infrastructure providers, payment processors, and AI inference services. All processors operate under data processing agreements and are prohibited from using your data for any purpose other than providing services to us.</p>
+              <p>We share data with trusted third-party service providers only as necessary to operate the platform. These include: cloud infrastructure providers, payment processors, and AI inference services. All processors operate under data processing agreements and are prohibited from using your data for any purpose other than providing services to us.</p>
               <p>We may disclose data if required to do so by law or valid legal process.</p>
             </Section>
 

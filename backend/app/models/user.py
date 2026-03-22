@@ -15,6 +15,7 @@ class User(Base):
     
     id = Column(String, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=True)  # nullable for social-auth compat
     name = Column(String, nullable=True)
     avatar = Column(String, nullable=True)
     plan = Column(Enum(PlanType), default=PlanType.FREE)

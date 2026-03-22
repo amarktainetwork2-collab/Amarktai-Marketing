@@ -9,9 +9,10 @@ class UserBase(BaseModel):
     avatar: Optional[str] = None
     plan: PlanType = PlanType.FREE
 
-class UserCreate(UserBase):
-    id: str
-    pass
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: Optional[str] = None
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None

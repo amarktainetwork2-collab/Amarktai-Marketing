@@ -44,7 +44,7 @@ export default function PublicNav({ activePath = '' }: Props) {
               style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span></span>
+            <span className="text-lg font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span><span style={{ color: '#F8FAFC' }}> Marketing</span></span>
           </Link>
 
           {/* Desktop links */}
