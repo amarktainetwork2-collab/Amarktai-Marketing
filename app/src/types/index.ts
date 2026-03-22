@@ -1,4 +1,4 @@
-// Types for Amarktai Marketing Platform
+// Types for AmarktAI Marketing Platform
 
 export interface User {
   id: string;

@@ -89,7 +89,7 @@ export default function TermsPage() {
             </Section>
 
             <Section title="5. Intellectual Property">
-              <p>You retain ownership of all content you create, add to, or publish through Amarktai Marketing. By using the platform, you grant us a limited licence to process, store, and transmit your content solely for the purpose of providing the service.</p>
+              <p>You retain ownership of all content you create, add to, or publish through AmarktAI Marketing. By using the platform, you grant us a limited licence to process, store, and transmit your content solely for the purpose of providing the service.</p>
               <p>AmarktAI Marketing, its design, codebase, and AI models are the exclusive property of AmarktAI Network. You may not copy, modify, or distribute any part of the platform without our written consent.</p>
             </Section>
 

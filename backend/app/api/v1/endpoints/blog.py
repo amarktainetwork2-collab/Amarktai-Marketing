@@ -1,7 +1,7 @@
 """
 SEO Blog Post Generator Endpoints
 
-Generates long-form SEO blog posts from webapp data using the Amarktai AI engine.
+Generates long-form SEO blog posts from webapp data using the AmarktAI AI engine.
 Each post can be used to drive organic search traffic to the user's site.
 """
 

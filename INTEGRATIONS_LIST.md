@@ -1,8 +1,8 @@
-# 🔗 Amarktai Marketing - Complete Integrations List
+# 🔗 AmarktAI Marketing - Complete Integrations List
 
 ## 📊 Overview
 
-Amarktai Marketing supports **37 third-party integrations** across 8 categories to provide comprehensive AI-powered social media marketing automation.
+AmarktAI Marketing supports **37 third-party integrations** across 8 categories to provide comprehensive AI-powered social media marketing automation.
 
 ---
 
@@ -303,7 +303,7 @@ Each integration requires account registration on the provider's platform. Most 
 
 ## ✅ Summary
 
-Amarktai Marketing integrates with **37 providers** across **11 categories**:
+AmarktAI Marketing integrates with **37 providers** across **11 categories**:
 
 1. **5 LLM providers** for AI content generation
 2. **8 image generators** for visual content
@@ -326,4 +326,4 @@ All integrations use secure API key storage with encryption and support user-pro
 
 **Last Updated**: February 9, 2026  
 **Version**: 1.0  
-**Part of Amarktai Network**
+**Part of AmarktAI Network**

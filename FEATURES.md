@@ -1,7 +1,7 @@
-# 🚀 Amarktai Marketing — Complete Feature List
+# 🚀 AmarktAI Marketing — Complete Feature List
 
 > Autonomous AI Social Media Marketing Platform powered by HuggingFace and Qwen.
-> **Designed and created by Amarktai Network.**
+> **Designed and created by AmarktAI Network.**
 
 ---
 
@@ -447,4 +447,4 @@ All tools use HuggingFace exclusively. Each runs autonomously via daily Celery t
 
 ---
 
-*Designed and created by Amarktai Network*
+*Designed and created by AmarktAI Network*

@@ -254,7 +254,7 @@ export default function SettingsPage() {
                 <p className="font-medium text-slate-200">
                   {user?.primaryEmailAddress?.emailAddress ?? 'Account'}
                 </p>
-                <p className="text-sm text-slate-400">Amarktai Account</p>
+                <p className="text-sm text-slate-400">AmarktAI Account</p>
               </div>
             </div>
             <Badge style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}>Connected</Badge>

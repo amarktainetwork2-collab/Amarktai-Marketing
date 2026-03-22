@@ -79,7 +79,7 @@ function AppRoutes() {
             isValidClerkKey ? (
               <ProtectedRoute><DashboardLayout /></ProtectedRoute>
             ) : (
-              <DashboardLayout />
+              <Navigate to="/login" replace />
             )
           }
         >

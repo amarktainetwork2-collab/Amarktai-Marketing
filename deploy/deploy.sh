@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# deploy.sh  — Amarktai Marketing VPS deploy script
+# deploy.sh  — AmarktAI Marketing VPS deploy script
 #
 # Target:  amarktai-marketing.amarktai.com
 # Server:  Ubuntu 22.04+ VPS (any provider)

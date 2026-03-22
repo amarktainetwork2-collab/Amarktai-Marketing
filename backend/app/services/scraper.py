@@ -34,7 +34,7 @@ _SOCIAL_DOMAINS = {"twitter.com", "x.com", "instagram.com", "facebook.com",
 
 _HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (compatible; AmarktaiBot/1.0; "
+        "Mozilla/5.0 (compatible; AmarktAIBot/1.0; "
         "+https://amarktai.com/bot)"
     ),
     "Accept": "text/html,application/xhtml+xml",

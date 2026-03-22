@@ -2,7 +2,7 @@
  * Power Tools Hub – All 10 AI Add-On Tools
  *
  * Each tool runs entirely via the AI Engine Inference API.
- * Designed and created by Amarktai Network
+ * Designed and created by AmarktAI Marketing
  */
 
 import { useState } from 'react';
@@ -548,7 +548,7 @@ export default function ToolsPage() {
           Power Tools Hub
         </h2>
         <p className="text-gray-500 text-sm mt-1">
-          10 autonomous AI add-ons powered entirely by AI Engine — Designed and created by Amarktai Network
+          10 autonomous AI add-ons powered entirely by AI Engine — Designed and created by AmarktAI Marketing
         </p>
       </div>
 

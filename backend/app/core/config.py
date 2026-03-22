@@ -4,7 +4,7 @@ import os
 
 class Settings(BaseSettings):
     # Application
-    APP_NAME: str = "Amarktai Marketing"
+    APP_NAME: str = "AmarktAI Marketing"
     DEBUG: bool = False
     FRONTEND_URL: str = "https://marketing.amarktai.com"
     ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     # Reddit (also used for trend analysis)
     REDDIT_CLIENT_ID: str = ""
     REDDIT_CLIENT_SECRET: str = ""
-    REDDIT_USER_AGENT: str = "AmarktaiBot/1.0"
+    REDDIT_USER_AGENT: str = "AmarktAIBot/1.0"
 
     # Bluesky / AT Protocol
     BLUESKY_CLIENT_ID: str = ""
@@ -168,14 +168,14 @@ class Settings(BaseSettings):
     # Per-app identity
     APP_ID: str = "amarktai-marketing"
     APP_SLUG: str = "amarktai-marketing"
-    APP_NAME: str = "Amarktai Marketing"
+    APP_NAME: str = "AmarktAI Marketing"
     APP_VERSION: str = "1.0.0"
     APP_ENVIRONMENT: str = "production"  # production | staging | development
 
-    # Outbound integration (connection to Amarktai Network main dashboard)
+    # Outbound integration (connection to AmarktAI Network main dashboard)
     # Keep AMARKTAI_INTEGRATION_TOKEN server-side only — never expose to frontend
     AMARKTAI_DASHBOARD_URL: str = ""   # e.g. https://dashboard.amarktai.com
-    AMARKTAI_INTEGRATION_TOKEN: str = ""  # generated per-app token in Amarktai Network
+    AMARKTAI_INTEGRATION_TOKEN: str = ""  # generated per-app token in AmarktAI Network
     AMARKTAI_INTEGRATION_ENABLED: bool = False
 
     # ==================== MONITORING ====================

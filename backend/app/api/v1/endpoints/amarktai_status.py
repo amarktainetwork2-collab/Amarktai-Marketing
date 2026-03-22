@@ -4,11 +4,11 @@
 Returns the current health, integration state, and supported metric keys for
 this app instance.  Useful for:
   - VPS deployment verification
-  - Amarktai Network health polling
+  - AmarktAI Network health polling
   - Local debugging during integration setup
 
 This endpoint is intentionally lightweight and public (no auth required) so
-that the Amarktai dashboard poller can reach it without a user token.
+that the AmarktAI dashboard poller can reach it without a user token.
 It does NOT expose secrets — the integration token is never returned.
 """
 
@@ -44,7 +44,7 @@ SUPPORTED_METRIC_KEYS = [
 @router.get("/status")
 async def amarktai_status() -> dict[str, Any]:
     """
-    Local status endpoint for Amarktai Network integration verification.
+    Local status endpoint for AmarktAI Network integration verification.
 
     Returns app identity, health, integration readiness, and the supported
     metric key list.  The integration token is NEVER included in the response.

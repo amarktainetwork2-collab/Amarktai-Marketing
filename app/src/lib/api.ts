@@ -1,5 +1,5 @@
 /**
- * Amarktai Marketing – Real API client
+ * AmarktAI Marketing – Real API client
  *
  * All calls go to the backend via /api/v1 (proxied through Nginx or Vite's
  * dev-server proxy).  No mock data is used here; the pricingPlans and

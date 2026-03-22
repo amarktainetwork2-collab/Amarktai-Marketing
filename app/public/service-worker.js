@@ -1,6 +1,5 @@
 /**
- * Amarktai Marketing — Service Worker
- * Part of Amarktai Network
+ * AmarktAI Marketing — Service Worker
  * Copyright 2026
  *
  * Enables offline support and makes the app installable as a PWA.
@@ -82,7 +81,7 @@ self.addEventListener('fetch', (event) => {
 // Push notifications (for future approval alerts)
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Amarktai AI';
+  const title = data.title || 'AmarktAI';
   const options = {
     body: data.body || 'You have new content ready for review.',
     icon: '/icons/icon-192x192.png',

@@ -1,8 +1,8 @@
-# Amarktai Marketing
+# AmarktAI Marketing
 
-**Autonomous AI Social Media Marketing Platform | Part of Amarktai Network**
+**Autonomous AI Social Media Marketing Platform | Part of AmarktAI Network**
 
-Amarktai Marketing is a fully autonomous AI-powered social media marketing SaaS platform.
+AmarktAI Marketing is a fully autonomous AI-powered social media marketing SaaS platform.
 It generates, schedules, and publishes content across social platforms with **zero manual effort** beyond a single approval step per post.
 
 **Deployment target:** `marketing.amarktai.com`
@@ -208,4 +208,4 @@ amarktai-marketing/
 
 ---
 
-**Part of Amarktai Network** — Building the future of autonomous marketing
+**Part of AmarktAI Network** — Building the future of autonomous marketing

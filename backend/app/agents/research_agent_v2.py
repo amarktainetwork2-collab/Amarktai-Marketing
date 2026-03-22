@@ -1,5 +1,5 @@
 """
-Enhanced Research Agent for Amarktai Marketing
+Enhanced Research Agent for AmarktAI Marketing
 Analyzes trends from multiple sources, competitors, and platform best practices
 """
 
@@ -183,7 +183,7 @@ class ResearchAgentV2:
                     # Use Reddit JSON API (no auth required for public data)
                     response = await client.get(
                         f"https://www.reddit.com/r/{subreddit}/hot.json",
-                        headers={"User-Agent": "AmarktaiBot/1.0"},
+                        headers={"User-Agent": "AmarktAIBot/1.0"},
                         params={"limit": 10},
                         timeout=15.0
                     )

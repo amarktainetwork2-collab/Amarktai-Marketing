@@ -1,11 +1,11 @@
-# Amarktai Marketing - Complete SaaS Blueprint
-## Autonomous AI Social Media Marketing Engine | Part of Amarktai Network
+# AmarktAI Marketing - Complete SaaS Blueprint
+## Autonomous AI Social Media Marketing Engine | Part of AmarktAI Network
 
 ---
 
 # Executive Summary
 
-Amarktai Marketing is a fully autonomous AI-powered social media marketing SaaS platform that promotes users' web apps across the top 6 social media platforms daily with **zero manual effort** beyond a single daily approval step.
+AmarktAI Marketing is a fully autonomous AI-powered social media marketing SaaS platform that promotes users' web apps across the top 6 social media platforms daily with **zero manual effort** beyond a single daily approval step.
 
 ### Core Value Proposition
 - **Set & Forget**: Connect your web apps once, approve content daily

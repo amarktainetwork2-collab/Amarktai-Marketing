@@ -1,4 +1,4 @@
-# Amarktai Marketing — Deployment & Integration Checklist
+# AmarktAI Marketing — Deployment & Integration Checklist
 
 > **Target subdomain:** `marketing.amarktai.com`
 
@@ -18,7 +18,7 @@
 | `nginx-subdomain.conf` | **NEW** — production Nginx config for `marketing.amarktai.com` with HTTPS |
 | `deploy/deploy.sh` | **NEW** — VPS deploy script (pull → build frontend → install backend → migrate → PM2 restart → Nginx reload) |
 | `deploy/ecosystem.config.cjs` | **NEW** — PM2 config for API, Celery worker, Celery Beat |
-| `deploy/app-registration.json` | **NEW** — app registration record for Amarktai Network dashboard |
+| `deploy/app-registration.json` | **NEW** — app registration record for AmarktAI Network dashboard |
 | `docker-compose.yml` | Added subdomain CORS origin |
 
 ---
@@ -55,11 +55,11 @@
 # ── App identity ──────────────────────────────────────────────────────────────
 APP_ID="amarktai-marketing"
 APP_SLUG="amarktai-marketing"
-APP_NAME="Amarktai Marketing"
+APP_NAME="AmarktAI Marketing"
 APP_VERSION="1.0.0"
 APP_ENVIRONMENT="production"
 
-# ── Amarktai Network integration ──────────────────────────────────────────────
+# ── AmarktAI Network integration ──────────────────────────────────────────────
 AMARKTAI_DASHBOARD_URL="https://dashboard.amarktai.com"
 AMARKTAI_INTEGRATION_TOKEN="<generated-per-app-token>"   # server-side ONLY
 AMARKTAI_INTEGRATION_ENABLED=true
@@ -78,7 +78,7 @@ FRONTEND_URL="https://marketing.amarktai.com"
 ```env
 VITE_API_URL=                        # empty = use Nginx /api proxy
 VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
-VITE_APP_NAME=Amarktai Marketing
+VITE_APP_NAME=AmarktAI Marketing
 VITE_APP_VERSION=1.0.0
 VITE_APP_ENVIRONMENT=production
 ```
@@ -88,7 +88,7 @@ VITE_APP_ENVIRONMENT=production
 ## 4 · Integration Model
 
 ```
-Amarktai Marketing VPS                     Amarktai Network Dashboard
+AmarktAI Marketing VPS                     AmarktAI Network Dashboard
 ─────────────────────────────────          ──────────────────────────
 backend/app/services/integration.py
   │
@@ -114,9 +114,9 @@ GET https://marketing.amarktai.com/api/amarktai/status
 
 ---
 
-## 5 · How to Register / Generate the App Token in Amarktai Network
+## 5 · How to Register / Generate the App Token in AmarktAI Network
 
-1. Log in to the Amarktai Network admin panel (`dashboard.amarktai.com`).
+1. Log in to the AmarktAI Network admin panel (`dashboard.amarktai.com`).
 2. Navigate to **Apps → Register App → Import JSON**.
 3. Upload / paste the contents of `deploy/app-registration.json`.
 4. Click **Register App**.
@@ -236,9 +236,9 @@ A     marketing.amarktai.com  <VPS IPv4>
   - Returns `supported_metric_keys` list
   - Does **NOT** contain the integration token
 
-### Integration with Amarktai Dashboard
+### Integration with AmarktAI Dashboard
 
-- [ ] App registered in Amarktai Network dashboard
+- [ ] App registered in AmarktAI Network dashboard
 - [ ] Token generated and set in `backend/.env`
 - [ ] `AMARKTAI_INTEGRATION_ENABLED=true` in `backend/.env`
 - [ ] After backend restart: heartbeat appears in dashboard within 5 minutes

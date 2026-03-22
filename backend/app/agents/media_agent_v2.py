@@ -1,5 +1,5 @@
 """
-Enhanced Media Agent for Amarktai Marketing
+Enhanced Media Agent for AmarktAI Marketing
 Orchestrates image/video/audio generation with multiple provider support and fallback routing
 """
 

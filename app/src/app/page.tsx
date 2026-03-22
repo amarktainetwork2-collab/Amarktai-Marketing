@@ -99,7 +99,7 @@ export default function LandingPage() {
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Sparkles className="w-3.5 h-3.5" />
               <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: '#22D3EE' }}></span>
-              AmarktAI Network — AI Marketing Platform
+              AmarktAI Marketing — AI Marketing Platform
             </motion.div>
 
             <motion.h1 variants={fadeUp}
