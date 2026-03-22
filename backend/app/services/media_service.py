@@ -6,7 +6,7 @@ HuggingFace is the primary provider for ALL media generation ($9/month Pro):
   - Videos: damo-vilab/text-to-video-ms-1.7b for short video clips
   - Fallback: picsum.photos (images) and free stock videos (video)
 
-Designed and created by AmarktAI Network
+Designed and created by AmarktAI Marketing
 """
 
 from __future__ import annotations

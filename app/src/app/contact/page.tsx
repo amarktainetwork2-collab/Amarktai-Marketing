@@ -79,7 +79,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* AmarktAI Network trust banner */}
+      {/* Trust banner */}
       <Section className="pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <motion.div variants={fadeUp}
@@ -94,8 +94,8 @@ export default function ContactPage() {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold" style={{ color: TEXT }}>Part of the AmarktAI Network</p>
-                <p className="text-xs" style={{ color: MUTED }}>AmarktAI Marketing is a product of the AmarktAI Network — a family of AI-powered business tools.</p>
+                <p className="text-sm font-semibold" style={{ color: TEXT }}>AmarktAI Marketing</p>
+                <p className="text-xs" style={{ color: MUTED }}>Autonomous AI-powered social media marketing — trusted by businesses worldwide.</p>
               </div>
             </div>
             <div className="flex items-center gap-4 shrink-0">

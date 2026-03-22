@@ -1,6 +1,5 @@
 /**
  * AmarktAI Marketing — Service Worker
- * Part of AmarktAI Network
  * Copyright 2026
  *
  * Enables offline support and makes the app installable as a PWA.

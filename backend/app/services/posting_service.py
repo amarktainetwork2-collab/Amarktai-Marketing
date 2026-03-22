@@ -358,7 +358,7 @@ async def post_youtube(
             description
             + "\n\n#Shorts"
             + "".join(f" #{t}" for t in (hashtags or [])[:5])
-            + "\n\nDesigned and created by AmarktAI Network"
+            + "\n\nDesigned and created by AmarktAI Marketing"
         )
 
         metadata = {

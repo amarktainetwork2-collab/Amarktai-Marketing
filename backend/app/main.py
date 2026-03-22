@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AmarktAI Marketing API",
-    description="Autonomous AI Social Media Marketing Platform — AmarktAI Network",
+    description="Autonomous AI Social Media Marketing Platform — AmarktAI Marketing",
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )

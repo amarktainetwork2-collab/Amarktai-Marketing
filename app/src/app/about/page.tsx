@@ -135,7 +135,7 @@ export default function AboutPage() {
                   { label: 'Platforms supported', value: '12 social channels' },
                   { label: 'Content generated', value: '3× daily, automatically' },
                   { label: 'Setup time', value: 'Under 5 minutes' },
-                  { label: 'Part of', value: 'AmarktAI Network' },
+                  { label: 'Ecosystem', value: 'AmarktAI' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between py-3"
                     style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -180,7 +180,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      {/* Part of the AmarktAI Network */}
+      {/* Broader mission */}
       <Section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <motion.div variants={staggerContainer(0.1)}
@@ -193,7 +193,7 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6"
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Zap className="w-3.5 h-3.5" />
-              Part of the AmarktAI Network
+              AmarktAI Marketing
             </motion.div>
             <motion.h2 variants={fadeUp} className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: TEXT }}>
               One product in a broader mission
@@ -201,7 +201,7 @@ export default function AboutPage() {
             <motion.p variants={fadeUp}
               className="text-base leading-relaxed mb-4 max-w-2xl mx-auto"
               style={{ color: SUB }}>
-              AmarktAI Marketing is one product in a growing family of AI-powered business tools under the AmarktAI Network. Every product in the network is built to the same standard: serious, reliable, and genuinely useful — not a toy, not a template.
+              AmarktAI Marketing is one product in a growing family of AI-powered business tools. Every product is built to the same standard: serious, reliable, and genuinely useful — not a toy, not a template.
             </motion.p>
             <motion.p variants={fadeUp}
               className="text-sm leading-relaxed mb-8 max-w-xl mx-auto"

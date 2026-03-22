@@ -7,7 +7,7 @@
  * - View live system health stats
  * - Trigger manual content generation
  *
- * Designed and created by AmarktAI Network
+ * Designed and created by AmarktAI Marketing
  */
 
 import { useEffect, useState } from 'react';
@@ -200,7 +200,7 @@ export default function AdminPage() {
             Admin Panel
           </h2>
           <p className="text-gray-500 text-sm mt-1">
-            System configuration — Designed and created by AmarktAI Network
+            System configuration — AmarktAI Marketing
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={loadData}>
