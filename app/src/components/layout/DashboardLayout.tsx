@@ -159,7 +159,9 @@ function UserArea() {
         <p className="text-sm font-medium text-slate-200 truncate">
           {user?.name || user?.email || 'Account'}
         </p>
-        <p className="text-xs text-slate-500">AmarktAI Pro</p>
+        <p className="text-xs text-slate-500">
+          {user?.name ? 'AmarktAI Marketing' : 'Free Plan'}
+        </p>
       </div>
       <button
         onClick={handleLogout}

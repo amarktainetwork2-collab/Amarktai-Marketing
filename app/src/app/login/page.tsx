@@ -115,7 +115,6 @@ export default function LoginPage() {
                 <label className="block text-sm font-medium text-slate-300" htmlFor="password">
                   Password
                 </label>
-                <span className="text-xs text-slate-500">Forgot password? (coming soon)</span>
               </div>
               <div className="relative">
                 <input

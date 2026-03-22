@@ -200,3 +200,12 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 settings = Settings()
+
+# Warn if JWT_SECRET is set to the insecure default value
+_DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
+if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "JWT_SECRET is set to the default insecure value. "
+        "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+    )
