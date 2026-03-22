@@ -31,6 +31,7 @@ const ToolsPage = lazy(() => import('@/app/tools/page'));
 const LeadsPage = lazy(() => import('@/app/leads/page'));
 const BlogPage = lazy(() => import('@/app/blog/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
+const FeaturesPage = lazy(() => import('@/app/features/page'));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
@@ -61,6 +62,7 @@ function AppRoutes() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/login" element={<LoginPage />} />
