@@ -180,7 +180,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      {/* Part of the Amarktai Network */}
+      {/* Part of the AmarktAI Network */}
       <Section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <motion.div variants={staggerContainer(0.1)}
@@ -223,7 +223,7 @@ export default function AboutPage() {
               </Link>
               <a href="https://amarktai.com" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
-                  Visit Amarktai.com
+                  Visit amarktai.com
                   <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </a>

@@ -79,7 +79,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Amarktai Network trust banner */}
+      {/* AmarktAI Network trust banner */}
       <Section className="pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <motion.div variants={fadeUp}
