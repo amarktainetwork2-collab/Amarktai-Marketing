@@ -1,6 +1,7 @@
 import { SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
@@ -23,10 +24,10 @@ export default function LoginPage() {
             >
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span></span>
+            <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span></span>
           </Link>
           <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
-          <p className="text-slate-400 text-sm">Sign in to your Amarktai workspace</p>
+          <p className="text-slate-400 text-sm">Sign in to your AmarktAI workspace</p>
         </div>
 
         {/* Auth Card */}
@@ -47,13 +48,41 @@ export default function LoginPage() {
               redirectUrl="/dashboard"
             />
           ) : (
-            <div className="text-center py-8">
-              <p className="text-slate-400 text-sm">
-                Authentication is not configured for this environment.
-              </p>
-              <p className="text-slate-500 text-xs mt-2">
-                Set VITE_CLERK_PUBLISHABLE_KEY to enable sign-in.
-              </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#CBD5E1' }}>Email address</label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  className="w-full rounded-lg px-4 py-3 text-sm outline-none border"
+                  style={{
+                    background: 'rgba(15,23,42,0.8)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: '#F8FAFC',
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#CBD5E1' }}>Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full rounded-lg px-4 py-3 text-sm outline-none border"
+                  style={{
+                    background: 'rgba(15,23,42,0.8)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: '#F8FAFC',
+                  }}
+                />
+              </div>
+              <Link to="/dashboard" className="block w-full">
+                <Button className="w-full font-semibold py-3" style={{ background: '#2563FF', color: '#fff' }}>
+                  Sign in
+                </Button>
+              </Link>
+              <div className="text-center pt-2">
+                <span className="text-xs" style={{ color: '#475569' }}>Preview mode active — full auth requires Clerk setup</span>
+              </div>
             </div>
           )}
         </div>

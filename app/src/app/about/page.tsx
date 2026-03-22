@@ -40,7 +40,7 @@ const whyPoints = [
   {
     icon: Brain,
     title: 'Most businesses never market consistently',
-    description: 'Life gets busy. Posting falls off. We built Amarktai Marketing so consistency happens automatically — not when you remember.',
+    description: 'Life gets busy. Posting falls off. We built AmarktAI Marketing so consistency happens automatically — not when you remember.',
   },
   {
     icon: Globe,
@@ -75,12 +75,12 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Sparkles className="w-3.5 h-3.5" />
-              About Amarktai Marketing
+              About AmarktAI Marketing
             </motion.div>
             <motion.h1 variants={fadeUp}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6"
               style={{ color: TEXT }}>
-              We built Amarktai Marketing so business owners
+              We built AmarktAI Marketing so business owners
               <br />
               <span style={{ background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 never have to think about social media again
@@ -101,10 +101,10 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div variants={staggerContainer(0.1)}>
               <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-6" style={{ color: TEXT }}>
-                What is Amarktai Marketing?
+              What is AmarktAI Marketing?
               </motion.h2>
               <motion.p variants={fadeUp} className="text-base leading-relaxed mb-5" style={{ color: SUB }}>
-                Amarktai Marketing is an AI-powered platform that runs your social media marketing on autopilot. You tell it about your business once — it learns your brand, products, tone of voice, and audience — then generates and publishes platform-native content every single day.
+                AmarktAI Marketing is an AI-powered platform that runs your social media marketing on autopilot. You tell it about your business once — it learns your brand, products, tone of voice, and audience — then generates and publishes platform-native content every single day.
               </motion.p>
               <motion.p variants={fadeUp} className="text-base leading-relaxed mb-5" style={{ color: MUTED }}>
                 It's built for founders, small teams, and growing businesses who know they need to market consistently but don't have the time, staff, or budget to do it properly.
@@ -135,7 +135,7 @@ export default function AboutPage() {
                   { label: 'Platforms supported', value: '12 social channels' },
                   { label: 'Content generated', value: '3× daily, automatically' },
                   { label: 'Setup time', value: 'Under 5 minutes' },
-                  { label: 'Part of', value: 'Amarktai Network' },
+                  { label: 'Part of', value: 'AmarktAI Network' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between py-3"
                     style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -193,7 +193,7 @@ export default function AboutPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6"
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Zap className="w-3.5 h-3.5" />
-              Part of the Amarktai Network
+              Part of the AmarktAI Network
             </motion.div>
             <motion.h2 variants={fadeUp} className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: TEXT }}>
               One product in a broader mission
@@ -201,12 +201,12 @@ export default function AboutPage() {
             <motion.p variants={fadeUp}
               className="text-base leading-relaxed mb-4 max-w-2xl mx-auto"
               style={{ color: SUB }}>
-              Amarktai Marketing is one product in a growing family of AI-powered business tools under the Amarktai Network. Every product in the network is built to the same standard: serious, reliable, and genuinely useful — not a toy, not a template.
+              AmarktAI Marketing is one product in a growing family of AI-powered business tools under the AmarktAI Network. Every product in the network is built to the same standard: serious, reliable, and genuinely useful — not a toy, not a template.
             </motion.p>
             <motion.p variants={fadeUp}
               className="text-sm leading-relaxed mb-8 max-w-xl mx-auto"
               style={{ color: MUTED }}>
-              We build tools that give independent businesses the capabilities of companies ten times their size. Amarktai Marketing is how we do that for marketing.
+              We build tools that give independent businesses the capabilities of companies ten times their size. AmarktAI Marketing is how we do that for marketing.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">

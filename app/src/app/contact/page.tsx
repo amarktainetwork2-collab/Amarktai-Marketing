@@ -94,8 +94,8 @@ export default function ContactPage() {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold" style={{ color: TEXT }}>Part of the Amarktai Network</p>
-                <p className="text-xs" style={{ color: MUTED }}>Amarktai Marketing is a product of the Amarktai Network — a family of AI-powered business tools.</p>
+                <p className="text-sm font-semibold" style={{ color: TEXT }}>Part of the AmarktAI Network</p>
+                <p className="text-xs" style={{ color: MUTED }}>AmarktAI Marketing is a product of the AmarktAI Network — a family of AI-powered business tools.</p>
               </div>
             </div>
             <div className="flex items-center gap-4 shrink-0">

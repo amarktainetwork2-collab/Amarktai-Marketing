@@ -187,8 +187,12 @@ export default function FeaturesPage() {
               const badge = badgeConfig[f.badge];
               return (
                 <motion.div key={f.title} variants={fadeUp}
-                  className="rounded-2xl p-6 flex flex-col gap-4 transition-all duration-300 hover:-translate-y-0.5"
-                  style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+                  className="rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                  style={{
+                    background: SURFACE,
+                    border: `1px solid ${BORDER}`,
+                    borderLeft: f.badge === 'live' ? '4px solid #22C55E' : f.badge === 'coming-soon' ? '4px solid #F59E0B' : '4px solid #A855F7',
+                  }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl" role="img" aria-label={f.title}>{f.emoji}</span>

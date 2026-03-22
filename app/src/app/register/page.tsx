@@ -1,6 +1,10 @@
 import { SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Zap, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
 
 export default function RegisterPage() {
   const benefits = [
@@ -27,14 +31,14 @@ export default function RegisterPage() {
             >
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span><span style={{ color: '#F8FAFC' }}> Network</span></span>
+            <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span><span style={{ color: '#F8FAFC' }}> Network</span></span>
           </Link>
           <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
             Automate your marketing.<br />
             <span style={{ color: '#22D3EE' }}>Scale without limits.</span>
           </h1>
           <p className="text-slate-400 mb-8 leading-relaxed">
-            Join businesses using Amarktai to run autonomous AI-powered marketing across all channels.
+            Join businesses using AmarktAI to run autonomous AI-powered marketing across all channels.
           </p>
           <ul className="space-y-3">
             {benefits.map((benefit, i) => (
@@ -56,7 +60,7 @@ export default function RegisterPage() {
               >
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span></span>
+              <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span></span>
             </Link>
           </div>
 
@@ -74,12 +78,64 @@ export default function RegisterPage() {
               boxShadow: '0 0 0 1px rgba(37,99,255,0.08), 0 24px 48px rgba(0,0,0,0.4)',
             }}
           >
-            <SignUp
-              routing="path"
-              path="/register"
-              signInUrl="/login"
-              redirectUrl="/dashboard"
-            />
+            {isValidClerkKey ? (
+              <SignUp
+                routing="path"
+                path="/register"
+                signInUrl="/login"
+                redirectUrl="/dashboard"
+              />
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#CBD5E1' }}>Full name</label>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    className="w-full rounded-lg px-4 py-3 text-sm outline-none border"
+                    style={{
+                      background: 'rgba(15,23,42,0.8)',
+                      borderColor: 'rgba(255,255,255,0.12)',
+                      color: '#F8FAFC',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#CBD5E1' }}>Email address</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg px-4 py-3 text-sm outline-none border"
+                    style={{
+                      background: 'rgba(15,23,42,0.8)',
+                      borderColor: 'rgba(255,255,255,0.12)',
+                      color: '#F8FAFC',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#CBD5E1' }}>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="w-full rounded-lg px-4 py-3 text-sm outline-none border"
+                    style={{
+                      background: 'rgba(15,23,42,0.8)',
+                      borderColor: 'rgba(255,255,255,0.12)',
+                      color: '#F8FAFC',
+                    }}
+                  />
+                </div>
+                <Link to="/dashboard" className="block w-full">
+                  <Button className="w-full font-semibold py-3" style={{ background: '#2563FF', color: '#fff' }}>
+                    Create account
+                  </Button>
+                </Link>
+                <div className="text-center pt-2">
+                  <span className="text-xs" style={{ color: '#475569' }}>Preview mode active — full auth requires Clerk setup</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <p className="text-center mt-6 text-slate-500 text-sm">

@@ -149,7 +149,7 @@ function UserArea() {
         <p className="text-sm font-medium text-slate-200 truncate">
           {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Account'}
         </p>
-        <p className="text-xs text-slate-500">Amarktai Pro</p>
+        <p className="text-xs text-slate-500">AmarktAI Pro</p>
       </div>
     </div>
   );
@@ -193,7 +193,7 @@ export default function DashboardLayout() {
             >
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-bold text-white tracking-tight">Amarktai</span>
+            <span className="text-base font-bold tracking-tight"><span className="text-white">Amarkt</span><span style={{ color: '#2563FF' }}>AI</span></span>
           </Link>
           <button
             className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 text-slate-400"

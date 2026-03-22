@@ -39,7 +39,7 @@ export default function PrivacyPage() {
               style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span></span>
+            <span className="font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span></span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login"><Button variant="ghost" className="text-sm" style={{ color: MUTED }}>Login</Button></Link>
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
             <p className="text-xs font-medium mb-3" style={{ color: MUTED }}>Effective Date: {updated}</p>
             <h1 className="text-4xl font-bold mb-4" style={{ color: TEXT }}>Privacy Policy</h1>
             <p className="text-base leading-relaxed" style={{ color: SUB }}>
-              Amarktai Marketing ("we", "our", or "us") is operated by Amarktai Network. This Privacy Policy
+              AmarktAI Marketing ("we", "our", or "us") is operated by AmarktAI Network. This Privacy Policy
               explains what data we collect, how we use it, and your rights as a user of marketing.amarktai.com.
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
             </Section>
 
             <Section title="2. How We Use Your Data">
-              <p>We use your data to: provide and maintain the Amarktai Marketing service; generate AI content on your behalf; publish content to connected platforms; send service-critical communications (account confirmations, billing alerts); improve and debug the platform; and comply with legal obligations.</p>
+              <p>We use your data to: provide and maintain the AmarktAI Marketing service; generate AI content on your behalf; publish content to connected platforms; send service-critical communications (account confirmations, billing alerts); improve and debug the platform; and comply with legal obligations.</p>
               <p>We do not sell your data. We do not use your content or account data to train AI models for third-party commercial purposes.</p>
             </Section>
 
@@ -105,11 +105,11 @@ export default function PrivacyPage() {
             </Section>
 
             <Section title="8. Third-Party Links">
-              <p>The platform may contain links to external websites (e.g. Amarktai.com). These are governed by their own privacy policies. We are not responsible for the privacy practices of third-party websites.</p>
+              <p>The platform may contain links to external websites (e.g. AmarktAI.com). These are governed by their own privacy policies. We are not responsible for the privacy practices of third-party websites.</p>
             </Section>
 
             <Section title="9. Children">
-              <p>Amarktai Marketing is not intended for users under the age of 16. We do not knowingly collect data from children. If you believe a child has provided us with personal data, contact us and we will delete it promptly.</p>
+              <p>AmarktAI Marketing is not intended for users under the age of 16. We do not knowingly collect data from children. If you believe a child has provided us with personal data, contact us and we will delete it promptly.</p>
             </Section>
 
             <Section title="10. Changes to This Policy">
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
                 For privacy-related queries: <strong style={{ color: TEXT }}>amarktainetwork@gmail.com</strong>
               </p>
               <p>
-                Amarktai Network · marketing.amarktai.com
+                AmarktAI Network · marketing.amarktai.com
               </p>
             </Section>
           </div>
@@ -131,7 +131,7 @@ export default function PrivacyPage() {
       {/* Footer */}
       <footer className="px-4 sm:px-6 lg:px-8 py-10" style={{ borderTop: `1px solid ${BORDER}` }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm" style={{ color: MUTED }}>
-          <p>© {new Date().getFullYear()} Amarktai Marketing. Part of Amarktai Network.</p>
+          <p>© {new Date().getFullYear()} AmarktAI Marketing. Part of AmarktAI Network.</p>
           <div className="flex items-center gap-6">
             <Link to="/privacy" className="hover:underline" style={{ color: MUTED }}>Privacy</Link>
             <Link to="/terms" className="hover:underline" style={{ color: MUTED }}>Terms</Link>
