@@ -136,9 +136,8 @@ function WorkspaceSwitcher() {
   );
 }
 
-function UserArea() {
+function UserAreaAuthenticated() {
   const { user } = useUser();
-  if (!isValidClerkKey) return null;
   return (
     <div
       className="flex items-center gap-3 p-3"
@@ -149,10 +148,33 @@ function UserArea() {
         <p className="text-sm font-medium text-slate-200 truncate">
           {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Account'}
         </p>
-        <p className="text-xs text-slate-500">Amarktai Pro</p>
+        <p className="text-xs text-slate-500">AmarktAI Pro</p>
       </div>
     </div>
   );
+}
+
+function UserArea() {
+  if (!isValidClerkKey) {
+    return (
+      <div
+        className="flex items-center gap-3 p-3"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
+          style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
+        >
+          P
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-slate-200 truncate">Preview Account</p>
+          <p className="text-xs text-slate-500">AmarktAI Pro</p>
+        </div>
+      </div>
+    );
+  }
+  return <UserAreaAuthenticated />;
 }
 
 export default function DashboardLayout() {
@@ -193,7 +215,7 @@ export default function DashboardLayout() {
             >
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-bold text-white tracking-tight">Amarktai</span>
+            <span className="text-base font-bold tracking-tight"><span className="text-white">Amarkt</span><span style={{ color: '#2563FF' }}>AI</span></span>
           </Link>
           <button
             className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 text-slate-400"

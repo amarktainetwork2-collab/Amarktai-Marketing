@@ -5,12 +5,21 @@ import { EASE_OUT_CURVE } from '@/lib/motion';
 import {
   Zap, BarChart3, Shield, Clock,
   Check, ChevronRight, Sparkles,
-  Brain, Globe, ArrowRight,
+  Brain, Globe, ArrowRight, Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
 import ParticleBackground from '@/components/ui/ParticleBackground';
+
+const BG = '#05070B';
+const SURFACE = '#0B1220';
+const BORDER = 'rgba(255,255,255,0.08)';
+const ACCENT = '#2563FF';
+const CYAN = '#22D3EE';
+const TEXT = '#F8FAFC';
+const MUTED = '#94A3B8';
+const SUB = '#CBD5E1';
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
@@ -39,54 +48,35 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   );
 }
 
-const BG = '#05070B';
-const SURFACE = '#0B1220';
-const GLASS = 'rgba(15,23,42,0.72)';
-const BORDER = 'rgba(255,255,255,0.08)';
-const ACCENT = '#2563FF';
-const CYAN = '#22D3EE';
-const TEXT = '#F8FAFC';
-const MUTED = '#94A3B8';
-const SUB = '#CBD5E1';
+const howItWorksSteps = [
+  { step: '01', title: 'Tell us about your business', description: 'Enter your website URL or fill in your business details manually. Takes less than 2 minutes.' },
+  { step: '02', title: 'AI learns your brand', description: 'Our AI reads your site, learns your products, services, tone of voice, and target audience automatically.' },
+  { step: '03', title: 'Content is generated and scheduled', description: 'Platform-native posts, captions, and scripts are created and scheduled across all your social channels.' },
+  { step: '04', title: 'You review, approve, and grow', description: 'Every post goes into your approval queue. Approve in one click, edit inline, or reject and regenerate.' },
+];
 
-const trustPoints = [
-  {
-    icon: <Brain className="w-5 h-5" />,
-    title: 'AI-Powered, Always On',
-    description: 'Generates 3 content batches daily across all 12 platforms. Zero manual effort required.',
-    color: ACCENT,
-  },
-  {
-    icon: <Globe className="w-5 h-5" />,
-    title: '12 Platforms, One Control Room',
-    description: 'YouTube, TikTok, Instagram, LinkedIn and more — native content for every algorithm.',
-    color: CYAN,
-  },
-  {
-    icon: <Shield className="w-5 h-5" />,
-    title: 'You Stay in Control',
-    description: 'Full approval queue before anything goes live. Edit, approve or reject in one click.',
-    color: '#6D5DF6',
-  },
-  {
-    icon: <BarChart3 className="w-5 h-5" />,
-    title: 'Self-Optimizing Intelligence',
-    description: 'Analytics, lead capture, A/B testing and competitor intel — all running autonomously.',
-    color: ACCENT,
-  },
+const featureCards = [
+  { icon: Brain, title: 'AI Content Generation', description: 'Platform-native posts generated 3× daily for every social channel — no prompts needed.', color: ACCENT },
+  { icon: Globe, title: '12 Platforms', description: 'YouTube, TikTok, Instagram, Facebook, X, LinkedIn, Pinterest, Reddit, Bluesky, Threads, Telegram, Snapchat.', color: CYAN },
+  { icon: Shield, title: 'Approval Queue', description: 'Full editorial control — approve, edit, or reject before anything goes live.', color: '#6D5DF6' },
+  { icon: BarChart3, title: 'Live Analytics', description: 'Per-platform performance tracking. AI learns what works and improves over time.', color: ACCENT },
+  { icon: Clock, title: 'Autonomous Scheduling', description: 'Posts go live at the optimal time for each platform — morning, midday, and evening.', color: CYAN },
+  { icon: Users, title: 'Lead Capture', description: 'AI captures leads from social comments and links, scores them 0–100, and adds them to your pipeline.', color: '#6D5DF6' },
 ];
 
 const platforms = [
-  'YouTube', 'TikTok', 'Instagram', 'Facebook',
-  'X / Twitter', 'LinkedIn', 'Pinterest', 'Reddit',
-  'Bluesky', 'Threads', 'Telegram', 'Snapchat',
-];
-
-const highlights = [
-  { icon: Clock, label: '3× Daily Content', sub: 'Auto-generated batches' },
-  { icon: BarChart3, label: 'Live Analytics', sub: 'Per-platform insights' },
-  { icon: Shield, label: 'Approval Queue', sub: 'Full editorial control' },
-  { icon: Brain, label: 'AI Lead Scoring', sub: '0–100 priority scores' },
+  { name: 'YouTube', color: '#FF0000' },
+  { name: 'TikTok', color: '#FF2D55' },
+  { name: 'Instagram', color: '#E1306C' },
+  { name: 'Facebook', color: '#1877F2' },
+  { name: 'X / Twitter', color: '#F8FAFC' },
+  { name: 'LinkedIn', color: '#0A66C2' },
+  { name: 'Pinterest', color: '#E60023' },
+  { name: 'Reddit', color: '#FF4500' },
+  { name: 'Bluesky', color: '#0085FF' },
+  { name: 'Threads', color: '#F8FAFC' },
+  { name: 'Telegram', color: '#229ED9' },
+  { name: 'Snapchat', color: '#FFFC00' },
 ];
 
 export default function LandingPage() {
@@ -108,28 +98,28 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Sparkles className="w-3.5 h-3.5" />
-              Amarktai Network — AI Marketing Platform
+              <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: '#22D3EE' }}></span>
+              AmarktAI Network — AI Marketing Platform
             </motion.div>
 
             <motion.h1 variants={fadeUp}
               className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.05] tracking-tight mb-6"
               style={{ color: TEXT }}>
-              Autonomous AI Marketing
+              Your Business,
               <br />
               <span style={{
                 background: `linear-gradient(90deg, ${ACCENT} 0%, ${CYAN} 100%)`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                That Scales Itself
+                Marketed by AI
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp}
               className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               style={{ color: SUB }}>
-              Create, schedule, optimise, and scale content across 12 platforms — entirely on autopilot.
-              Your AI marketing team, running 24/7 from day one.
+              AmarktAI Marketing understands your business, creates content, and posts across all your social platforms — automatically, every single day.
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
@@ -140,17 +130,16 @@ export default function LandingPage() {
                   <ChevronRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </Link>
-              <Link to="/features">
-                <Button size="lg" variant="outline" className="px-9 font-medium text-base h-12"
-                  style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
-                  Explore Features
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
-                </Button>
-              </Link>
+              <Button size="lg" variant="outline" className="px-9 font-medium text-base h-12"
+                style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>
+                See How It Works
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
             </motion.div>
 
             <motion.div variants={fadeIn} className="flex flex-wrap items-center justify-center gap-6 text-sm" style={{ color: MUTED }}>
-              {['7-day free trial', 'No credit card required', 'Cancel anytime'].map((t) => (
+              {['7-day free trial', 'No credit card', 'Cancel anytime'].map((t) => (
                 <span key={t} className="flex items-center gap-1.5">
                   <Check className="w-4 h-4" style={{ color: '#10B981' }} />
                   {t}
@@ -161,79 +150,140 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust / Value Snapshot */}
+      {/* Stats row */}
+      <div className="flex flex-wrap justify-center gap-4 mt-12 mb-4 px-4">
+        {[
+          { stat: '12', label: 'Platforms Supported' },
+          { stat: '3×', label: 'Daily Content' },
+          { stat: '7-Day', label: 'Free Trial' },
+        ].map((item) => (
+          <div key={item.stat} className="flex flex-col items-center px-8 py-4 rounded-2xl border" style={{ background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(37,99,255,0.25)' }}>
+            <span className="text-3xl font-black" style={{ color: '#2563FF' }}>{item.stat}</span>
+            <span className="text-xs mt-1 font-medium" style={{ color: '#94A3B8' }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Product preview */}
+      <div className="mt-10 mx-auto max-w-2xl rounded-2xl border overflow-hidden px-4" style={{ background: 'rgba(15,23,42,0.85)', borderColor: 'rgba(37,99,255,0.2)' }}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.3)' }}>
+          <span className="w-3 h-3 rounded-full bg-red-500 opacity-70"></span>
+          <span className="w-3 h-3 rounded-full bg-yellow-500 opacity-70"></span>
+          <span className="w-3 h-3 rounded-full bg-green-500 opacity-70"></span>
+          <span className="text-xs ml-2 font-mono" style={{ color: '#475569' }}>AmarktAI — Content Studio</span>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(37,99,255,0.1)', border: '1px solid rgba(37,99,255,0.2)' }}>
+            <span className="animate-spin text-lg">⚙️</span>
+            <span className="text-sm font-medium" style={{ color: '#93C5FD' }}>AI generating content for Instagram… <span className="text-xs" style={{ color: '#475569' }}>3 posts</span></span>
+          </div>
+          <div className="rounded-xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ background: 'linear-gradient(135deg,#E1306C,#833AB4)' }}>📸</span>
+              <div>
+                <div className="text-xs font-semibold" style={{ color: '#F8FAFC' }}>Instagram Post</div>
+                <div className="text-xs" style={{ color: '#475569' }}>Generated just now</div>
+              </div>
+            </div>
+            <div className="h-24 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'linear-gradient(135deg,rgba(225,48,108,0.2),rgba(131,58,180,0.2))', border: '1px dashed rgba(255,255,255,0.1)' }}>🖼️</div>
+            <p className="text-xs leading-relaxed" style={{ color: '#CBD5E1' }}>✨ Transform your business with AI-powered marketing that works 24/7. Stop wasting hours on content — let AmarktAI handle it while you focus on growth. 🚀 #AIMarketing #BusinessGrowth</p>
+          </div>
+          <div className="flex gap-2">
+            <button className="flex-1 rounded-lg py-2 text-xs font-semibold" style={{ background: 'rgba(34,197,94,0.15)', color: '#4ADE80', border: '1px solid rgba(34,197,94,0.3)' }}>✓ Approve</button>
+            <button className="flex-1 rounded-lg py-2 text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.1)' }}>✏️ Edit</button>
+            <button className="flex-1 rounded-lg py-2 text-xs font-semibold" style={{ background: 'rgba(239,68,68,0.1)', color: '#F87171', border: '1px solid rgba(239,68,68,0.2)' }}>✗ Reject</button>
+          </div>
+        </div>
+      </div>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8">
+        <Section>
+          <div className="max-w-5xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
+                style={{ background: 'rgba(34,211,238,0.10)', border: `1px solid rgba(34,211,238,0.25)`, color: CYAN }}>
+                How It Works
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: TEXT }}>
+                From zero to fully automated in minutes
+              </h2>
+              <p className="text-base max-w-xl mx-auto" style={{ color: MUTED }}>
+                No technical setup. No content strategy required. Just tell us about your business and the AI handles the rest.
+              </p>
+            </motion.div>
+            <motion.div variants={staggerContainer(0.1)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {howItWorksSteps.map((step) => (
+                <motion.div key={step.step} variants={fadeUp}
+                  className="rounded-2xl p-6"
+                  style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full text-lg font-black mb-4 mx-auto" style={{ background: 'rgba(37,99,255,0.15)', border: '1px solid rgba(37,99,255,0.4)', color: '#2563FF', boxShadow: '0 0 20px rgba(37,99,255,0.3)' }}>
+                    {step.step}
+                  </div>
+                  <h3 className="font-semibold mb-2" style={{ color: TEXT }}>{step.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{step.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </Section>
+      </section>
+
+      {/* Feature Cards */}
       <Section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <motion.div variants={fadeUp} className="text-center mb-14">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: TEXT }}>
-              Why teams choose Amarktai Marketing
-            </h2>
-            <p className="text-base max-w-xl mx-auto" style={{ color: MUTED }}>
-              Built for founders, marketers, and growing teams who need results without the overhead.
-            </p>
-          </motion.div>
-          <motion.div variants={staggerContainer(0.08)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {trustPoints.map((t) => (
-              <motion.div key={t.title} variants={fadeUp}
-                className="rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5"
-                style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: `${t.color}1A`, color: t.color }}>
-                  {t.icon}
-                </div>
-                <h3 className="font-semibold mb-2 text-sm" style={{ color: TEXT }}>{t.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{t.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </Section>
-
-      {/* Product Highlight */}
-      <Section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <motion.div variants={fadeUp} className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
-              style={{ background: 'rgba(34,211,238,0.10)', border: `1px solid rgba(34,211,238,0.25)`, color: CYAN }}>
-              Platform Overview
+              style={{ background: 'rgba(37,99,255,0.10)', border: `1px solid rgba(37,99,255,0.25)`, color: '#93c5fd' }}>
+              Platform Features
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: TEXT }}>
-              Every Platform. One Intelligence.
+              Everything you need, nothing you don't
             </h2>
             <p className="text-base max-w-xl mx-auto" style={{ color: MUTED }}>
-              Post natively to 12 platforms simultaneously. Each piece of content is generated and optimised for that platform's audience and algorithm.
+              Built for founders and small teams who need enterprise-grade marketing without the overhead.
             </p>
           </motion.div>
-
-          <motion.div variants={staggerContainer(0.04)} className="flex flex-wrap justify-center gap-3 mb-14">
-            {platforms.map((p) => (
-              <motion.div key={p} variants={scaleIn}
-                className="px-4 py-2 rounded-full text-sm font-medium"
-                style={{ background: GLASS, border: `1px solid ${BORDER}`, color: SUB, backdropFilter: 'blur(12px)' }}>
-                {p}
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div variants={staggerContainer(0.07)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {highlights.map((h) => {
-              const Icon = h.icon;
+          <motion.div variants={staggerContainer(0.07)} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featureCards.map((f) => {
+              const Icon = f.icon;
               return (
-                <motion.div key={h.label} variants={fadeUp}
-                  className="rounded-2xl p-5 flex flex-col items-center text-center"
+                <motion.div key={f.title} variants={fadeUp}
+                  className="rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5"
                   style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                    style={{ background: 'rgba(37,99,255,0.12)', color: ACCENT }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: `${f.color}1A`, color: f.color }}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <p className="font-semibold text-sm mb-1" style={{ color: TEXT }}>{h.label}</p>
-                  <p className="text-xs" style={{ color: MUTED }}>{h.sub}</p>
+                  <h3 className="font-semibold mb-2 text-sm" style={{ color: TEXT }}>{f.title}</h3>
+                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{f.description}</p>
                 </motion.div>
               );
             })}
           </motion.div>
+        </div>
+      </Section>
 
-          <motion.div variants={fadeUp} className="text-center mt-10">
+      {/* Platforms */}
+      <Section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <motion.div variants={fadeUp} className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: TEXT }}>
+              Every Platform. One Intelligence.
+            </h2>
+            <p className="text-base" style={{ color: MUTED }}>Post natively to 12 platforms simultaneously.</p>
+          </motion.div>
+          <motion.div variants={staggerContainer(0.04)} className="flex flex-wrap justify-center gap-3">
+            {platforms.map((p) => (
+              <motion.div key={p.name} variants={scaleIn}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium border"
+                style={{ background: 'rgba(15,23,42,0.8)', borderColor: 'rgba(255,255,255,0.1)', color: '#CBD5E1', backdropFilter: 'blur(12px)' }}>
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }}></span>
+                {p.name}
+              </motion.div>
+            ))}
+          </motion.div>
+          <motion.div variants={fadeUp} className="mt-8">
             <Link to="/features">
               <Button variant="outline" className="font-medium"
                 style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
@@ -267,13 +317,13 @@ export default function LandingPage() {
               Ready to automate your marketing?
             </motion.h2>
             <motion.p variants={fadeUp} className="text-lg mb-8 relative max-w-lg mx-auto" style={{ color: MUTED }}>
-              Join businesses already using Amarktai Marketing to generate, schedule, and scale their content across every platform — while they focus on building.
+              Join businesses already using AmarktAI Marketing to generate, schedule, and scale their content across every platform — while they focus on building.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4 relative">
               <Link to="/register">
                 <Button size="lg" className="px-10 font-semibold text-base"
                   style={{ background: ACCENT, color: '#fff', boxShadow: `0 0 20px rgba(37,99,255,0.3)` }}>
-                  Start Free
+                  Start Free — 7 Days
                   <ChevronRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </Link>

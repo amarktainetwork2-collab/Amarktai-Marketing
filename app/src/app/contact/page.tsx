@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
-import { Zap, Mail, MessageSquare, Building2, ChevronRight, Check, Sparkles } from 'lucide-react';
+import { Zap, Mail, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
@@ -36,16 +36,16 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   );
 }
 
-const contactTypes = [
-  { icon: MessageSquare, title: 'General Support', description: 'Questions about features, your account, or how the platform works.', tag: 'general' },
-  { icon: Mail, title: 'Billing & Plans', description: 'Questions about your subscription, invoices, or upgrading your plan.', tag: 'billing' },
-  { icon: Building2, title: 'Business Enquiries', description: 'Custom plans, partnerships, white-label options, or enterprise pricing.', tag: 'business' },
-];
+interface FormState {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
 
 export default function ContactPage() {
-  const [category, setCategory] = useState('general');
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState<FormState>({ name: '', email: '', subject: 'general', message: '' });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,13 +67,13 @@ export default function ContactPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
               style={{ background: 'rgba(37,99,255,0.12)', border: `1px solid rgba(37,99,255,0.3)`, color: '#93c5fd' }}>
               <Sparkles className="w-3.5 h-3.5" />
-              Get in Touch
+              Contact Us
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl font-bold mb-5" style={{ color: TEXT }}>
-              We're here to help
+              Get in Touch
             </motion.h1>
             <motion.p variants={fadeUp} className="text-lg" style={{ color: SUB }}>
-              Whether you have a question, a billing issue, or a business enquiry — we respond fast.
+              Questions, feedback, billing, or partnerships — we're here and we respond fast.
             </motion.p>
           </motion.div>
         </div>
@@ -94,54 +94,26 @@ export default function ContactPage() {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold" style={{ color: TEXT }}>Part of the Amarktai Network</p>
-                <p className="text-xs" style={{ color: MUTED }}>Amarktai Marketing is a product of the Amarktai Network — a family of AI-powered business tools.</p>
+                <p className="text-sm font-semibold" style={{ color: TEXT }}>Part of the AmarktAI Network</p>
+                <p className="text-xs" style={{ color: MUTED }}>AmarktAI Marketing is a product of the AmarktAI Network — a family of AI-powered business tools.</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-4 shrink-0">
               <div className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
                 <Check className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
                 Trusted platform
               </div>
               <div className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <Check className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
-                Fast response
+                <Mail className="w-3.5 h-3.5" style={{ color: ACCENT }} />
+                amarktainetwork@gmail.com
               </div>
             </div>
           </motion.div>
         </div>
       </Section>
 
-      {/* Contact category tiles */}
-      <Section className="py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <motion.div variants={staggerContainer(0.08)} className="grid sm:grid-cols-3 gap-4 mb-10">
-            {contactTypes.map((ct) => {
-              const Icon = ct.icon;
-              const active = category === ct.tag;
-              return (
-                <motion.button key={ct.tag} variants={fadeUp}
-                  onClick={() => setCategory(ct.tag)}
-                  className="rounded-2xl p-5 text-left transition-all duration-200"
-                  style={{
-                    background: active ? `rgba(37,99,255,0.15)` : SURFACE,
-                    border: active ? `1px solid rgba(37,99,255,0.4)` : `1px solid ${BORDER}`,
-                  }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
-                    style={{ background: active ? 'rgba(37,99,255,0.2)' : 'rgba(37,99,255,0.10)', color: ACCENT }}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <h3 className="font-semibold text-sm mb-1" style={{ color: TEXT }}>{ct.title}</h3>
-                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{ct.description}</p>
-                </motion.button>
-              );
-            })}
-          </motion.div>
-        </div>
-      </Section>
-
       {/* Form */}
-      <Section className="pb-24 px-4 sm:px-6 lg:px-8">
+      <Section className="py-12 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           {submitted ? (
             <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
@@ -149,11 +121,11 @@ export default function ContactPage() {
               style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
                 style={{ background: 'rgba(16,185,129,0.12)', color: '#10B981' }}>
-                <ChevronRight className="w-7 h-7" />
+                <Check className="w-7 h-7" />
               </div>
               <h2 className="text-xl font-bold mb-3" style={{ color: TEXT }}>Message sent</h2>
               <p className="text-sm leading-relaxed mb-6" style={{ color: MUTED }}>
-                Thank you for reaching out. We typically respond within 1 business day.
+                Thank you for reaching out. We'll respond to you at <strong style={{ color: TEXT }}>{form.email}</strong> within 1 business day.
               </p>
               <Link to="/">
                 <Button variant="outline" style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
@@ -169,39 +141,54 @@ export default function ContactPage() {
                 Send a message
               </motion.h2>
               <motion.div variants={fadeUp} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Your name</label>
-                  <input type="text" required value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
-                    style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}
-                    placeholder="Jane Smith" />
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Your name</label>
+                    <input type="text" required value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+                      style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}
+                      placeholder="Jane Smith" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Email address</label>
+                    <input type="email" required value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+                      style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}
+                      placeholder="jane@company.com" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Email address</label>
-                  <input type="email" required value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
-                    style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}
-                    placeholder="jane@company.com" />
+                  <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Subject</label>
+                  <select value={form.subject}
+                    onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors appearance-none"
+                    style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}>
+                    <option value="general">General Enquiry</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="billing">Billing & Subscriptions</option>
+                    <option value="partnership">Partnership & Business</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>
-                    Message
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(37,99,255,0.12)', color: '#93c5fd' }}>
-                      {contactTypes.find((c) => c.tag === category)?.title}
-                    </span>
-                  </label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: SUB }}>Message</label>
                   <textarea required rows={5} value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors resize-none"
                     style={{ background: '#060b14', border: `1px solid ${BORDER}`, color: TEXT }}
-                    placeholder="How can we help?" />
+                    placeholder="How can we help you?" />
                 </div>
                 <Button type="submit" className="w-full font-semibold" style={{ background: ACCENT, color: '#fff' }}>
                   Send Message
+                  <ChevronRight className="w-4 h-4 ml-1.5" />
                 </Button>
+                <p className="text-xs text-center" style={{ color: MUTED }}>
+                  Or email us directly at{' '}
+                  <a href="mailto:amarktainetwork@gmail.com" style={{ color: ACCENT }} className="hover:underline">
+                    amarktainetwork@gmail.com
+                  </a>
+                </p>
               </motion.div>
             </motion.form>
           )}
