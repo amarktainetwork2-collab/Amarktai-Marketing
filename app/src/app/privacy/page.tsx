@@ -23,7 +23,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function PrivacyPage() {
-  const updated = 'March 2025';
+  const updated = 'January 1, 2025';
 
   return (
     <div className="min-h-screen" style={{ background: BG, color: TEXT }}>
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
               style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold" style={{ color: TEXT }}>Amarktai</span>
+            <span className="font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span></span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login"><Button variant="ghost" className="text-sm" style={{ color: MUTED }}>Login</Button></Link>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
 
           {/* Header */}
           <div className="mb-12">
-            <p className="text-xs font-medium mb-3" style={{ color: MUTED }}>Last updated: {updated}</p>
+            <p className="text-xs font-medium mb-3" style={{ color: MUTED }}>Effective Date: {updated}</p>
             <h1 className="text-4xl font-bold mb-4" style={{ color: TEXT }}>Privacy Policy</h1>
             <p className="text-base leading-relaxed" style={{ color: SUB }}>
               Amarktai Marketing ("we", "our", or "us") is operated by Amarktai Network. This Privacy Policy
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
 
             <Section title="11. Contact">
               <p>
-                For privacy-related queries: <strong style={{ color: TEXT }}>privacy@amarktai.com</strong>
+                For privacy-related queries: <strong style={{ color: TEXT }}>amarktainetwork@gmail.com</strong>
               </p>
               <p>
                 Amarktai Network · marketing.amarktai.com

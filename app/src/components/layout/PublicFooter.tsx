@@ -19,7 +19,7 @@ export default function PublicFooter() {
                 style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold" style={{ color: TEXT }}>Amarktai Marketing</span>
+              <span className="font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span><span style={{ color: '#F8FAFC' }}> Marketing</span></span>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
               Autonomous AI social media marketing.<br />Part of the Amarktai Network.

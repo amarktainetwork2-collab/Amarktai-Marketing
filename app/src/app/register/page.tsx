@@ -27,7 +27,7 @@ export default function RegisterPage() {
             >
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">Amarktai Network</span>
+            <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span><span style={{ color: '#F8FAFC' }}> Network</span></span>
           </Link>
           <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
             Automate your marketing.<br />
@@ -56,7 +56,7 @@ export default function RegisterPage() {
               >
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">Amarktai</span>
+              <span className="text-xl font-bold tracking-tight"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ai</span></span>
             </Link>
           </div>
 

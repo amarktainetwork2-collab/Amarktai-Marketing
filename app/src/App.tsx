@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { Toaster } from '@/components/ui/sonner';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 // Lazy load pages
@@ -35,6 +35,12 @@ const FeaturesPage = lazy(() => import('@/app/features/page'));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 function PageLoader() {
   return (
@@ -104,6 +110,7 @@ function AppRoutes() {
 function App() {
   const content = (
     <BrowserRouter>
+      <ScrollToTop />
       <AppRoutes />
       <Toaster position="top-right" richColors theme="dark" />
     </BrowserRouter>
