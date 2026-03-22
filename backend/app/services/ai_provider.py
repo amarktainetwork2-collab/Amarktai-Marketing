@@ -1,5 +1,5 @@
 """
-Amarktai Marketing — Unified AI Provider Abstraction
+AmarktAI Marketing — Unified AI Provider Abstraction
 =====================================================
 
 Priority order for text generation (lowest cost first):
@@ -164,7 +164,7 @@ class AIProvider:
                 gen = self._get_hf_generator()
                 # generate_content returns structured content; extract caption as plain text
                 result = await gen.generate_content(
-                    {"name": "Amarktai", "description": prompt, "url": "", "target_audience": ""},
+                    {"name": "AmarktAI", "description": prompt, "url": "", "target_audience": ""},
                     "generic",
                 )
                 return result.get("caption", "")

@@ -362,7 +362,7 @@ async def post_to_group(
         result = await post_to_discord_channel(
             webhook_url=grp.group_id,
             text=req.text,
-            username=current_user.name or "Amarktai",
+            username=current_user.name or "AmarktAI",
         )
 
     else:

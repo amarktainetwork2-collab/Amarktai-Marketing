@@ -1,4 +1,4 @@
-// PM2 ecosystem config for Amarktai Marketing
+// PM2 ecosystem config for AmarktAI Marketing
 // Usage:
 //   pm2 start deploy/ecosystem.config.cjs
 //   pm2 save

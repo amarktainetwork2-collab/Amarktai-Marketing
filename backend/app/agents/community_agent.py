@@ -1,5 +1,5 @@
 """
-Community Management Agent for Amarktai Marketing
+Community Management Agent for AmarktAI Marketing
 Handles comments, DMs, and engagement replies
 """
 

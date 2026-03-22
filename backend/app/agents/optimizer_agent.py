@@ -1,5 +1,5 @@
 """
-Optimizer Agent for Amarktai Marketing
+Optimizer Agent for AmarktAI Marketing
 Optimizes content for virality, adds hashtags, emojis, and platform-specific formatting
 """
 

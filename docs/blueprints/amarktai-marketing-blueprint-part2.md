@@ -111,7 +111,7 @@
 # APPLICATION
 # ============================================
 NODE_ENV=development
-APP_NAME=Amarktai Marketing
+APP_NAME=AmarktAI Marketing
 APP_URL=http://localhost:3000
 API_URL=http://localhost:8000
 

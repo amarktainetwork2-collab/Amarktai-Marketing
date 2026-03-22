@@ -4,7 +4,7 @@ Content Remix Engine – API Endpoints
 Remixes source content (URL or raw text) into platform-optimised
 social snippets using HuggingFace Mistral.
 
-Designed and created by Amarktai Network
+Designed and created by AmarktAI Network
 """
 
 from __future__ import annotations

@@ -9,7 +9,7 @@ Provides backend support for all dashboard widgets:
 - Content Calendar (scheduled / posted events)
 - Competitor Intelligence (competitor analysis)
 
-Designed and created by Amarktai Network
+Designed and created by AmarktAI Network
 """
 
 from __future__ import annotations

@@ -1,5 +1,5 @@
 """
-Celery Tasks for Amarktai Marketing
+Celery Tasks for AmarktAI Marketing
 
 Core tasks:
   run_content_generation_and_post  – generate + queue content (3× daily)

@@ -1,5 +1,5 @@
 """
-Celery Configuration for Amarktai Marketing
+Celery Configuration for AmarktAI Marketing
 """
 
 from celery import Celery

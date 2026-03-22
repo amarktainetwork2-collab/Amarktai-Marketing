@@ -1,5 +1,5 @@
 """
-Enhanced Nightly Workflow Orchestrator for Amarktai Marketing
+Enhanced Nightly Workflow Orchestrator for AmarktAI Marketing
 Uses LangGraph for stateful, multi-step content generation with A/B testing and feedback loops
 """
 

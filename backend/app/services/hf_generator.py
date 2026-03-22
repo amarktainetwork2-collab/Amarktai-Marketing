@@ -197,7 +197,7 @@ class HuggingFaceGenerator:
         )
 
         system = (
-            "You are a viral social media copywriter for Amarktai Network. "
+            "You are a viral social media copywriter for AmarktAI Network. "
             "Transform the provided content into platform-native posts. "
             "Respond ONLY with valid JSON."
         )
@@ -389,7 +389,7 @@ Provide a JSON object:
         topic_hint = f"Topic: {topic}" if topic else f"Topic: how {name} helps {audience}"
 
         system = (
-            "You are an expert SEO content writer for Amarktai Network. "
+            "You are an expert SEO content writer for AmarktAI Network. "
             "Write authoritative, long-form blog posts that rank on Google and drive organic leads. "
             "Respond ONLY with valid JSON."
         )
@@ -459,7 +459,7 @@ Return ONLY a JSON object:
         duration = durations.get(platform, "30 seconds")
 
         system = (
-            "You are a viral video scriptwriter for Amarktai Network. "
+            "You are a viral video scriptwriter for AmarktAI Network. "
             "Write concise, hook-driven video scripts. Respond ONLY with valid JSON."
         )
         user = f"""Write a {duration} {platform} video script for '{name}'.
@@ -495,7 +495,7 @@ JSON format:
             ],
             "cta": f"Try {name} free",
             "description": f"{description}\n\n#Shorts #AI #Marketing",
-            "hashtags": ["Shorts", "AI", "Marketing", "AmarktaiNetwork"],
+            "hashtags": ["Shorts", "AI", "Marketing", "AmarktAINetwork"],
         }
 
     async def generate_comment_reply(
@@ -507,7 +507,7 @@ JSON format:
     ) -> dict[str, Any]:
         """Generate a contextual reply to a social media comment using HF."""
         system = (
-            "You are a friendly, professional community manager for Amarktai Network. "
+            "You are a friendly, professional community manager for AmarktAI Network. "
             "Write genuine, helpful replies. Respond ONLY with valid JSON."
         )
         tone_hint = {
@@ -859,7 +859,7 @@ Provide a JSON object:
         url = webapp_data.get("url", "")
 
         system = (
-            "You are an expert social media copywriter for Amarktai Network. "
+            "You are an expert social media copywriter for AmarktAI Network. "
             "You create high-converting content that drives leads and engagement. "
             "Always respond with valid JSON only – no markdown, no extra text."
         )
@@ -877,7 +877,7 @@ Requirements:
 - Caption length: {hint['length']}
 - Include {hint['hashtag_count']} relevant hashtags
 - The content must drive leads to the website
-- Designed and created by Amarktai Network
+- Designed and created by AmarktAI Network
 
 Respond ONLY with a JSON object with these exact keys:
 {{
@@ -952,9 +952,9 @@ Respond ONLY with a JSON object with these exact keys:
             "caption": (
                 f"🚀 {name} – {description[:120]}\n\n"
                 f"Check it out: {url}\n\n"
-                f"Designed and created by Amarktai Network"
+                f"Designed and created by AmarktAI Network"
             ),
-            "hashtags": ["AI", "Marketing", "Growth", "AmarktaiNetwork"],
+            "hashtags": ["AI", "Marketing", "Growth", "AmarktAINetwork"],
             "_generation_error": error,
         }
 

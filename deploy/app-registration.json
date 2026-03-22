@@ -1,13 +1,13 @@
 {
-  "_comment": "Amarktai Marketing — app registration record for the Amarktai Network dashboard.",
+  "_comment": "AmarktAI Marketing — app registration record for the AmarktAI Network dashboard.",
   "_usage": [
-    "Import this file into the Amarktai Network admin panel under Apps → Register App → Import JSON.",
+    "Import this file into the AmarktAI Network admin panel under Apps → Register App → Import JSON.",
     "After import, generate the per-app token (Apps → [this app] → Generate Token).",
     "Copy the token into backend/.env as AMARKTAI_INTEGRATION_TOKEN.",
     "Then set AMARKTAI_INTEGRATION_ENABLED=true and restart the backend."
   ],
 
-  "name": "Amarktai Marketing",
+  "name": "AmarktAI Marketing",
   "slug": "amarktai-marketing",
   "category": "marketing",
   "short_description": "Autonomous AI social media marketing platform. Generates and schedules content across 12 platforms powered by Qwen and intelligent automation.",

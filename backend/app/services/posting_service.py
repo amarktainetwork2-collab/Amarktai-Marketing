@@ -1,5 +1,5 @@
 """
-Platform Posting Service for Amarktai Marketing.
+Platform Posting Service for AmarktAI Marketing.
 
 Implements real API calls to post content on all 6 supported platforms:
   - Twitter/X (tweepy v2)
@@ -358,7 +358,7 @@ async def post_youtube(
             description
             + "\n\n#Shorts"
             + "".join(f" #{t}" for t in (hashtags or [])[:5])
-            + "\n\nDesigned and created by Amarktai Network"
+            + "\n\nDesigned and created by AmarktAI Network"
         )
 
         metadata = {
@@ -628,7 +628,7 @@ async def post_reddit(
     try:
         headers = {
             "Authorization": f"bearer {access_token}",
-            "User-Agent": "AmarktaiBot/1.0",
+            "User-Agent": "AmarktAIBot/1.0",
             "Content-Type": "application/x-www-form-urlencoded",
         }
         if link:
@@ -941,7 +941,7 @@ async def post_to_reddit(
             "username": username,
             "password": password,
         }
-        headers = {"User-Agent": "AmarktaiBot/1.0"}
+        headers = {"User-Agent": "AmarktAIBot/1.0"}
         async with httpx.AsyncClient(timeout=20, headers=headers) as client:
             token_resp = await client.post(
                 "https://www.reddit.com/api/v1/access_token",
@@ -1024,7 +1024,7 @@ async def post_to_telegram_channel(
 async def post_to_discord_channel(
     webhook_url: str,
     text: str,
-    username: str = "Amarktai",
+    username: str = "AmarktAI",
 ) -> PostResult:
     """
     Send a message to a Discord channel via an incoming webhook.

@@ -39,6 +39,6 @@ api_router.include_router(blog.router, prefix="/blog", tags=["blog"])
 # Dashboard feature endpoints (insights, scheduler, predictions, calendar, competitors)
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 
-# Amarktai Network integration status (public, no auth)
+# AmarktAI Network integration status (public, no auth)
 # Accessible at /api/v1/amarktai/status  AND  /api/amarktai/status (via main.py mount)
 api_router.include_router(amarktai_status.router, prefix="/amarktai", tags=["integration"])

@@ -1,4 +1,4 @@
-# 🚀 Amarktai Marketing - Ubuntu Webdock VPS Deployment Guide
+# 🚀 AmarktAI Marketing - Ubuntu Webdock VPS Deployment Guide
 
 ## 📋 Table of Contents
 1. [Prerequisites](#prerequisites)
@@ -230,7 +230,7 @@ nano .env
 # PRODUCTION CONFIGURATION
 # ============================================
 
-APP_NAME="Amarktai Marketing"
+APP_NAME="AmarktAI Marketing"
 DEBUG=false
 FRONTEND_URL="https://yourdomain.com"
 
@@ -578,7 +578,7 @@ sudo nano /etc/systemd/system/amarktai-api.service
 Add:
 ```ini
 [Unit]
-Description=Amarktai Marketing API
+Description=AmarktAI Marketing API
 After=network.target postgresql.service redis-server.service
 
 [Service]
@@ -608,7 +608,7 @@ sudo nano /etc/systemd/system/amarktai-worker.service
 Add:
 ```ini
 [Unit]
-Description=Amarktai Marketing Celery Worker
+Description=AmarktAI Marketing Celery Worker
 After=network.target redis-server.service
 
 [Service]
@@ -637,7 +637,7 @@ sudo nano /etc/systemd/system/amarktai-beat.service
 Add:
 ```ini
 [Unit]
-Description=Amarktai Marketing Celery Beat Scheduler
+Description=AmarktAI Marketing Celery Beat Scheduler
 After=network.target redis-server.service
 
 [Service]
@@ -822,7 +822,7 @@ sudo apt install -y mailutils
 crontab -e
 
 # Add line to check for errors and email:
-0 * * * * grep -i error /var/log/amarktai/api-error.log | tail -20 | mail -s "Amarktai API Errors" admin@yourdomain.com
+0 * * * * grep -i error /var/log/amarktai/api-error.log | tail -20 | mail -s "AmarktAI API Errors" admin@yourdomain.com
 ```
 
 ---
@@ -1228,7 +1228,7 @@ sudo systemctl restart sshd
 
 **Deployment Completed!** 🎉
 
-Your Amarktai Marketing platform should now be running on your Ubuntu Webdock VPS.
+Your AmarktAI Marketing platform should now be running on your Ubuntu Webdock VPS.
 
 Access your application at: `https://yourdomain.com`
 

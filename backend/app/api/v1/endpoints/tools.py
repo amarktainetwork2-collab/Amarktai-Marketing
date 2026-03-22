@@ -13,7 +13,7 @@ Tools:
   9. audience_map   – Audience Mirage Mapper
  10. ad_alchemy     – Ad Alchemy Optimizer
 
-Designed and created by Amarktai Network
+Designed and created by AmarktAI Network
 """
 
 from __future__ import annotations

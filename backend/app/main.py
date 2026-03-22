@@ -56,14 +56,14 @@ async def _heartbeat_loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting up Amarktai Marketing API (v%s)…", settings.APP_VERSION)
+    logger.info("Starting up AmarktAI Marketing API (v%s)…", settings.APP_VERSION)
 
     # Start the periodic heartbeat task if integration is enabled
     heartbeat_task = None
     if settings.AMARKTAI_INTEGRATION_ENABLED:
         heartbeat_task = asyncio.create_task(_heartbeat_loop())
         logger.info(
-            "Amarktai Network integration enabled — heartbeat active → %s",
+            "AmarktAI Network integration enabled — heartbeat active → %s",
             settings.AMARKTAI_DASHBOARD_URL,
         )
 
@@ -76,12 +76,12 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
 
-    logger.info("Shutting down Amarktai Marketing API…")
+    logger.info("Shutting down AmarktAI Marketing API…")
 
 
 app = FastAPI(
-    title="Amarktai Marketing API",
-    description="Autonomous AI Social Media Marketing Platform — Amarktai Network",
+    title="AmarktAI Marketing API",
+    description="Autonomous AI Social Media Marketing Platform — AmarktAI Network",
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
@@ -103,7 +103,7 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api/v1")
 
 # Also expose the status endpoint at the canonical /api/amarktai/status path
-# (in addition to /api/v1/amarktai/status) for Amarktai Network pollers that
+# (in addition to /api/v1/amarktai/status) for AmarktAI Network pollers that
 # use the short form.
 app.include_router(amarktai_status_router, prefix="/api/amarktai", tags=["integration"])
 

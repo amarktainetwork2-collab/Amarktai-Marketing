@@ -1,5 +1,5 @@
 """
-OpenAI Orchestrator Service — the intelligent brain of Amarktai Marketing.
+OpenAI Orchestrator Service — the intelligent brain of AmarktAI Marketing.
 
 Responsibilities:
   - Generate high-quality social media content when HuggingFace is unavailable
@@ -112,7 +112,7 @@ def _clean_json(raw: str) -> str:
 
 class OpenAIOrchestrator:
     """
-    OpenAI-powered intelligent orchestrator for Amarktai Marketing.
+    OpenAI-powered intelligent orchestrator for AmarktAI Marketing.
 
     Acts as the brain that:
     1. Generates high-quality content (text, captions, hashtags)
@@ -146,7 +146,7 @@ class OpenAIOrchestrator:
         url = webapp_data.get("url", "")
 
         system = (
-            "You are an expert social media copywriter for Amarktai Network. "
+            "You are an expert social media copywriter for AmarktAI Network. "
             "You create high-converting content that drives leads and engagement. "
             "Always respond with ONLY valid JSON — no markdown, no extra text."
         )
@@ -215,7 +215,7 @@ class OpenAIOrchestrator:
         """
         hint = _PLATFORM_HINTS.get(platform, _PLATFORM_HINTS["instagram"])
         system = (
-            "You are a senior social media strategist for Amarktai Network. "
+            "You are a senior social media strategist for AmarktAI Network. "
             "Review and improve the given draft content. "
             "Respond ONLY with valid JSON."
         )
@@ -265,7 +265,7 @@ class OpenAIOrchestrator:
         platform_list = ", ".join(platforms or ["instagram", "twitter", "linkedin"])
 
         system = (
-            "You are a world-class social media strategist for Amarktai Network. "
+            "You are a world-class social media strategist for AmarktAI Network. "
             "Create data-driven content strategies. Respond ONLY with valid JSON."
         )
         user = (
@@ -396,7 +396,7 @@ class OpenAIOrchestrator:
         duration = durations.get(platform, "30-45 seconds")
 
         system = (
-            "You are a viral video scriptwriter for Amarktai Network. "
+            "You are a viral video scriptwriter for AmarktAI Network. "
             "Write short, punchy video scripts that drive engagement. "
             "Respond ONLY with valid JSON."
         )
@@ -481,8 +481,8 @@ class OpenAIOrchestrator:
             "caption": (
                 f"🚀 {name} – {description[:120]}\n\n"
                 f"Check it out: {url}\n\n"
-                "Designed and created by Amarktai Network"
+                "Designed and created by AmarktAI Network"
             ),
-            "hashtags": ["AI", "Marketing", "Growth", "AmarktaiNetwork"],
+            "hashtags": ["AI", "Marketing", "Growth", "AmarktAINetwork"],
             "_generation_error": error,
         }

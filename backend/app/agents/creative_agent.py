@@ -1,5 +1,5 @@
 """
-Creative Agent for Amarktai Marketing
+Creative Agent for AmarktAI Marketing
 Generates scripts, copy, and creative concepts
 """
 

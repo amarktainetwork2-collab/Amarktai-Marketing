@@ -1,8 +1,8 @@
 """
-Amarktai Network Integration Service
+AmarktAI Network Integration Service
 =====================================
-Outbound integration methods that connect this app (Amarktai Marketing) to the
-main Amarktai Network dashboard/control plane.
+Outbound integration methods that connect this app (AmarktAI Marketing) to the
+main AmarktAI Network dashboard/control plane.
 
 Security model
 --------------
@@ -70,7 +70,7 @@ async def send_heartbeat(db_ok: bool = True) -> bool:
     """
     POST /integrations/heartbeat
 
-    Signals to the main Amarktai dashboard that this app is alive.
+    Signals to the main AmarktAI dashboard that this app is alive.
     Returns True on success, False on failure (never raises).
     """
     global _last_heartbeat_ts
@@ -97,11 +97,11 @@ async def send_heartbeat(db_ok: bool = True) -> bool:
             )
             resp.raise_for_status()
             _last_heartbeat_ts = time.time()
-            logger.debug("Heartbeat sent to Amarktai dashboard (%s)", resp.status_code)
+            logger.debug("Heartbeat sent to AmarktAI dashboard (%s)", resp.status_code)
             return True
     except httpx.HTTPStatusError as exc:
         logger.warning(
-            "Heartbeat rejected by Amarktai dashboard (HTTP %s)", exc.response.status_code
+            "Heartbeat rejected by AmarktAI dashboard (HTTP %s)", exc.response.status_code
         )
     except Exception as exc:
         logger.warning("Heartbeat failed: %s", type(exc).__name__)
@@ -113,7 +113,7 @@ async def send_metrics(metrics: dict[str, Any]) -> bool:
     """
     POST /integrations/metrics
 
-    Sends a structured metrics snapshot to the Amarktai dashboard.
+    Sends a structured metrics snapshot to the AmarktAI dashboard.
 
     Supported metric keys
     ---------------------
@@ -168,7 +168,7 @@ async def send_event(
     """
     POST /integrations/events
 
-    Sends a discrete event to the Amarktai dashboard for logging or alerting.
+    Sends a discrete event to the AmarktAI dashboard for logging or alerting.
 
     Parameters
     ----------

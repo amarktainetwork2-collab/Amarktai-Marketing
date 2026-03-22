@@ -90,7 +90,7 @@ async def search_reddit_subreddits(
     results: list[GroupSuggestion] = []
     try:
         url = "https://www.reddit.com/subreddits/search.json"
-        headers = {"User-Agent": "AmarktaiBot/1.0 (organic marketing tool)"}
+        headers = {"User-Agent": "AmarktAIBot/1.0 (organic marketing tool)"}
         params = {"q": keywords, "limit": limit, "include_over_18": "false"}
         async with httpx.AsyncClient(timeout=15, headers=headers) as client:
             resp = await client.get(url, params=params)

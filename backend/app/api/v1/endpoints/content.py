@@ -6,7 +6,7 @@ Template-based generation is always available as a guaranteed fallback.
 
 Rejecting a post immediately triggers regeneration for the same webapp/platform.
 
-Designed and created by Amarktai Network
+Designed and created by AmarktAI Network
 """
 
 from __future__ import annotations
