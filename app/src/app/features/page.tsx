@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
 import {
-  Zap, ChevronRight, Sparkles, ArrowRight,
+  Zap, Sparkles,
   Brain, Globe, Shield, BarChart3, Clock, Users,
   Cpu, Image, MessageSquare, TrendingUp, RefreshCw, Calendar,
   Target, Activity, BookOpen, Layers, Share2, Lock,
@@ -253,29 +253,21 @@ export default function FeaturesPage() {
             <motion.h1 variants={fadeUp}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight mb-6"
               style={{ color: TEXT }}>
-              Built for autonomous marketing.
+              Every Feature You Need.
               <br />
               <span style={{ background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                Designed to run itself.
+                Running Automatically.
               </span>
             </motion.h1>
             <motion.p variants={fadeUp}
               className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: SUB }}>
-              A complete AI marketing platform that creates, schedules, and publishes content across 12 channels — fully autonomously.
+              AmarktAI Marketing handles the full marketing lifecycle — from learning your business to publishing content across 12 platforms.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">
                 <Button size="lg" className="px-8 font-semibold text-base"
                   style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: '0 0 24px rgba(37,99,255,0.32)' }}>
-                  Start Free — 7 Days
-                  <ChevronRight className="w-4 h-4 ml-1.5" />
-                </Button>
-              </Link>
-              <Link to="/pricing">
-                <Button size="lg" variant="outline" className="px-8 font-medium text-base"
-                  style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
-                  View Pricing
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  Get Started →
                 </Button>
               </Link>
             </motion.div>
@@ -392,16 +384,15 @@ export default function FeaturesPage() {
               <Link to="/register">
                 <Button size="lg" className="px-10 font-semibold text-base"
                   style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: '0 0 24px rgba(37,99,255,0.32)' }}>
-                  Start Free — 7 Days
-                  <ChevronRight className="w-4 h-4 ml-1.5" />
+                  Get Started Free →
                 </Button>
               </Link>
-              <Link to="/pricing">
+              <a href="https://cal.com/amarktai" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="px-10 font-medium text-base"
                   style={{ borderColor: BORDER, color: SUB, background: 'transparent' }}>
-                  View Pricing
+                  Book a Walkthrough →
                 </Button>
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
         </div>

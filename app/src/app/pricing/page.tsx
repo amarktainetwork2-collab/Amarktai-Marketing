@@ -53,14 +53,13 @@ const plans: Plan[] = [
   {
     id: 'starter',
     name: 'Starter',
-    monthlyPrice: 29,
-    annualPrice: 23,
-    description: 'For solo founders getting started with AI marketing.',
+    monthlyPrice: 49,
+    annualPrice: 39,
+    description: 'For solo founders and small businesses getting started with AI marketing.',
     features: [
       '1 business',
       '3 social platforms',
-      '1 content batch per day',
-      'AI content generation',
+      'Core AI content generation',
       'Approval queue',
       'Basic analytics',
       'Email support',
@@ -70,35 +69,31 @@ const plans: Plan[] = [
   {
     id: 'growth',
     name: 'Growth',
-    monthlyPrice: 79,
-    annualPrice: 63,
-    description: 'For growing teams who need more reach and automation.',
+    monthlyPrice: 149,
+    annualPrice: 119,
+    description: 'For growing teams who need full automation across more businesses and channels.',
     features: [
-      '3 businesses',
+      '5 businesses',
       '8 social platforms',
-      '3 content batches per day',
-      'Advanced AI engine',
-      'Full analytics dashboard',
+      'Full AI automation + scheduling',
+      'Advanced analytics dashboard',
       'Lead capture & scoring',
-      'Content scheduler',
       'Priority support',
     ],
     highlighted: true,
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    monthlyPrice: 199,
-    annualPrice: 159,
-    description: 'Unlimited scale for agencies and power users.',
+    id: 'agency',
+    name: 'Agency',
+    monthlyPrice: 399,
+    annualPrice: 319,
+    description: 'For agencies and operators managing multiple brands at scale.',
     features: [
-      'Unlimited businesses',
+      '20 businesses',
       'All 12 platforms',
-      'Unlimited content batches',
+      'White-label ready',
       'Full AI intelligence suite',
-      'White-label options',
       'API access',
-      'SEO blog generator',
       'Dedicated support',
     ],
     highlighted: false,
@@ -248,7 +243,7 @@ export default function PricingPage() {
                       style={plan.highlighted
                         ? { background: ACCENT, color: '#fff' }
                         : { background: 'transparent', border: `1px solid ${BORDER}`, color: TEXT }}>
-                      Start Free — 7 Days
+                      Get Started
                       <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>

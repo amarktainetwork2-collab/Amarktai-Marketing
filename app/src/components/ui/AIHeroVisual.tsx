@@ -49,7 +49,7 @@ function OrbitLine({ angle, r }: { angle: number; r: number }) {
 
 export default function AIHeroVisual({ className = '' }: { className?: string }) {
   return (
-    <div className={`relative flex items-center justify-center ${className}`} style={{ minHeight: 380 }}>
+    <div className={`relative flex items-center justify-center min-h-[480px] lg:min-h-[560px] ${className}`}>
       {/* Ambient glow layers */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 rounded-3xl"
