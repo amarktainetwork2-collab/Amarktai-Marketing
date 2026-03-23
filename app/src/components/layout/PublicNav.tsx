@@ -9,8 +9,8 @@ const NAV_LINKS = [
   { label: 'Contact', href: '/contact' },
 ];
 
-// activePath accepted for backwards compatibility; active state is derived from useLocation
-export default function PublicNav(_props: { activePath?: string } = {}) {
+// activePath is ignored; active state is derived from useLocation internally
+export default function PublicNav(_props?: { activePath?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
