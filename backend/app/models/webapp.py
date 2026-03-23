@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, ARRAY, JSON
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, JSON, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -10,15 +10,15 @@ MAX_BUSINESSES_PER_USER = 20
 class WebApp(Base):
     __tablename__ = "webapps"
     
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    name = Column(String, nullable=False)
-    url = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    category = Column(String, nullable=False)
-    target_audience = Column(String, nullable=False)
-    key_features = Column(ARRAY(String), default=[])
-    logo = Column(String, nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    url = Column(String(512), nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(String(128), nullable=False)
+    target_audience = Column(String(512), nullable=False)
+    key_features = Column(JSON, default=list)
+    logo = Column(String(512), nullable=True)
     is_active = Column(Boolean, default=True)
     # Cached scrape results – refreshed nightly and before content generation
     scraped_data = Column(JSON, nullable=True)

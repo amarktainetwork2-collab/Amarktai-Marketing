@@ -36,15 +36,15 @@ class GroupStatus(str, enum.Enum):
 class BusinessGroup(Base):
     __tablename__ = "business_groups"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=False, index=True)
 
     # Platform & identifiers
     platform = Column(Enum(GroupPlatform), nullable=False)
-    group_id = Column(String, nullable=True)           # Platform-specific ID (set after user joins)
-    group_name = Column(String, nullable=False)
-    group_url = Column(String, nullable=True)          # Link for manual joining
+    group_id = Column(String(255), nullable=True)          # Platform-specific ID (set after user joins)
+    group_name = Column(String(255), nullable=False)
+    group_url = Column(String(512), nullable=True)         # Link for manual joining
     description = Column(Text, nullable=True)
 
     # Status
@@ -59,7 +59,7 @@ class BusinessGroup(Base):
     avg_interaction_rate = Column(Float, default=0.0)   # engagements / posts_sent
 
     # Keywords used to find this group (from webapp scrape)
-    keywords_used = Column(String, nullable=True)
+    keywords_used = Column(String(512), nullable=True)
 
     # Compliance note
     compliance_note = Column(Text, nullable=True)

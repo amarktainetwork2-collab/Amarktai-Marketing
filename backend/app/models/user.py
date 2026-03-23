@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Enum, Integer, Float, Boolean, JSON
+from sqlalchemy import Column, String, DateTime, Enum, Integer, Float, Boolean, JSON, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -13,18 +13,18 @@ class PlanType(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
     
-    id = Column(String, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=True)  # nullable for social-auth compat
-    name = Column(String, nullable=True)
-    avatar = Column(String, nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=True)  # nullable for social-auth compat
+    name = Column(String(255), nullable=True)
+    avatar = Column(String(512), nullable=True)
     plan = Column(Enum(PlanType), default=PlanType.FREE)
     
     # Usage limits and tracking
     monthly_content_quota = Column(Integer, default=10)  # Posts per month
     monthly_content_used = Column(Integer, default=0)
-    api_cost_budget = Column(String, default="5.00")  # Monthly AI generation budget
-    api_cost_used = Column(String, default="0.00")
+    api_cost_budget = Column(String(20), default="5.00")  # Monthly AI generation budget
+    api_cost_used = Column(String(20), default="0.00")
     
     # Feature flags
     auto_post_enabled = Column(Boolean, default=False)
@@ -32,8 +32,8 @@ class User(Base):
     low_risk_auto_reply = Column(Boolean, default=False)
     
     # Preferences
-    preferred_language = Column(String, default="en")
-    timezone = Column(String, default="UTC")
+    preferred_language = Column(String(10), default="en")
+    timezone = Column(String(64), default="UTC")
     notification_preferences = Column(JSON, default=dict)
 
     # Phase 2: extended plan/quota tracking
@@ -42,7 +42,7 @@ class User(Base):
     plan_quota_used = Column(Integer, default=0)
     notification_email = Column(Boolean, default=True)
     notification_digest = Column(Boolean, default=True)
-    settings_json = Column(String(length=65535), nullable=True)  # arbitrary JSON prefs
+    settings_json = Column(Text, nullable=True)  # arbitrary JSON prefs
 
     # Geolocation (captured via browser Geolocation API on login)
     geo_lat = Column(Float, nullable=True)

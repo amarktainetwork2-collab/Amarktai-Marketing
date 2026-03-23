@@ -202,7 +202,7 @@ export default function BlogPage() {
             )}
           </Button>
           <p className="text-xs text-gray-400">
-            Powered by AI Engine. Posts take ~30s to generate.
+            Powered by Amarkt<span style={{color: '#2563EB'}}>AI</span> Network. Posts take ~30s to generate.
             Each post can be remixed into social media content with one click.
           </p>
         </CardContent>

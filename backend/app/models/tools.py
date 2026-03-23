@@ -24,14 +24,14 @@ class ContentRemix(Base):
     """A single remix job: source content → N platform snippets."""
     __tablename__ = "content_remixes"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=True)
 
-    source_type = Column(String, nullable=False)          # url | text
-    source_url = Column(String, nullable=True)
+    source_type = Column(String(16), nullable=False)          # url | text
+    source_url = Column(String(512), nullable=True)
     source_text = Column(Text, nullable=True)
-    source_title = Column(String, nullable=True)
+    source_title = Column(String(512), nullable=True)
 
     target_platforms = Column(JSON, default=list)
     snippets = Column(JSON, default=list)                 # [{platform, title, caption, hashtags, key_points}]
@@ -41,8 +41,8 @@ class ContentRemix(Base):
     auto_schedule = Column(Boolean, default=False)        # auto-queue approved snippets
     remix_booster_enabled = Column(Boolean, default=False)
 
-    status = Column(String, default="pending")            # pending|processing|done|failed
-    error_message = Column(String, nullable=True)
+    status = Column(String(32), default="pending")        # pending|processing|done|failed
+    error_message = Column(String(512), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -56,13 +56,13 @@ class CompetitorProfile(Base):
     """One competitor tracked with latest analysis report."""
     __tablename__ = "competitor_profiles"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
 
-    competitor_name = Column(String, nullable=False)
-    competitor_url = Column(String, nullable=False)
+    competitor_name = Column(String(255), nullable=False)
+    competitor_url = Column(String(512), nullable=False)
     social_handles = Column(JSON, default=dict)           # {twitter: "@handle", ...}
-    our_niche = Column(String, nullable=True)
+    our_niche = Column(String(255), nullable=True)
 
     last_scraped_at = Column(DateTime(timezone=True), nullable=True)
     scraped_content_preview = Column(Text, nullable=True)
@@ -73,8 +73,8 @@ class CompetitorProfile(Base):
     content_gaps = Column(JSON, default=list)
     counter_strategies = Column(JSON, default=list)
     top_topics = Column(JSON, default=list)
-    posting_frequency = Column(String, nullable=True)
-    engagement_level = Column(String, nullable=True)
+    posting_frequency = Column(String(64), nullable=True)
+    engagement_level = Column(String(32), nullable=True)
     sentiment_score = Column(Float, nullable=True)
     predicted_next_moves = Column(JSON, default=list)     # expansion: pattern-based predictions
 
@@ -91,14 +91,14 @@ class FeedbackAnalysis(Base):
     """A batch of feedback transformed into marketing recommendations."""
     __tablename__ = "feedback_analyses"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=True)
 
-    source = Column(String, nullable=True)                # manual|social|review_site
+    source = Column(String(32), nullable=True)                # manual|social|review_site
     raw_feedback = Column(JSON, default=list)
 
-    overall_sentiment = Column(String, nullable=True)
+    overall_sentiment = Column(String(32), nullable=True)
     sentiment_score = Column(Float, nullable=True)
     key_themes = Column(JSON, default=list)
     praise_points = Column(JSON, default=list)
@@ -110,7 +110,7 @@ class FeedbackAnalysis(Base):
     # Feed into scheduler
     auto_apply_to_templates = Column(Boolean, default=False)
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -123,20 +123,20 @@ class EchoAmplification(Base):
     """Visitor interaction → amplified social campaign."""
     __tablename__ = "echo_amplifications"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
 
     trigger_text = Column(Text, nullable=False)           # original visitor query/comment
-    trigger_source = Column(String, nullable=True)        # chat|comment|dm|review
-    brand_voice = Column(String, nullable=True)
+    trigger_source = Column(String(32), nullable=True)    # chat|comment|dm|review
+    brand_voice = Column(String(64), nullable=True)
 
     # Generated amplifications
     thread_posts = Column(JSON, default=list)             # [{platform, content, hashtags}]
     story_content = Column(JSON, default=list)
     virality_score = Column(Float, nullable=True)         # 0-100
-    priority = Column(String, default="medium")           # high|medium|low
+    priority = Column(String(16), default="medium")       # high|medium|low
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -149,23 +149,23 @@ class SeoMirageReport(Base):
     """SEO-optimized content/alt-text/hashtags for a page or post."""
     __tablename__ = "seo_mirage_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    content_id = Column(String, ForeignKey("content.id"), nullable=True)  # tie to existing post
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    content_id = Column(String(36), ForeignKey("content.id"), nullable=True)  # tie to existing post
 
-    target_url = Column(String, nullable=True)
+    target_url = Column(String(512), nullable=True)
     input_text = Column(Text, nullable=True)
-    platform = Column(String, nullable=True)
+    platform = Column(String(64), nullable=True)
 
-    seo_title = Column(String, nullable=True)
-    seo_description = Column(String, nullable=True)
-    alt_text = Column(String, nullable=True)
+    seo_title = Column(String(512), nullable=True)
+    seo_description = Column(String(512), nullable=True)
+    alt_text = Column(String(512), nullable=True)
     optimized_hashtags = Column(JSON, default=list)
     keyword_density_report = Column(JSON, default=dict)
     algorithm_tips = Column(JSON, default=list)           # platform-specific tips
     enhanced_caption = Column(Text, nullable=True)
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
@@ -177,11 +177,11 @@ class ChurnShieldReport(Base):
     """Daily audience churn prediction + retention campaign."""
     __tablename__ = "churn_shield_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
 
-    platform = Column(String, nullable=False)
-    analysis_date = Column(String, nullable=True)
+    platform = Column(String(64), nullable=False)
+    analysis_date = Column(String(16), nullable=True)
 
     # Risk assessment
     churn_risk_score = Column(Float, nullable=True)       # 0-100
@@ -194,7 +194,7 @@ class ChurnShieldReport(Base):
     loyalty_campaign = Column(JSON, default=dict)
 
     auto_deploy = Column(Boolean, default=False)
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
@@ -206,23 +206,23 @@ class HarmonyPricerReport(Base):
     """Recommended ad price / bid adjustments based on buzz + competitor data."""
     __tablename__ = "harmony_pricer_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
 
-    product_name = Column(String, nullable=False)
-    current_price = Column(String, nullable=True)
-    platform = Column(String, nullable=True)
+    product_name = Column(String(255), nullable=False)
+    current_price = Column(String(20), nullable=True)
+    platform = Column(String(64), nullable=True)
 
     competitor_prices = Column(JSON, default=list)
     buzz_score = Column(Float, nullable=True)
     sentiment_score = Column(Float, nullable=True)
 
-    recommended_price = Column(String, nullable=True)
+    recommended_price = Column(String(20), nullable=True)
     price_rationale = Column(Text, nullable=True)
     ad_copy_variants = Column(JSON, default=list)         # copy for each price point
     simulated_roi = Column(JSON, default=dict)
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
@@ -234,12 +234,12 @@ class ViralSparkReport(Base):
     """Daily viral opportunity report + hooks/challenges for scheduled posts."""
     __tablename__ = "viral_spark_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=True)
 
-    report_date = Column(String, nullable=True)
-    niche = Column(String, nullable=True)
+    report_date = Column(String(16), nullable=True)
+    niche = Column(String(128), nullable=True)
 
     trending_topics = Column(JSON, default=list)
     viral_opportunities = Column(JSON, default=list)      # [{topic, score, hook, challenge}]
@@ -251,7 +251,7 @@ class ViralSparkReport(Base):
     # Integration with scheduler
     auto_inject_hooks = Column(Boolean, default=False)
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
@@ -263,11 +263,11 @@ class AudienceMapReport(Base):
     """Psychographic audience segments + campaign suggestions."""
     __tablename__ = "audience_map_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=True)
 
-    platform = Column(String, nullable=True)
+    platform = Column(String(64), nullable=True)
     data_summary = Column(Text, nullable=True)            # summary of input social data
 
     segments = Column(JSON, default=list)                 # [{name, description, size_pct, interests}]
@@ -276,7 +276,7 @@ class AudienceMapReport(Base):
     cross_platform_insights = Column(JSON, default=list)
     response_mirage = Column(JSON, default=dict)          # predicted response per segment
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
@@ -288,12 +288,12 @@ class AdAlchemyReport(Base):
     """A/B tested ad copy variants + winner recommendation."""
     __tablename__ = "ad_alchemy_reports"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    content_id = Column(String, ForeignKey("content.id"), nullable=True)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    content_id = Column(String(36), ForeignKey("content.id"), nullable=True)
 
-    product_or_service = Column(String, nullable=False)
-    platform = Column(String, nullable=True)
+    product_or_service = Column(String(255), nullable=False)
+    platform = Column(String(64), nullable=True)
     current_copy = Column(Text, nullable=True)
 
     variants = Column(JSON, default=list)                 # [{variant_id, headline, body, cta, score}]
@@ -302,7 +302,7 @@ class AdAlchemyReport(Base):
     improvement_suggestions = Column(JSON, default=list)
     auto_deploy_winner = Column(Boolean, default=False)
 
-    status = Column(String, default="pending")
+    status = Column(String(32), default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
+import ParticleBackground from '@/components/ui/ParticleBackground';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -74,11 +75,13 @@ export default function FeaturesPage() {
       <PublicNav />
 
       {/* Hero */}
-      <section className="py-24 px-4 sm:px-6 text-center">
+      <section className="relative py-24 px-4 sm:px-6 text-center overflow-hidden">
+        <ParticleBackground variant="stars" opacity={0.35} className="z-0" />
         <motion.div
           variants={stagger}
           initial="hidden"
           animate="visible"
+          className="relative z-10"
         >
           <motion.p variants={fadeUp} className="text-blue-500 text-sm font-semibold uppercase tracking-widest mb-4">
             Platform Features

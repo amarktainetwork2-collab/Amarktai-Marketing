@@ -6,10 +6,10 @@ from app.db.base import Base
 class Analytics(Base):
     __tablename__ = "analytics"
     
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    content_id = Column(String, ForeignKey("content.id"), nullable=True)
-    platform = Column(String, nullable=False)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    content_id = Column(String(36), ForeignKey("content.id"), nullable=True)
+    platform = Column(String(64), nullable=False)
     date = Column(Date, nullable=False)
     
     # Metrics

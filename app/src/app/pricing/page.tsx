@@ -77,8 +77,8 @@ const FAQ = [
     a: 'Yes. No lock-in, no cancellation fees. Cancel from your account dashboard at any time.',
   },
   {
-    q: 'What AI providers power the platform?',
-    a: 'AmarktAI uses Qwen as the primary generation engine, with HuggingFace as fallback. OpenAI and Gemini are optional add-ons you can enable in settings.',
+    q: 'What AI powers the platform?',
+    a: 'AmarktAI Marketing is powered by the Amarktai Network AI infrastructure — a multi-model system optimized for marketing content generation at scale. You can optionally connect your own API keys in settings for additional providers.',
   },
   {
     q: 'What platforms are supported?',
