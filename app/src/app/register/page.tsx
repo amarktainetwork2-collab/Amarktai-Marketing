@@ -1,267 +1,238 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Zap, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
-const benefits = [
-  'Autonomous AI content generation',
-  'Cross-platform scheduling & publishing',
-  'Real-time analytics & performance insights',
-  'Lead capture and follow-up automation',
+const BENEFITS = [
+  'AI content generation across 15+ platforms',
+  'Smart scheduling with engagement optimization',
+  'Viral predictor + A/B testing built in',
+  'No credit card required to start',
 ];
 
+function PasswordStrength({ password }: { password: string }) {
+  const score = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password), /[^A-Za-z0-9]/.test(password)].filter(Boolean).length;
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const colors = ['', 'bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-emerald-400'];
+  if (!password) return null;
+  return (
+    <div className="mt-2">
+      <div className="flex gap-1 mb-1">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= score ? colors[score] : 'bg-[#252A3A]'}`} />
+        ))}
+      </div>
+      <p className={`text-xs ${score <= 1 ? 'text-red-400' : score === 2 ? 'text-yellow-400' : score === 3 ? 'text-blue-400' : 'text-emerald-400'}`}>
+        {labels[score]}
+      </p>
+    </div>
+  );
+}
+
 export default function RegisterPage() {
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(e: FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 8) {
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (form.password.length < 8) {
       setError('Password must be at least 8 characters.');
       return;
     }
     setLoading(true);
     try {
-      await register(email, password, name || undefined);
-      navigate('/dashboard', { replace: true });
-    } catch (err: unknown) {
+      await register(form.email, form.password, form.name);
+      navigate('/dashboard');
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center p-4"
-      style={{
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(37,99,255,0.14) 0%, #06070A 60%)',
-      }}
-    >
-      <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-12 items-center">
-        {/* Left: Value prop */}
-        <div className="hidden lg:block">
-          <Link to="/" className="inline-flex items-center gap-2.5 mb-8">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
-            >
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              <span style={{ color: '#F8FAFC' }}>Amarkt</span>
-              <span
-                style={{
-                  background: 'linear-gradient(90deg,#2563FF,#22D3EE)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                AI
-              </span>
-              <span style={{ color: '#F8FAFC' }}> Marketing</span>
-            </span>
-          </Link>
-          <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
-            Automate your marketing.<br />
-            <span style={{ color: '#22D3EE' }}>Scale without limits.</span>
-          </h1>
-          <p className="text-slate-400 mb-8 leading-relaxed">
-            Join businesses using AmarktAI Marketing to run autonomous AI-powered marketing across all channels.
-          </p>
-          <ul className="space-y-3">
-            {benefits.map((benefit, i) => (
-              <li key={i} className="flex items-center gap-3 text-slate-300">
-                <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#10B981' }} />
-                <span className="text-sm">{benefit}</span>
-              </li>
-            ))}
-          </ul>
+    <div className="min-h-screen bg-[#06070A] flex">
+      {/* Left: Branding panel */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white font-bold text-lg">
+            Amarkt<span className="text-blue-500">AI</span> Marketing
+          </span>
         </div>
 
-        {/* Right: Register form */}
         <div>
-          {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-2.5">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
-              >
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold tracking-tight">
-                <span style={{ color: '#F8FAFC' }}>Amarkt</span>
-                <span
-                  style={{
-                    background: 'linear-gradient(90deg,#2563FF,#22D3EE)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  AI
-                </span>
-                <span style={{ color: '#F8FAFC' }}> Marketing</span>
-              </span>
-            </Link>
-          </div>
-
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-white mb-1">Create your account</h2>
-            <p className="text-slate-400 text-sm">Start free — no credit card required</p>
-          </div>
-
-          <div
-            className="rounded-2xl p-7 border"
-            style={{
-              background: 'rgba(17, 24, 39, 0.75)',
-              backdropFilter: 'blur(20px)',
-              borderColor: 'rgba(255,255,255,0.10)',
-              boxShadow: '0 0 0 1px rgba(37,99,255,0.08), 0 24px 48px rgba(0,0,0,0.4)',
-            }}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
+            <h2 className="text-3xl font-bold text-white mb-3">
+              Start building your AI marketing machine.
+            </h2>
+            <p className="text-[#9AA3B8] text-lg mb-10">
+              Free trial. No credit card. Full access.
+            </p>
+            <div className="space-y-4">
+              <p className="text-[#5A6478] text-xs uppercase tracking-widest font-semibold">What you get free:</p>
+              <ul className="space-y-3">
+                {BENEFITS.map((b) => (
+                  <li key={b} className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-[#9AA3B8] text-sm">{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Abstract AI visual */}
+        <div
+          className="rounded-2xl border border-[#252A3A] p-8 relative overflow-hidden flex items-center justify-center"
+          style={{ background: 'linear-gradient(135deg, #0D0F14 0%, #141720 100%)' }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(37,99,235,0.12) 0%, transparent 70%)' }}
+          />
+          <div className="relative text-center">
+            <div className="text-6xl font-black mb-2" style={{ background: 'linear-gradient(135deg, #2563EB, #06B6D4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              AI
+            </div>
+            <p className="text-[#5A6478] text-xs">Marketing that works around the clock</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Register form */}
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-8 lg:hidden">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-white font-bold text-lg">
+              Amarkt<span className="text-blue-500">AI</span> Marketing
+            </span>
+          </div>
+
+          <h1 className="text-white font-bold text-3xl mb-2">Create your account</h1>
+          <p className="text-[#9AA3B8] mb-8">14-day free trial. No credit card required.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-[#9AA3B8] text-sm font-medium mb-2">Full Name</label>
+              <input
+                type="text"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Jane Smith"
+                className="w-full bg-[#0D0F14] border border-[#252A3A] rounded-xl px-4 py-3 text-white placeholder:text-[#5A6478] focus:outline-none focus:border-blue-600/60 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#9AA3B8] text-sm font-medium mb-2">Email Address</label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="you@company.com"
+                className="w-full bg-[#0D0F14] border border-[#252A3A] rounded-xl px-4 py-3 text-white placeholder:text-[#5A6478] focus:outline-none focus:border-blue-600/60 transition-colors text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#9AA3B8] text-sm font-medium mb-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="Min. 8 characters"
+                  className="w-full bg-[#0D0F14] border border-[#252A3A] rounded-xl px-4 py-3 pr-12 text-white placeholder:text-[#5A6478] focus:outline-none focus:border-blue-600/60 transition-colors text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5A6478] hover:text-[#9AA3B8] transition-colors"
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <PasswordStrength password={form.password} />
+            </div>
+
+            <div>
+              <label className="block text-[#9AA3B8] text-sm font-medium mb-2">Confirm Password</label>
+              <input
+                type="password"
+                required
+                value={form.confirm}
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                placeholder="Re-enter password"
+                className="w-full bg-[#0D0F14] border border-[#252A3A] rounded-xl px-4 py-3 text-white placeholder:text-[#5A6478] focus:outline-none focus:border-blue-600/60 transition-colors text-sm"
+              />
+            </div>
+
             {error && (
-              <div
-                className="flex items-start gap-2.5 rounded-lg px-3.5 py-3 mb-5 text-sm"
-                style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.22)', color: '#FCA5A5' }}
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="name">
-                  Full name <span className="text-slate-500 text-xs font-normal">(optional)</span>
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Jane Smith"
-                  className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none transition-all"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    color: '#F8FAFC',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(37,99,255,0.6)')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
-                />
-              </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 mt-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Start free trial'
+              )}
+            </button>
+          </form>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="email">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-lg px-3.5 py-2.5 text-sm outline-none transition-all"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    color: '#F8FAFC',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(37,99,255,0.6)')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
-                />
-              </div>
+          <p className="text-center text-[#5A6478] text-xs mt-6">
+            By signing up, you agree to our{' '}
+            <Link to="/terms" className="text-blue-500 hover:text-blue-400 transition-colors">Terms</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="text-blue-500 hover:text-blue-400 transition-colors">Privacy Policy</Link>.
+          </p>
 
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="password">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPw ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min. 8 characters"
-                    className="w-full rounded-lg px-3.5 py-2.5 pr-10 text-sm outline-none transition-all"
-                    style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.10)',
-                      color: '#F8FAFC',
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(37,99,255,0.6)')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)')}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                    onClick={() => setShowPw((v) => !v)}
-                    tabIndex={-1}
-                    aria-label={showPw ? 'Hide password' : 'Show password'}
-                  >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {password.length > 0 && password.length < 8 && (
-                  <p className="text-xs mt-1" style={{ color: '#F59E0B' }}>
-                    Password must be at least 8 characters
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full font-semibold mt-2"
-                disabled={loading}
-                style={{ background: '#2563FF', color: '#fff' }}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating account…
-                  </span>
-                ) : (
-                  'Create account'
-                )}
-              </Button>
-
-              <p className="text-xs text-slate-500 text-center leading-relaxed">
-                By creating an account you agree to our{' '}
-                <Link to="/terms" className="text-slate-400 hover:text-slate-300 underline">Terms</Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-slate-400 hover:text-slate-300 underline">Privacy Policy</Link>.
-              </p>
-            </form>
-          </div>
-
-          <p className="text-center mt-6 text-slate-500 text-sm">
+          <p className="text-center text-[#9AA3B8] text-sm mt-4">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
-              Sign in
+            <Link to="/login" className="text-blue-500 hover:text-blue-400 font-medium transition-colors">
+              Sign in →
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
