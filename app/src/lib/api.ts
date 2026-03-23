@@ -15,14 +15,19 @@ import type {
   Lead,
   LeadStats,
 } from '@/types';
+import { getStoredToken } from '@/lib/auth';
 
 // ─── Base helpers ────────────────────────────────────────────────────────────
 
 const BASE = '/api/v1';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getStoredToken();
+  const authHeaders: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { 'Content-Type': 'application/json', ...authHeaders, ...init?.headers },
     ...init,
   });
   if (!res.ok) {
