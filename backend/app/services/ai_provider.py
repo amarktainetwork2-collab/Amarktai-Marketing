@@ -3,47 +3,57 @@ AmarktAI Marketing — Unified AI Provider Abstraction
 =====================================================
 
 Priority order for text generation (lowest cost first):
-  1. Qwen/Qwen2.5-72B-Instruct via HuggingFace Serverless (QWEN_API_KEY)
-  2. HuggingFace Inference API – Mistral-7B (HUGGINGFACE_TOKEN)
-  3. OpenAI (OPENAI_API_KEY) — optional internal fallback only
-  4. Template-based fallback — always available
+  1. Qwen (Alibaba Cloud DashScope) — primary (QWEN_API_KEY)
+  2. HuggingFace Inference API — fallback (HUGGINGFACE_TOKEN)
+  3. OpenAI — optional (OPENAI_API_KEY)
+  4. Gemini — optional (GEMINI_API_KEY)
+  5. Template fallback — always available
 
 All external provider names are intentionally abstracted here.
-Callers receive a neutral provider tag ("ai", "template") and never see
-raw provider identifiers in user-facing responses.
+Callers receive metadata indicating which provider was used.
 
 Usage
 -----
     from app.services.ai_provider import AIProvider
 
-    provider = AIProvider.from_env_or_db(hf_token, qwen_key, openai_key)
+    provider = AIProvider.from_settings()
     result = await provider.generate_content(webapp_data, platform)
-    # result["_provider_tag"] is "ai" or "template" — never a vendor name
 """
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
+
+_DASHSCOPE_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+_HF_INFERENCE_URL = "https://api-inference.huggingface.co/models/{model}"
+_HF_DEFAULT_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+_HF_FALLBACK_MODEL = "distilgpt2"
+_OPENAI_MODEL = "gpt-3.5-turbo"
+_GEMINI_MODEL = "gemini-pro"
+
 
 class AIProvider:
     """
-    Thin façade that selects the best available AI backend and delegates
-    to the concrete generator.  Callers never need to know which backend
-    is active.
+    Unified AI provider that walks down a priority chain:
+    Qwen → HuggingFace → OpenAI → Gemini → Template.
     """
 
     def __init__(
         self,
-        hf_token: str = "",
         qwen_key: str = "",
+        hf_token: str = "",
         openai_key: str = "",
+        gemini_key: str = "",
     ) -> None:
-        self._hf_token = hf_token or ""
         self._qwen_key = qwen_key or ""
+        self._hf_token = hf_token or ""
         self._openai_key = openai_key or ""
+        self._gemini_key = gemini_key or ""
 
     # ------------------------------------------------------------------
     # Factory helpers
@@ -52,43 +62,236 @@ class AIProvider:
     @classmethod
     def from_settings(cls) -> "AIProvider":
         """Build from global settings (system-level keys only)."""
+        gemini_key = settings.GEMINI_API_KEY or settings.GOOGLE_GEMINI_API_KEY or ""
         return cls(
-            hf_token=settings.HUGGINGFACE_TOKEN,
             qwen_key=settings.QWEN_API_KEY,
+            hf_token=settings.HUGGINGFACE_TOKEN,
             openai_key=settings.OPENAI_API_KEY,
+            gemini_key=gemini_key,
         )
 
     @classmethod
     def from_keys(
         cls,
+        qwen_key: str = "",
+        hf_token: str = "",
+        openai_key: str = "",
+        gemini_key: str = "",
+    ) -> "AIProvider":
+        """Build with explicit key overrides (e.g. from per-user DB keys)."""
+        gemini_fallback = settings.GEMINI_API_KEY or settings.GOOGLE_GEMINI_API_KEY or ""
+        return cls(
+            qwen_key=qwen_key or settings.QWEN_API_KEY,
+            hf_token=hf_token or settings.HUGGINGFACE_TOKEN,
+            openai_key=openai_key or settings.OPENAI_API_KEY,
+            gemini_key=gemini_key or gemini_fallback,
+        )
+
+    # Backwards-compatible factory used by existing callers
+    @classmethod
+    def from_env_or_db(
+        cls,
         hf_token: str = "",
         qwen_key: str = "",
         openai_key: str = "",
     ) -> "AIProvider":
-        """Build with explicit key overrides (e.g. from per-user DB keys)."""
-        return cls(
-            hf_token=hf_token or settings.HUGGINGFACE_TOKEN,
-            qwen_key=qwen_key or settings.QWEN_API_KEY,
-            openai_key=openai_key or settings.OPENAI_API_KEY,
+        return cls.from_keys(
+            qwen_key=qwen_key,
+            hf_token=hf_token,
+            openai_key=openai_key,
         )
 
     # ------------------------------------------------------------------
-    # Provider selection (internal, not exposed to callers)
+    # Low-level provider calls
     # ------------------------------------------------------------------
 
-    def _has_ai_key(self) -> bool:
-        return bool(self._qwen_key or self._hf_token)
+    async def _call_qwen(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
+        """Call Qwen via DashScope API. Returns {text, model, tokens} or None."""
+        if not self._qwen_key:
+            return None
+        import httpx
+        headers = {
+            "Authorization": f"Bearer {self._qwen_key}",
+            "Content-Type": "application/json",
+        }
+        for model in ("qwen-turbo", "qwen-plus"):
+            try:
+                payload = {
+                    "model": model,
+                    "input": {
+                        "messages": [{"role": "user", "content": prompt}]
+                    },
+                    "parameters": {"max_tokens": max_tokens, "result_format": "message"},
+                }
+                async with httpx.AsyncClient(timeout=30) as client:
+                    resp = await client.post(_DASHSCOPE_URL, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                text = (
+                    data.get("output", {})
+                    .get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                )
+                if text:
+                    usage = data.get("usage", {})
+                    return {
+                        "text": text,
+                        "model": model,
+                        "tokens": usage.get("total_tokens", 0),
+                        "provider": "qwen",
+                        "cost_usd": round(usage.get("total_tokens", 0) * 0.0000002, 6),
+                    }
+            except Exception as exc:
+                logger.debug("Qwen %s call failed: %s", model, exc)
+        return None
 
-    def _get_hf_generator(self):
-        from app.services.hf_generator import HuggingFaceGenerator
-        return HuggingFaceGenerator(
-            hf_token=self._hf_token,
-            qwen_key=self._qwen_key,
-        )
+    async def _call_huggingface(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
+        """Call HuggingFace Inference API. Returns {text, model, tokens} or None."""
+        if not self._hf_token:
+            return None
+        import httpx
+        headers = {"Authorization": f"Bearer {self._hf_token}"}
+        for model in (_HF_DEFAULT_MODEL, _HF_FALLBACK_MODEL):
+            try:
+                url = _HF_INFERENCE_URL.format(model=model)
+                payload = {
+                    "inputs": prompt,
+                    "parameters": {"max_new_tokens": max_tokens, "return_full_text": False},
+                }
+                async with httpx.AsyncClient(timeout=60) as client:
+                    resp = await client.post(url, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                if isinstance(data, list) and data:
+                    text = data[0].get("generated_text", "")
+                elif isinstance(data, dict):
+                    text = data.get("generated_text", "")
+                else:
+                    continue
+                if text:
+                    return {
+                        "text": text,
+                        "model": model,
+                        "tokens": len(prompt.split()) + len(text.split()),
+                        "provider": "huggingface",
+                        "cost_usd": 0.0,
+                    }
+            except Exception as exc:
+                logger.debug("HuggingFace %s call failed: %s", model, exc)
+        return None
 
-    def _get_openai_orchestrator(self):
-        from app.services.openai_service import OpenAIOrchestrator
-        return OpenAIOrchestrator(api_key=self._openai_key)
+    async def _call_openai(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
+        """Call OpenAI gpt-3.5-turbo. Returns {text, model, tokens} or None."""
+        if not self._openai_key:
+            return None
+        import httpx
+        try:
+            headers = {
+                "Authorization": f"Bearer {self._openai_key}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": _OPENAI_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+            }
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            text = data["choices"][0]["message"]["content"]
+            usage = data.get("usage", {})
+            tokens = usage.get("total_tokens", 0)
+            return {
+                "text": text,
+                "model": _OPENAI_MODEL,
+                "tokens": tokens,
+                "provider": "openai",
+                "cost_usd": round(tokens * 0.000002, 6),
+            }
+        except Exception as exc:
+            logger.debug("OpenAI call failed: %s", exc)
+            return None
+
+    async def _call_gemini(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
+        """Call Google Gemini. Returns {text, model, tokens} or None."""
+        if not self._gemini_key:
+            return None
+        import httpx
+        try:
+            url = (
+                f"https://generativelanguage.googleapis.com/v1beta/models/"
+                f"{_GEMINI_MODEL}:generateContent?key={self._gemini_key}"
+            )
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"maxOutputTokens": max_tokens},
+            }
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(url, json=payload)
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            text = (
+                data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+            )
+            if text:
+                return {
+                    "text": text,
+                    "model": _GEMINI_MODEL,
+                    "tokens": len(prompt.split()) + len(text.split()),
+                    "provider": "gemini",
+                    "cost_usd": 0.0,
+                }
+            return None
+        except Exception as exc:
+            logger.debug("Gemini call failed: %s", exc)
+            return None
+
+    async def _generate_raw(self, prompt: str, max_tokens: int = 512) -> dict[str, Any]:
+        """
+        Walk the provider chain and return {text, provider, model, tokens_used, cost_usd}.
+        Always returns a result — never raises.
+        """
+        for call in (
+            self._call_qwen,
+            self._call_huggingface,
+            self._call_openai,
+            self._call_gemini,
+        ):
+            try:
+                result = await call(prompt, max_tokens)
+                if result and result.get("text"):
+                    return {
+                        "text": result["text"],
+                        "provider": result["provider"],
+                        "model": result["model"],
+                        "tokens_used": result.get("tokens", 0),
+                        "cost_usd": result.get("cost_usd", 0.0),
+                    }
+            except Exception as exc:
+                logger.warning("Provider call %s raised unexpectedly: %s", call.__name__, exc)
+
+        # Template fallback — last resort
+        logger.warning("All AI providers failed. Using template fallback.")
+        return {
+            "text": "",
+            "provider": "template",
+            "model": "template",
+            "tokens_used": 0,
+            "cost_usd": 0.0,
+        }
 
     # ------------------------------------------------------------------
     # Public API — content generation
@@ -102,46 +305,74 @@ class AIProvider:
         """
         Generate platform-optimised social media content.
 
-        Returns the standard content dict::
+        Returns::
 
             {
                 "title": str,
                 "caption": str,
                 "hashtags": list[str],
+                "provider": str,
+                "model": str,
+                "tokens_used": int,
+                "cost_usd": float,
                 "_provider_tag": "ai" | "template",
             }
-
-        ``_provider_tag`` indicates whether real AI generation was used.
-        It is safe to include in internal logging but MUST NOT be surfaced
-        in user-facing API responses.
         """
-        result: dict[str, Any] = {}
-        used_ai = False
-
-        if self._has_ai_key():
+        # Try delegating to the specialist HF generator first (it knows platform hints)
+        if self._qwen_key or self._hf_token:
             try:
-                gen = self._get_hf_generator()
+                from app.services.hf_generator import HuggingFaceGenerator
+                gen = HuggingFaceGenerator(
+                    hf_token=self._hf_token,
+                    qwen_key=self._qwen_key,
+                )
                 result = await gen.generate_content(webapp_data, platform)
-                used_ai = True
-            except Exception:
-                pass
+                if result and not result.get("_generation_error"):
+                    result.setdefault("provider", "qwen" if self._qwen_key else "huggingface")
+                    result.setdefault("model", "qwen-turbo")
+                    result.setdefault("tokens_used", 0)
+                    result.setdefault("cost_usd", 0.0)
+                    result["_provider_tag"] = "ai"
+                    return result
+            except Exception as exc:
+                logger.warning("HuggingFaceGenerator.generate_content failed: %s", exc)
 
-        # Optional OpenAI polish pass (internal fallback only)
-        if used_ai and self._openai_key and not result.get("_generation_error"):
-            try:
-                oai = self._get_openai_orchestrator()
-                result = await oai.validate_and_improve(result, webapp_data, platform)
-            except Exception:
-                pass  # Silently continue with unimproved result
+        # Fallback: build a simple prompt and call provider chain
+        name = webapp_data.get("name", "our business")
+        description = webapp_data.get("description", "")
+        prompt = (
+            f"Write a short {platform} social media post for {name}. "
+            f"Business description: {description}. "
+            f"Include relevant hashtags."
+        )
+        raw = await self._generate_raw(prompt, max_tokens=300)
+        text = raw["text"]
 
-        if not result or result.get("_generation_error") or not used_ai:
+        if raw["provider"] == "template" or not text:
             from app.services.hf_generator import HuggingFaceGenerator
-            result = HuggingFaceGenerator._fallback_content(webapp_data, platform)
-            used_ai = False
+            fallback = HuggingFaceGenerator._fallback_content(webapp_data, platform)
+            fallback["provider"] = "template"
+            fallback["model"] = "template"
+            fallback["tokens_used"] = 0
+            fallback["cost_usd"] = 0.0
+            fallback["_provider_tag"] = "template"
+            return fallback
 
-        # Attach internal tag — must be stripped before sending to frontend
-        result["_provider_tag"] = "ai" if used_ai else "template"
-        return result
+        # Parse hashtags from generated text
+        import re
+        hashtags = re.findall(r"#\w+", text)
+        caption = re.sub(r"#\w+", "", text).strip()
+
+        return {
+            "title": f"{name} on {platform.title()}",
+            "caption": caption[:500],
+            "hashtags": hashtags[:15],
+            "provider": raw["provider"],
+            "model": raw["model"],
+            "tokens_used": raw["tokens_used"],
+            "cost_usd": raw["cost_usd"],
+            "_provider_tag": "ai",
+        }
 
     async def generate_batch(
         self,
@@ -159,50 +390,15 @@ class AIProvider:
         Generate free-form text using the best available provider.
         Returns the generated text string, or an empty string on failure.
         """
-        if self._has_ai_key():
-            try:
-                gen = self._get_hf_generator()
-                # generate_content returns structured content; extract caption as plain text
-                result = await gen.generate_content(
-                    {"name": "AmarktAI", "description": prompt, "url": "", "target_audience": ""},
-                    "generic",
-                )
-                return result.get("caption", "")
-            except Exception:
-                pass
-
-        if self._openai_key:
-            try:
-                import httpx
-                headers = {
-                    "Authorization": f"Bearer {self._openai_key}",
-                    "Content-Type": "application/json",
-                }
-                payload = {
-                    "model": "gpt-4o-mini",
-                    "messages": [
-                        {"role": "user", "content": prompt},
-                    ],
-                    "max_tokens": max_tokens,
-                }
-                async with httpx.AsyncClient(timeout=60) as client:
-                    resp = await client.post(
-                        "https://api.openai.com/v1/chat/completions",
-                        json=payload,
-                        headers=headers,
-                    )
-                    resp.raise_for_status()
-                    return resp.json()["choices"][0]["message"]["content"]
-            except Exception:
-                pass
-
-        return ""
+        raw = await self._generate_raw(prompt, max_tokens)
+        return raw.get("text", "")
 
     async def summarize(self, text: str) -> str:
         """Summarise text using the best available provider."""
-        if self._has_ai_key():
+        if self._hf_token:
             try:
-                gen = self._get_hf_generator()
+                from app.services.hf_generator import HuggingFaceGenerator
+                gen = HuggingFaceGenerator(hf_token=self._hf_token, qwen_key=self._qwen_key)
                 return await gen.summarize(text)
             except Exception:
                 pass
@@ -210,9 +406,10 @@ class AIProvider:
 
     async def analyze_sentiment(self, text: str) -> dict[str, Any]:
         """Analyse sentiment of text."""
-        if self._has_ai_key():
+        if self._hf_token:
             try:
-                gen = self._get_hf_generator()
+                from app.services.hf_generator import HuggingFaceGenerator
+                gen = HuggingFaceGenerator(hf_token=self._hf_token, qwen_key=self._qwen_key)
                 return await gen.analyze_sentiment(text)
             except Exception:
                 pass
@@ -220,9 +417,10 @@ class AIProvider:
 
     async def classify_topics(self, text: str, labels: list[str]) -> dict[str, Any]:
         """Zero-shot topic classification."""
-        if self._has_ai_key():
+        if self._hf_token:
             try:
-                gen = self._get_hf_generator()
+                from app.services.hf_generator import HuggingFaceGenerator
+                gen = HuggingFaceGenerator(hf_token=self._hf_token, qwen_key=self._qwen_key)
                 return await gen.classify_topics(text, labels)
             except Exception:
                 pass
@@ -230,12 +428,12 @@ class AIProvider:
 
     async def extract_keywords(self, text: str) -> list[str]:
         """Extract keywords from text."""
-        if self._has_ai_key():
+        if self._hf_token:
             try:
-                gen = self._get_hf_generator()
+                from app.services.hf_generator import HuggingFaceGenerator
+                gen = HuggingFaceGenerator(hf_token=self._hf_token, qwen_key=self._qwen_key)
                 return await gen.extract_keywords(text)
             except Exception:
                 pass
-        # Naive fallback: return first few words
         words = [w.strip(".,!?") for w in text.split() if len(w) > 4]
         return list(dict.fromkeys(words))[:10]

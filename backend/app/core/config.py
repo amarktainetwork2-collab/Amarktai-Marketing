@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/amarktai"
+    DATABASE_URL: str = "mysql+pymysql://amarktai:CHANGE_THIS_PASSWORD@localhost:3306/amarktai"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
@@ -42,8 +42,9 @@ class Settings(BaseSettings):
     QWEN_API_KEY: str = ""  # DashScope API key from console.aliyun.com
     QWEN_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"  # HF model ID or DashScope model name
     
-    # Google AI
+    # Gemini (Google) — optional add-on
     GOOGLE_GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""  # alias used by ai_provider
     GOOGLE_AI_API_KEY: str = ""  # Legacy
     
     # Grok/X AI
@@ -149,6 +150,7 @@ class Settings(BaseSettings):
     # ==================== EMAIL ====================
     RESEND_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@amarktai.com"
+    CONTACT_EMAIL: str = ""  # Destination for contact form submissions
     
     # ==================== STORAGE ====================
     SUPABASE_URL: str = ""

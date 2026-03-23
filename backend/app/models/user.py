@@ -36,6 +36,14 @@ class User(Base):
     timezone = Column(String, default="UTC")
     notification_preferences = Column(JSON, default=dict)
 
+    # Phase 2: extended plan/quota tracking
+    plan_tier = Column(String(32), default="free")
+    plan_quota_content = Column(Integer, default=50)
+    plan_quota_used = Column(Integer, default=0)
+    notification_email = Column(Boolean, default=True)
+    notification_digest = Column(Boolean, default=True)
+    settings_json = Column(String(length=65535), nullable=True)  # arbitrary JSON prefs
+
     # Geolocation (captured via browser Geolocation API on login)
     geo_lat = Column(Float, nullable=True)
     geo_lon = Column(Float, nullable=True)
