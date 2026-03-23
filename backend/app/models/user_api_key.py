@@ -36,12 +36,12 @@ _fernet = _build_fernet()
 class UserAPIKey(Base):
     __tablename__ = "user_api_keys"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    key_name = Column(String, nullable=False)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    key_name = Column(String(128), nullable=False)
     encrypted_key = Column(Text, nullable=False)
     is_active = Column(Boolean, default=True)
-    usage_count = Column(String, default="0")
+    usage_count = Column(String(20), default="0")
     last_used_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -71,9 +71,9 @@ class UserIntegration(Base):
     """Stores OAuth2 tokens and connection status for social platforms."""
     __tablename__ = "user_integrations"
 
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    platform = Column(String, nullable=False)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(64), nullable=False)
 
     encrypted_access_token = Column(Text, nullable=True)
     encrypted_refresh_token = Column(Text, nullable=True)
@@ -83,8 +83,8 @@ class UserIntegration(Base):
     connected_at = Column(DateTime(timezone=True), nullable=True)
     disconnected_at = Column(DateTime(timezone=True), nullable=True)
 
-    platform_user_id = Column(String, nullable=True)
-    platform_username = Column(String, nullable=True)
+    platform_user_id = Column(String(255), nullable=True)
+    platform_username = Column(String(255), nullable=True)
     platform_data = Column(Text, nullable=True)
     scopes = Column(Text, nullable=True)
 

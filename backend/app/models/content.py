@@ -24,24 +24,24 @@ class ContentType(str, enum.Enum):
 class Content(Base):
     __tablename__ = "content"
     
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    webapp_id = Column(String, ForeignKey("webapps.id"), nullable=False)
-    platform = Column(String, nullable=False)
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    webapp_id = Column(String(36), ForeignKey("webapps.id"), nullable=False)
+    platform = Column(String(64), nullable=False)
     type = Column(Enum(ContentType), nullable=False)
     status = Column(Enum(ContentStatus), default=ContentStatus.PENDING)
-    title = Column(String, nullable=False)
-    caption = Column(String, nullable=False)
+    title = Column(String(512), nullable=False)
+    caption = Column(Text, nullable=False)
     hashtags = Column(JSON, default=[])
     media_urls = Column(JSON, default=[])
     scheduled_for = Column(DateTime(timezone=True), nullable=True)
     posted_at = Column(DateTime(timezone=True), nullable=True)
-    platform_post_id = Column(String, nullable=True)
+    platform_post_id = Column(String(256), nullable=True)
     
     # Content metadata
-    content_angle = Column(String, nullable=True)  # e.g., "tutorial", "transformation", "pov"
-    target_audience = Column(String, nullable=True)
-    language = Column(String, default="en")
+    content_angle = Column(String(128), nullable=True)  # e.g., "tutorial", "transformation", "pov"
+    target_audience = Column(String(512), nullable=True)
+    language = Column(String(10), default="en")
     
     # Viral prediction
     viral_score = Column(Integer, nullable=True)  # 0-100
@@ -57,17 +57,17 @@ class Content(Base):
     
     # A/B testing
     is_variant = Column(Boolean, default=False)
-    ab_test_id = Column(String, ForeignKey("ab_tests.id"), nullable=True)
-    variant_id = Column(String, nullable=True)  # Unique ID within the test
+    ab_test_id = Column(String(36), ForeignKey("ab_tests.id"), nullable=True)
+    variant_id = Column(String(36), nullable=True)  # Unique ID within the test
     
     # Media generation tracking
-    image_generation_cost = Column(String, default="0.00")
-    video_generation_cost = Column(String, default="0.00")
-    audio_generation_cost = Column(String, default="0.00")
+    image_generation_cost = Column(String(20), default="0.00")
+    video_generation_cost = Column(String(20), default="0.00")
+    audio_generation_cost = Column(String(20), default="0.00")
     llm_tokens_used = Column(Integer, default=0)
     
     # Repurposing
-    parent_content_id = Column(String, ForeignKey("content.id"), nullable=True)  # If repurposed from another content
+    parent_content_id = Column(String(36), ForeignKey("content.id"), nullable=True)  # If repurposed from another content
     is_repurposed = Column(Boolean, default=False)
     repurposed_for_platforms = Column(JSON, default=list)  # List of platforms this was repurposed for
     

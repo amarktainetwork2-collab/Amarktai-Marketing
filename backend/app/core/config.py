@@ -167,7 +167,6 @@ class Settings(BaseSettings):
     # Per-app identity
     APP_ID: str = "amarktai-marketing"
     APP_SLUG: str = "amarktai-marketing"
-    APP_NAME: str = "AmarktAI Marketing"
     APP_VERSION: str = "1.0.0"
     APP_ENVIRONMENT: str = "production"  # production | staging | development
 

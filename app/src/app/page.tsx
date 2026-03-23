@@ -76,8 +76,6 @@ const STEPS = [
   },
 ];
 
-const TRUST_BRANDS = ['TechScale', 'Growloop', 'Launchify', 'NovaMark', 'Viralio', 'Scaleworks'];
-
 const STATS = [
   { value: '15+', label: 'Platforms Supported' },
   { value: '10+', label: 'AI Power Tools' },
@@ -107,7 +105,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 rounded-full px-4 py-1.5 text-blue-400 text-sm font-medium mb-8">
               <Zap className="w-3.5 h-3.5" />
-              Powered by Qwen + HuggingFace AI
+              Powered by Amarkt<span className="text-blue-300">AI</span> Network
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6">
@@ -159,22 +157,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust Band */}
-      <section className="border-y border-[#1E2130] bg-[#0D0F14] py-12">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <p className="text-center text-[#5A6478] text-sm font-medium mb-8 uppercase tracking-widest">
-            Trusted by growth teams at
+      {/* Brand Statement */}
+      <section className="border-y border-[#1E2130] bg-[#0D0F14] py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-[#5A6478] text-xs font-semibold uppercase tracking-widest mb-6">What we stand for</p>
+          <blockquote className="text-xl sm:text-2xl font-semibold text-white leading-relaxed mb-6">
+            "The brands that win in the next decade won't be the ones with the biggest teams — they'll be the ones with the smartest automation."
+          </blockquote>
+          <p className="text-[#5A6478] text-sm">
+            Amarkt<span className="text-blue-500">AI</span> Marketing — built to give every business unfair AI leverage.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {TRUST_BRANDS.map((brand) => (
-              <div
-                key={brand}
-                className="px-5 py-2 bg-[#141720] border border-[#252A3A] rounded-full text-[#9AA3B8] text-sm font-medium"
-              >
-                {brand}
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

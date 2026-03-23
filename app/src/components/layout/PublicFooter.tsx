@@ -58,7 +58,6 @@ export default function PublicFooter() {
             <ul className="space-y-3">
               {[
                 { label: 'About', href: '/about' },
-                { label: 'Blog', href: '/dashboard/blog' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link to={link.href} className="text-[#5A6478] hover:text-white text-sm transition-colors">
@@ -90,10 +89,18 @@ export default function PublicFooter() {
         {/* Bottom bar */}
         <div className="border-t border-[#1E2130] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#5A6478] text-sm">
-            © {year} Amarkt<span className="text-blue-500">AI</span> Marketing. Built for scale.
+            © {year} Amarkt<span className="text-blue-500">AI</span> Marketing. All rights reserved.
           </p>
           <p className="text-[#5A6478] text-xs">
-            Powered by Qwen · HuggingFace · Firecrawl
+            Part of{' '}
+            <a
+              href="https://amarktai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:text-blue-400 transition-colors"
+            >
+              Amarkt<span className="text-blue-300">AI</span> Network
+            </a>
           </p>
         </div>
       </div>
