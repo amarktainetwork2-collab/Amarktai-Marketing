@@ -15,6 +15,7 @@ import type {
   Lead,
   LeadStats,
 } from '@/types';
+import { getStoredToken } from '@/lib/auth';
 
 // ─── Base helpers ────────────────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ function getToken(): string | null {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
+  const token = getStoredToken();
   const authHeaders: Record<string, string> = token
     ? { Authorization: `Bearer ${token}` }
     : {};
