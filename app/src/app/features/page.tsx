@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Zap, Calendar, TrendingUp, BarChart2, Users, GitBranch,
   FileText, Repeat, Share2, CheckSquare, MessageCircle, Layers,
-  ArrowRight
+  ArrowRight, Eye
 } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
@@ -45,7 +45,7 @@ const FEATURE_GROUPS = [
     features: [
       { icon: TrendingUp, title: 'Viral Predictor', desc: 'Score content before posting. The AI predicts engagement based on historical patterns and trends.' },
       { icon: BarChart2, title: 'Performance Predictor', desc: 'Forecast campaign ROI and content performance before you invest budget.' },
-      { icon: BarChart2, title: 'Competitor Intelligence', desc: 'Monitor rival accounts, track their top content, and surface opportunities to outperform them.' },
+      { icon: Eye, title: 'Competitor Intelligence', desc: 'Monitor rival accounts, track their top content, and surface opportunities to outperform them.' },
       { icon: GitBranch, title: 'A/B Testing', desc: 'Run controlled content experiments. AI automatically promotes the variant that performs best.' },
     ],
   },
