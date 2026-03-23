@@ -14,6 +14,68 @@ class LocationUpdate(BaseModel):
     latitude: float
     longitude: float
 
+
+# ── Personal API keys ─────────────────────────────────────────────────────────
+
+class ApiKeyEntry(BaseModel):
+    key_name: str
+    key_value: str
+
+class ApiKeysBatchRequest(BaseModel):
+    keys: list[ApiKeyEntry]
+
+# Allowed key names users can set from the settings page
+_ALLOWED_KEYS = {
+    "QWEN_API_KEY",
+    "HUGGINGFACE_TOKEN",
+    "OPENAI_API_KEY",
+    "FIRECRAWL_API_KEY",
+}
+
+@router.post("/api-keys", status_code=204)
+async def upsert_api_keys(
+    body: ApiKeysBatchRequest,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+) -> None:
+    """
+    Save / update personal API keys for the current user.
+
+    Only a safe allow-list of key names is accepted.
+    Each key is encrypted before storage using the app ENCRYPTION_KEY.
+    """
+    import uuid as _uuid
+    from app.models.user_api_key import UserAPIKey
+
+    for entry in body.keys:
+        if entry.key_name not in _ALLOWED_KEYS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Key '{entry.key_name}' is not allowed via this endpoint.",
+            )
+        if not entry.key_value.strip():
+            continue  # Skip blanks silently
+
+        existing = db.query(UserAPIKey).filter(
+            UserAPIKey.user_id == current_user.id,
+            UserAPIKey.key_name == entry.key_name,
+        ).first()
+
+        if existing:
+            existing.encrypted_key = UserAPIKey.encrypt_key(entry.key_value.strip())  # type: ignore[assignment]
+            existing.is_active = True  # type: ignore[assignment]
+        else:
+            new_key = UserAPIKey(
+                id=str(_uuid.uuid4()),
+                user_id=current_user.id,
+                key_name=entry.key_name,
+                encrypted_key=UserAPIKey.encrypt_key(entry.key_value.strip()),
+                is_active=True,
+            )
+            db.add(new_key)
+
+    db.commit()
+
 @router.get("/me", response_model=User)
 async def get_me(
     db: Session = Depends(get_db),

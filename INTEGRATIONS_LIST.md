@@ -94,7 +94,7 @@ AmarktAI Marketing supports **37 third-party integrations** across 8 categories 
 | # | Provider | Purpose | Tier | API Key Required |
 |---|----------|---------|------|------------------|
 | 30 | **Firecrawl** | Web app content crawling and extraction | Paid | `FIRECRAWL_API_KEY` |
-| 31 | **ScrapingBee** | General web scraping with JS rendering | Paid | `SCRAPINGBEE_API_KEY` |
+| 31 | **Firecrawl** | Primary web scraping — JS-rendered, rich extraction | Paid | `FIRECRAWL_API_KEY` (primary) |
 
 **Use Cases**: Extract web app features, competitor analysis, content research, landing page data
 
@@ -195,7 +195,7 @@ For users on paid plans seeking best quality:
 - **Video**: Runway ML or HeyGen
 - **Voice**: ElevenLabs
 - **Trends**: Google Trends (via SerpAPI)
-- **Scraping**: Firecrawl + ScrapingBee
+- **Scraping**: Firecrawl (primary), httpx+BeautifulSoup (fallback)
 - **Payments**: Stripe (required)
 - **Storage**: AWS S3 or Supabase Pro
 
