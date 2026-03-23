@@ -5,9 +5,10 @@ import {
   Home, PenTool, CheckSquare, Calendar, BarChart2,
   MessageCircle, Share2, Zap, Users, FileText, Layers,
   Plug, Settings, Shield, Menu, X, Bell, ChevronDown,
-  LogOut, User
+  LogOut, User, Building2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useWebapp } from '@/hooks/useWebapp';
 
 interface NavItem {
   label: string;
@@ -74,9 +75,11 @@ function NavLink({ item, isActive, onClick }: { item: NavItem; isActive: boolean
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [webappMenuOpen, setWebappMenuOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { webapps, activeWebapp, setActiveWebapp } = useWebapp();
 
   const isAdmin = user?.email?.includes('admin') || false;
 
@@ -214,6 +217,57 @@ export default function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Webapp Switcher */}
+            {webapps.length > 0 && (
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setWebappMenuOpen(!webappMenuOpen)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-sm text-[#9AA3B8] hover:text-white transition-colors border border-[#252A3A]"
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span className="max-w-[120px] truncate">{activeWebapp?.name ?? 'Select Business'}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${webappMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {webappMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.1 }}
+                      className="absolute right-0 top-full mt-1 w-56 bg-[#0D0F14] border border-[#252A3A] rounded-xl shadow-xl z-50 overflow-hidden"
+                    >
+                      <div className="p-1">
+                        {webapps.map((w) => (
+                          <button
+                            key={w.id}
+                            onClick={() => { setActiveWebapp(w.id); setWebappMenuOpen(false); }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+                              activeWebapp?.id === w.id
+                                ? 'bg-blue-600/15 text-blue-400'
+                                : 'text-[#9AA3B8] hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="truncate">{w.name}</span>
+                          </button>
+                        ))}
+                        <div className="border-t border-[#1E2130] mt-1 pt-1">
+                          <Link
+                            to="/dashboard/webapps"
+                            onClick={() => setWebappMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-[#5A6478] hover:text-white hover:bg-white/5 transition-colors"
+                          >
+                            + Manage businesses
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
             <button className="p-2 text-[#9AA3B8] hover:text-white transition-colors rounded-lg hover:bg-white/5 relative">
               <Bell className="w-5 h-5" />
             </button>

@@ -4,7 +4,7 @@ from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
     remix, tools, leads, blog, groups,
-    amarktai_status, dashboard,
+    amarktai_status, dashboard, settings, contact,
 )
 
 api_router = APIRouter()
@@ -42,3 +42,9 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboar
 # AmarktAI Network integration status (public, no auth)
 # Accessible at /api/v1/amarktai/status  AND  /api/amarktai/status (via main.py mount)
 api_router.include_router(amarktai_status.router, prefix="/amarktai", tags=["integration"])
+
+# Settings & preferences (user API keys, billing, notifications)
+api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+
+# Contact form (public, no auth, rate limited)
+api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
