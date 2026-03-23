@@ -43,7 +43,7 @@ sudo mysql -u root -p
 
 ```sql
 CREATE DATABASE amarktai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'your_strong_password';
+CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
 GRANT ALL PRIVILEGES ON amarktai.* TO 'amarktai_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -101,7 +101,7 @@ nano .env
 Required values in `.env`:
 
 ```env
-DATABASE_URL=mysql+pymysql://amarktai_user:your_strong_password@localhost:3306/amarktai
+DATABASE_URL=mysql+pymysql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:3306/amarktai
 JWT_SECRET=<output of: openssl rand -hex 32>
 ENCRYPTION_KEY=<output of: openssl rand -base64 32>
 REDIS_URL=redis://localhost:6379/0
@@ -355,7 +355,7 @@ tail -f /var/log/amarktai/celery-worker.log
 | `ADMIN_EMAIL`       | Valid email address                                       |
 | `CORS_ORIGINS`      | `https://yourdomain.com` (no trailing slash)              |
 
-> ⚠️ **DATABASE_URL must use `mysql+pymysql://`**. PostgreSQL is not supported.
+> ⚠️ **DATABASE_URL must use `mysql+pymysql://`**. The ORM models and Alembic migrations use MySQL-specific types and collations. Using a PostgreSQL connection string will cause migration failures and runtime errors.
 
 ---
 

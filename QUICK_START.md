@@ -43,7 +43,7 @@ Edit `.env` with your values:
 
 ```env
 # Database — MySQL only, PyMySQL driver
-DATABASE_URL=mysql+pymysql://amarktai_user:yourpassword@localhost:3306/amarktai
+DATABASE_URL=mysql+pymysql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:3306/amarktai
 
 # Security
 JWT_SECRET=your-long-random-secret-here        # openssl rand -hex 32
@@ -72,7 +72,7 @@ CORS_ORIGINS=http://localhost:5173
 
 ```sql
 CREATE DATABASE amarktai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'yourpassword';
+CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
 GRANT ALL PRIVILEGES ON amarktai.* TO 'amarktai_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
