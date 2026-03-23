@@ -1,337 +1,276 @@
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/auth';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard,
-  Globe,
-  Share2,
-  BarChart3,
-  Settings,
-  Menu,
-  X,
-  Zap,
-  Bell,
-  Clock,
-  Sparkles,
-  MessageSquare,
-  ShieldCheck,
-  Wrench,
-  Users,
-  FileText,
-  UsersRound,
-  ChevronDown,
-  Building2,
-  Plus,
-  Key,
-  CheckSquare,
-  LogOut,
-  UserCircle,
+  Home, PenTool, CheckSquare, Calendar, BarChart2,
+  MessageCircle, Share2, Zap, Users, FileText, Layers,
+  Plug, Settings, Shield, Menu, X, Bell, ChevronDown,
+  LogOut, User
 } from 'lucide-react';
-import { useState } from 'react';
+import { useAuth } from '@/lib/auth';
 
 interface NavItem {
-  name: string;
+  label: string;
   href: string;
-  icon: React.ElementType;
-  group: string;
-  badge?: number;
+  icon: React.ComponentType<{ className?: string }>;
+  adminOnly?: boolean;
 }
 
-const navigation: NavItem[] = [
-  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, group: 'main' },
-  { name: 'Web Apps', href: '/dashboard/webapps', icon: Globe, group: 'main' },
-  { name: 'Platforms', href: '/dashboard/platforms', icon: Share2, group: 'main' },
-  { name: 'Content Studio', href: '/dashboard/content', icon: Sparkles, group: 'create' },
-  { name: 'Review & Approve', href: '/dashboard/approval', icon: CheckSquare, badge: 5, group: 'create' },
-  { name: 'Scheduler', href: '/dashboard/scheduler', icon: Clock, group: 'create' },
-  { name: 'Blog Generator', href: '/dashboard/blog', icon: FileText, group: 'create' },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, group: 'insights' },
-  { name: 'Leads', href: '/dashboard/leads', icon: Users, group: 'insights' },
-  { name: 'Engagement', href: '/dashboard/engagement', icon: MessageSquare, group: 'insights' },
-  { name: 'Communities', href: '/dashboard/groups', icon: UsersRound, group: 'insights' },
-  { name: 'Power Tools', href: '/dashboard/tools', icon: Wrench, group: 'system' },
-  { name: 'Integrations', href: '/dashboard/integrations', icon: Key, group: 'system' },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings, group: 'system' },
-  { name: 'Admin', href: '/dashboard/admin', icon: ShieldCheck, group: 'system' },
+const NAV_SECTIONS = [
+  {
+    label: 'Core',
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: Home },
+      { label: 'Content Studio', href: '/dashboard/content', icon: PenTool },
+      { label: 'Approval Queue', href: '/dashboard/approval', icon: CheckSquare },
+      { label: 'Scheduler', href: '/dashboard/scheduler', icon: Calendar },
+    ] as NavItem[],
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart2 },
+      { label: 'Engagement', href: '/dashboard/engagement', icon: MessageCircle },
+      { label: 'Platforms', href: '/dashboard/platforms', icon: Share2 },
+    ] as NavItem[],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'AI Tools', href: '/dashboard/tools', icon: Zap },
+      { label: 'Leads', href: '/dashboard/leads', icon: Users },
+      { label: 'Blog', href: '/dashboard/blog', icon: FileText },
+      { label: 'Groups', href: '/dashboard/groups', icon: Layers },
+    ] as NavItem[],
+  },
+  {
+    label: 'System',
+    items: [
+      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug },
+      { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+      { label: 'Admin', href: '/dashboard/admin', icon: Shield, adminOnly: true },
+    ] as NavItem[],
+  },
 ];
 
-const navGroups = [
-  { key: 'main', label: 'Platform' },
-  { key: 'create', label: 'Create' },
-  { key: 'insights', label: 'Insights' },
-  { key: 'system', label: 'System' },
-];
-
-function WorkspaceSwitcher() {
-  const [workspaces, setWorkspaces] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('amarktai_workspaces') || '["Default Brand"]');
-    } catch {
-      return ['Default Brand'];
-    }
-  });
-  const [active, setActive] = useState<string>(
-    () => localStorage.getItem('amarktai_active_workspace') || 'Default Brand'
-  );
-  const [open, setOpen] = useState(false);
-
-  const switchTo = (name: string) => {
-    setActive(name);
-    localStorage.setItem('amarktai_active_workspace', name);
-    setOpen(false);
-  };
-
-  const addWorkspace = () => {
-    const name = prompt('New workspace name:');
-    if (name?.trim()) {
-      const updated = [...workspaces, name.trim()];
-      setWorkspaces(updated);
-      localStorage.setItem('amarktai_workspaces', JSON.stringify(updated));
-      switchTo(name.trim());
-    }
-    setOpen(false);
-  };
-
+function NavLink({ item, isActive, onClick }: { item: NavItem; isActive: boolean; onClick?: () => void }) {
+  const Icon = item.icon;
   return (
-    <div className="relative px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-      <button
-        className="w-full flex items-center justify-between text-sm font-medium py-1.5 px-2 rounded-lg transition-colors hover:bg-white/5 text-slate-300"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <span className="flex items-center gap-2 truncate">
-          <Building2 className="w-4 h-4 text-blue-400 shrink-0" />
-          <span className="truncate">{active}</span>
-        </span>
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div
-          className="absolute left-2 right-2 mt-1 rounded-xl z-50 overflow-hidden"
-          style={{
-            background: '#111827',
-            border: '1px solid rgba(255,255,255,0.10)',
-            boxShadow: '0 16px 32px rgba(0,0,0,0.5)',
-          }}
-        >
-          {workspaces.map((ws) => (
-            <button
-              key={ws}
-              className="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-white/5"
-              style={{ color: ws === active ? '#2563FF' : '#CBD5E1' }}
-              onClick={() => switchTo(ws)}
-            >
-              {ws}
-            </button>
-          ))}
-          <button
-            className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-white/5"
-            style={{ color: '#22D3EE', borderTop: '1px solid rgba(255,255,255,0.06)' }}
-            onClick={addWorkspace}
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Workspace
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function UserArea() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/', { replace: true });
-  };
-
-  return (
-    <div
-      className="flex items-center gap-3 p-3"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+    <Link
+      to={item.href}
+      onClick={onClick}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+        isActive
+          ? 'bg-blue-600/15 text-blue-400 border border-blue-600/20'
+          : 'text-[#9AA3B8] hover:text-white hover:bg-white/5'
+      }`}
     >
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: 'rgba(37,99,255,0.18)' }}
-      >
-        <UserCircle className="w-4.5 h-4.5" style={{ color: '#4F7DFF' }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-200 truncate">
-          {user?.name || user?.email || 'Account'}
-        </p>
-        <p className="text-xs text-slate-500">
-          {user?.name ? 'AmarktAI Marketing' : 'Free Plan'}
-        </p>
-      </div>
-      <button
-        onClick={handleLogout}
-        className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-colors shrink-0"
-        title="Sign out"
-        aria-label="Sign out"
-      >
-        <LogOut className="w-3.5 h-3.5" />
-      </button>
-    </div>
+      <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-400' : ''}`} />
+      {item.label}
+    </Link>
   );
 }
 
 export default function DashboardLayout() {
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const currentPage = navigation.find((n) => n.href === location.pathname)?.name || 'Overview';
+  const isAdmin = user?.email?.includes('admin') || false;
 
-  return (
-    <div className="min-h-screen" style={{ background: '#06070A' }}>
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 z-50 h-full w-60 flex flex-col transform transition-transform lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{
-          background: '#0B0F14',
-          borderRight: '1px solid rgba(255,255,255,0.07)',
-        }}
-      >
-        {/* Logo */}
-        <div
-          className="flex items-center justify-between px-4 py-4"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
-        >
-          <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
-            >
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-bold tracking-tight leading-none">
-              <span className="text-white">Amarkt</span>
-              <span style={{ color: '#2563FF' }}>AI</span>
-              <span className="text-white"> Marketing</span>
-            </span>
-          </Link>
-          <button
-            className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 text-slate-400"
-            onClick={() => setSidebarOpen(false)}
-          >
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const pageTitle = (() => {
+    const seg = pathname.split('/').filter(Boolean).pop() || 'dashboard';
+    const map: Record<string, string> = {
+      dashboard: 'Dashboard',
+      content: 'Content Studio',
+      approval: 'Approval Queue',
+      scheduler: 'Scheduler',
+      analytics: 'Analytics',
+      engagement: 'Engagement',
+      platforms: 'Platforms',
+      tools: 'AI Tools',
+      leads: 'Leads',
+      blog: 'Blog',
+      groups: 'Groups',
+      integrations: 'Integrations',
+      settings: 'Settings',
+      admin: 'Admin',
+    };
+    return map[seg] ?? 'Dashboard';
+  })();
+
+  const Sidebar = ({ onClose }: { onClose?: () => void }) => (
+    <aside className="flex flex-col h-full bg-[#0D0F14] border-r border-[#1E2130] w-64">
+      {/* Logo */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-[#1E2130]">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="text-white font-bold text-sm">
+            Amarkt<span className="text-blue-500">AI</span> Marketing
+          </span>
+        </Link>
+        {onClose && (
+          <button onClick={onClose} className="text-[#5A6478] hover:text-white p-1">
             <X className="w-4 h-4" />
           </button>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="text-[#5A6478] text-xs font-semibold uppercase tracking-widest mb-2 px-3">
+              {section.label}
+            </p>
+            <div className="space-y-1">
+              {section.items
+                .filter((item) => !item.adminOnly || isAdmin)
+                .map((item) => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    isActive={pathname === item.href}
+                    onClick={onClose}
+                  />
+                ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* User */}
+      <div className="p-4 border-t border-[#1E2130]">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#141720]">
+          <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-600/30 flex items-center justify-center flex-shrink-0">
+            <User className="w-4 h-4 text-blue-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium truncate">{user?.name ?? user?.email ?? 'User'}</p>
+            <p className="text-[#5A6478] text-xs">Pro Plan</p>
+          </div>
         </div>
+      </div>
+    </aside>
+  );
 
-        {/* Workspace Switcher */}
-        <WorkspaceSwitcher />
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#06070A]">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex flex-shrink-0">
+        <Sidebar />
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {navGroups.map((group) => {
-            const items = navigation.filter((n) => n.group === group.key);
-            return (
-              <div key={group.key} className="mb-4">
-                <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-1.5" style={{ color: '#475569' }}>
-                  {group.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {items.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          to={item.href}
-                          className="flex items-center justify-between px-3 py-2 rounded-lg transition-all text-sm"
-                          style={{
-                            background: isActive ? 'rgba(37,99,255,0.15)' : 'transparent',
-                            color: isActive ? '#4F7DFF' : '#94A3B8',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isActive) {
-                              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.04)';
-                              (e.currentTarget as HTMLAnchorElement).style.color = '#CBD5E1';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isActive) {
-                              (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
-                              (e.currentTarget as HTMLAnchorElement).style.color = '#94A3B8';
-                            }
-                          }}
-                          onClick={() => setSidebarOpen(false)}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <item.icon
-                              className="w-4 h-4 shrink-0"
-                              style={{ color: isActive ? '#2563FF' : 'inherit' }}
-                            />
-                            <span>{item.name}</span>
-                          </div>
-                          {item.badge && (
-                            <span
-                              className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                              style={{ background: 'rgba(37,99,255,0.2)', color: '#4F7DFF' }}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* User area */}
-        <UserArea />
-      </aside>
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/60 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -256 }}
+              animate={{ x: 0 }}
+              exit={{ x: -256 }}
+              transition={{ type: 'tween', duration: 0.2 }}
+              className="fixed left-0 top-0 bottom-0 z-50 md:hidden"
+            >
+              <Sidebar onClose={() => setSidebarOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
-      <div className="lg:ml-60">
-        {/* Header */}
-        <header
-          className="sticky top-0 z-30 px-4 sm:px-6"
-          style={{
-            background: 'rgba(6,7,10,0.85)',
-            backdropFilter: 'blur(12px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
-          <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-3">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Topbar */}
+        <header className="flex-shrink-0 h-16 bg-[#141720] border-b border-[#1E2130] flex items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-[#9AA3B8] hover:text-white transition-colors"
+              aria-label="Open sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-white font-semibold text-base">{pageTitle}</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button className="p-2 text-[#9AA3B8] hover:text-white transition-colors rounded-lg hover:bg-white/5 relative">
+              <Bell className="w-5 h-5" />
+            </button>
+
+            <div className="relative">
               <button
-                className="lg:hidden p-2 rounded-lg hover:bg-white/5 text-slate-400"
-                onClick={() => setSidebarOpen(true)}
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
               >
-                <Menu className="w-5 h-5" />
+                <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-600/30 flex items-center justify-center">
+                  <User className="w-3.5 h-3.5 text-blue-400" />
+                </div>
+                <ChevronDown className={`w-4 h-4 text-[#9AA3B8] transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
-              <h1 className="text-base font-semibold text-slate-100">{currentPage}</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="relative p-2 rounded-lg hover:bg-white/5 text-slate-400 transition-colors"
-              >
-                <Bell className="w-4 h-4" />
-                <span
-                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                  style={{ background: '#EF4444' }}
-                />
-              </button>
+
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.1 }}
+                    className="absolute right-0 top-full mt-1 w-52 bg-[#0D0F14] border border-[#252A3A] rounded-xl shadow-xl z-50 overflow-hidden"
+                  >
+                    <div className="p-3 border-b border-[#1E2130]">
+                      <p className="text-white text-sm font-medium truncate">{user?.name ?? 'User'}</p>
+                      <p className="text-[#5A6478] text-xs truncate">{user?.email}</p>
+                    </div>
+                    <div className="p-1">
+                      <Link
+                        to="/dashboard/settings"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#9AA3B8] hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#9AA3B8] hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

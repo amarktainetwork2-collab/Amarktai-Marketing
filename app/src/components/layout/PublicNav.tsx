@@ -1,128 +1,137 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { EASE_OUT_CURVE } from '@/lib/motion';
-import { Zap, Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-const BG_NAV = 'rgba(5,7,11,0.88)';
-const BORDER = 'rgba(255,255,255,0.08)';
-const ACCENT = '#2563FF';
-const CYAN = '#22D3EE';
-const TEXT = '#F8FAFC';
-const SUB = '#CBD5E1';
-const SURFACE = '#0B1220';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, Zap } from 'lucide-react';
 
 const NAV_LINKS = [
-  { label: 'Platform',     to: '/features' },
-  { label: 'How It Works', to: '/#how-it-works' },
-  { label: 'Features',     to: '/features' },
-  { label: 'Pricing',      to: '/pricing' },
+  { label: 'Features', href: '/features' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Contact', href: '/contact' },
 ];
 
-interface Props {
-  activePath?: string;
-}
+// activePath accepted for backwards compatibility; active state is derived from useLocation
+export default function PublicNav(_props: { activePath?: string } = {}) {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname } = useLocation();
 
-export default function PublicNav({ activePath = '' }: Props) {
-  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
-    <motion.nav
-      initial={{ y: -64, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: EASE_OUT_CURVE }}
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{ background: BG_NAV, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${BORDER}` }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-bold"><span style={{ color: '#F8FAFC' }}>Amarkt</span><span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span><span style={{ color: '#F8FAFC' }}> Marketing</span></span>
-          </Link>
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-[#06070A]/90 backdrop-blur-xl border-b border-[#1E2130]'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-white font-bold text-lg tracking-tight">
+                Amarkt<span className="text-blue-500">AI</span> Marketing
+              </span>
+            </Link>
 
-          {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-7">
-            {NAV_LINKS.map((l) => {
-              const isActive = activePath === l.to;
-              return (
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-8">
+              {NAV_LINKS.map((link) => (
                 <Link
-                  key={l.to}
-                  to={l.to}
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: isActive ? TEXT : SUB }}
-                  onMouseEnter={e => (e.currentTarget.style.color = TEXT)}
-                  onMouseLeave={e => (e.currentTarget.style.color = isActive ? TEXT : SUB)}
+                  key={link.href}
+                  to={link.href}
+                  className={`text-sm font-medium transition-colors duration-150 ${
+                    pathname === link.href
+                      ? 'text-white'
+                      : 'text-[#9AA3B8] hover:text-white'
+                  }`}
                 >
-                  {l.label}
+                  {link.label}
                 </Link>
-              );
-            })}
-          </div>
+              ))}
+            </nav>
 
-          {/* Desktop CTAs */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" className="text-sm" style={{ color: SUB }}>Login</Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="text-sm font-semibold" style={{ background: ACCENT, color: '#fff' }}>
-                Get Started
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 rounded-lg"
-            style={{ color: SUB }}
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="md:hidden"
-          style={{ background: SURFACE, borderTop: `1px solid ${BORDER}` }}
-        >
-          <div className="px-4 py-5 space-y-4">
-            {NAV_LINKS.map((l) => (
+            {/* Desktop CTA */}
+            <div className="hidden md:flex items-center gap-3">
               <Link
-                key={l.to}
-                to={l.to}
-                className="block text-sm font-medium py-1"
-                style={{ color: activePath === l.to ? TEXT : SUB }}
-                onClick={() => setOpen(false)}
+                to="/login"
+                className="text-sm font-medium text-[#9AA3B8] hover:text-white transition-colors duration-150 px-4 py-2 rounded-lg hover:bg-white/5"
               >
-                {l.label}
+                Log In
               </Link>
-            ))}
-            <div className="pt-3 flex flex-col gap-2 border-t" style={{ borderColor: BORDER }}>
-              <Link to="/login" onClick={() => setOpen(false)}>
-                <Button variant="ghost" className="w-full" style={{ color: SUB }}>Login</Button>
-              </Link>
-              <Link to="/register" onClick={() => setOpen(false)}>
-                <Button className="w-full font-semibold" style={{ background: ACCENT, color: '#fff' }}>
-                  Get Started
-                </Button>
+              <Link
+                to="/register"
+                className="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition-all duration-150"
+              >
+                Start Free
               </Link>
             </div>
+
+            {/* Mobile Hamburger */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 text-[#9AA3B8] hover:text-white transition-colors"
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
-        </motion.div>
-      )}
-    </motion.nav>
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-x-0 top-16 z-40 bg-[#0D0F14] border-b border-[#1E2130] md:hidden"
+          >
+            <nav className="flex flex-col gap-1 p-4">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-[#9AA3B8] hover:text-white hover:bg-white/5 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="border-t border-[#1E2130] mt-2 pt-3 flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  className="text-[#9AA3B8] hover:text-white px-4 py-3 rounded-lg text-sm font-medium text-center transition-colors hover:bg-white/5"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-lg text-sm font-semibold text-center transition-colors"
+                >
+                  Start Free
+                </Link>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Spacer */}
+      <div className="h-16" />
+    </>
   );
 }
