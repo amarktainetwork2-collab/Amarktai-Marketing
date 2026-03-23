@@ -1,515 +1,439 @@
-import { useRef, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { motion, useInView, type Variants } from 'framer-motion';
-import { EASE_OUT_CURVE } from '@/lib/motion';
-import {
-  Zap, BarChart3, Shield, Clock,
-  Check, ChevronRight, Sparkles,
-  Brain, Globe, ArrowRight, Users,
-  CheckCircle2, Loader2, Circle, Rocket,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, Zap, Calendar, TrendingUp, Users, BarChart2, GitBranch, CheckCircle, Star } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
-import ParticleBackground from '@/components/ui/ParticleBackground';
-import AIHeroVisual from '@/components/ui/AIHeroVisual';
-import AIWorkflowVisual from '@/components/ui/AIWorkflowVisual';
-import AIDashboardMock from '@/components/ui/AIDashboardMock';
 
-const BG = '#05070B';
-const SURFACE = '#0B1220';
-const BORDER = 'rgba(255,255,255,0.08)';
-const ACCENT = '#2563FF';
-const CYAN = '#22D3EE';
-const TEXT = '#F8FAFC';
-const MUTED = '#94A3B8';
-const SUB = '#CBD5E1';
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE_OUT_CURVE } },
-};
-const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.6 } },
-};
-const staggerContainer = (stagger = 0.1, delay = 0): Variants => ({
+const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: stagger, delayChildren: delay } },
-});
-const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.94 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: EASE_OUT_CURVE } },
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
-function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
-  return (
-    <motion.div ref={ref} initial="hidden" animate={inView ? 'show' : 'hidden'} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-interface WorkflowStep { id: string; label: string; detail: string; }
-const WORKFLOW_STEPS: WorkflowStep[] = [
-  { id: 'discover', label: 'Website discovered',        detail: 'yourbusiness.com \u2192 12 pages indexed' },
-  { id: 'index',   label: 'Pages indexed',              detail: 'Home, About, Pricing, Blog + 8 more' },
-  { id: 'brand',   label: 'Brand voice extracted',      detail: 'Tone: professional, friendly \u00b7 Niche: SaaS' },
-  { id: 'products',label: 'Products & services mapped', detail: '3 plans detected \u00b7 5 features catalogued' },
-  { id: 'channels',label: 'Channels connected',         detail: 'Instagram \u00b7 LinkedIn \u00b7 X \u00b7 Facebook' },
-  { id: 'content', label: 'Content generated',          detail: '12 posts ready across 4 platforms' },
-  { id: 'schedule',label: 'Schedule prepared',          detail: 'Optimal slots: 9 AM, 1 PM, 6 PM' },
-  { id: 'running', label: 'Automations running',        detail: 'First posts queued \u00b7 Analytics live' },
-];
-type WorkflowStage = 'done' | 'active' | 'pending';
-
-function LiveWorkflowPanel() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  const [activeStep, setActiveStep] = useState<number>(-1);
-  const [completedUntil, setCompletedUntil] = useState<number>(-1);
-
-  useEffect(() => {
-    if (!inView) return;
-    let step = 0;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    const advance = () => {
-      setActiveStep(step);
-      const t1 = setTimeout(() => {
-        setCompletedUntil(step);
-        step += 1;
-        if (step < WORKFLOW_STEPS.length) { const t2 = setTimeout(advance, 380); timers.push(t2); }
-        else { setActiveStep(-1); }
-      }, 850);
-      timers.push(t1);
-    };
-    const init = setTimeout(advance, 300);
-    timers.push(init);
-    return () => { timers.forEach(clearTimeout); };
-  }, [inView]);
-
-  const getStatus = (i: number): WorkflowStage => {
-    if (i <= completedUntil) return 'done';
-    if (i === activeStep) return 'active';
-    return 'pending';
-  };
-
-  return (
-    <div ref={ref} className="mt-16 rounded-2xl overflow-hidden"
-      style={{ background: '#070D1A', border: '1px solid rgba(37,99,255,0.28)', boxShadow: '0 0 60px rgba(37,99,255,0.10)' }}>
-      <div className="flex items-center gap-2 px-5 py-3"
-        style={{ background: 'rgba(37,99,255,0.10)', borderBottom: '1px solid rgba(37,99,255,0.18)' }}>
-        <span className="w-3 h-3 rounded-full" style={{ background: '#FF5F57' }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: '#FFBD2E' }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: '#28C840' }} />
-        <span className="ml-3 text-xs font-mono" style={{ color: '#4F7DFF' }}>AmarktAI · Autonomous Setup Monitor</span>
-        <span className="ml-auto flex items-center gap-1.5 text-xs" style={{ color: '#22D3EE' }}>
-          <motion.span className="w-1.5 h-1.5 rounded-full" style={{ background: '#22D3EE', display: 'inline-block' }}
-            animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
-          LIVE
-        </span>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x"
-        style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        {[WORKFLOW_STEPS.slice(0, 4), WORKFLOW_STEPS.slice(4)].map((col, ci) => (
-          <div key={ci} className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-            {col.map((step, ri) => {
-              const i = ci * 4 + ri;
-              const status = getStatus(i);
-              return (
-                <div key={step.id} className="flex items-start gap-3 px-5 py-3.5 transition-all duration-300"
-                  style={{ background: status === 'active' ? 'rgba(37,99,255,0.09)' : 'transparent' }}>
-                  <div className="flex-shrink-0 mt-0.5">
-                    {status === 'done'    && <CheckCircle2 className="w-4 h-4" style={{ color: '#10B981' }} />}
-                    {status === 'active'  && <Loader2 className="w-4 h-4 animate-spin" style={{ color: ACCENT }} />}
-                    {status === 'pending' && <Circle className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.18)' }} />}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium leading-snug"
-                      style={{ color: status === 'pending' ? 'rgba(248,250,252,0.32)' : TEXT }}>{step.label}</p>
-                    <p className="text-xs mt-0.5"
-                      style={{ color: status === 'done' ? '#4ADE80' : status === 'active' ? '#93c5fd' : 'rgba(148,163,184,0.35)' }}>
-                      {status === 'pending' ? '\u2014 awaiting' : step.detail}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <span className="text-xs" style={{ color: MUTED }}>
-          {completedUntil >= WORKFLOW_STEPS.length - 1
-            ? '\u2713 System fully configured \u2014 all automations active'
-            : 'Configuring your autonomous marketing system\u2026'}
-        </span>
-        <Link to="/register">
-          <button className="text-xs font-semibold px-3 py-1 rounded-full"
-            style={{ background: 'rgba(37,99,255,0.2)', color: '#93c5fd', border: '1px solid rgba(37,99,255,0.35)' }}>
-            Start Free \u2192
-          </button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-const featureCards = [
-  { icon: Brain,    title: 'AI Content Generation', description: 'Platform-native posts, captions, scripts, and threads generated 3\u00d7 daily for every channel \u2014 no prompts needed.', color: ACCENT },
-  { icon: Globe,    title: '12 Social Platforms',   description: 'YouTube, TikTok, Instagram, Facebook, X, LinkedIn, Pinterest, Reddit, Bluesky, Threads, Telegram, and Snapchat.', color: CYAN },
-  { icon: Shield,   title: 'Approval Queue',        description: 'Every post passes through your editorial queue. Approve in one tap, edit inline, or reject and regenerate instantly.', color: '#6366f1' },
-  { icon: BarChart3,title: 'Performance Analytics', description: 'Per-platform views, engagement, CTR, and conversion tracking. The AI reads results and optimises your strategy continuously.', color: ACCENT },
-  { icon: Clock,    title: 'Autonomous Scheduling', description: 'AI calculates the optimal slot for each platform and audience. Morning, midday, and evening batches run automatically.', color: CYAN },
-  { icon: Users,    title: 'Lead Capture',          description: 'AI captures leads from social engagement and link clicks, scores them 0\u2013100 for priority, and builds your pipeline.', color: '#6366f1' },
+const PLATFORMS = [
+  'YouTube', 'TikTok', 'Instagram', 'LinkedIn', 'Twitter/X',
+  'Facebook', 'Pinterest', 'Reddit', 'Bluesky', 'Telegram', 'Snapchat', 'Discord',
 ];
 
-const platforms = [
-  { name: 'YouTube', color: '#FF0000' }, { name: 'TikTok', color: '#FF2D55' },
-  { name: 'Instagram', color: '#E1306C' }, { name: 'Facebook', color: '#1877F2' },
-  { name: 'X / Twitter', color: '#F8FAFC' }, { name: 'LinkedIn', color: '#0A66C2' },
-  { name: 'Pinterest', color: '#E60023' }, { name: 'Reddit', color: '#FF4500' },
-  { name: 'Bluesky', color: '#0085FF' }, { name: 'Threads', color: '#F8FAFC' },
-  { name: 'Telegram', color: '#229ED9' }, { name: 'Snapchat', color: '#FFFC00' },
+const FEATURES = [
+  {
+    icon: Zap,
+    title: 'AI Content Studio',
+    desc: 'Generate on-brand posts, threads, and scripts across every format with a single prompt.',
+    color: 'text-blue-400',
+  },
+  {
+    icon: Calendar,
+    title: 'Smart Scheduler',
+    desc: 'AI-powered timing optimization that publishes when your audience is most engaged.',
+    color: 'text-cyan-400',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Viral Predictor',
+    desc: 'Score your content before posting and refine based on predicted engagement signals.',
+    color: 'text-emerald-400',
+  },
+  {
+    icon: BarChart2,
+    title: 'Competitor Intelligence',
+    desc: 'Track rivals, benchmark performance, and surface gaps you can capitalize on.',
+    color: 'text-purple-400',
+  },
+  {
+    icon: Users,
+    title: 'Engagement Engine',
+    desc: 'Auto-reply to comments, manage DMs, and nurture leads — on autopilot.',
+    color: 'text-orange-400',
+  },
+  {
+    icon: GitBranch,
+    title: 'A/B Testing',
+    desc: 'Run content experiments and let data automatically promote the winning variant.',
+    color: 'text-pink-400',
+  },
 ];
 
-const trustStats = [
-  { stat: '12', label: 'Platforms Supported' },
-  { stat: '3\u00d7', label: 'Daily Content Batches' },
-  { stat: '100%', label: 'Automated Publishing' },
-  { stat: '7-Day', label: 'Free Trial' },
+const STEPS = [
+  {
+    num: '01',
+    title: 'Connect your platforms',
+    desc: 'Link your social accounts in minutes with secure OAuth — no API keys to manage.',
+  },
+  {
+    num: '02',
+    title: 'Set your strategy',
+    desc: 'Define your brand voice, content goals, audience segments, and posting schedule.',
+  },
+  {
+    num: '03',
+    title: 'AI handles everything',
+    desc: 'AmarktAI generates, approves, schedules, posts, and optimizes — continuously.',
+  },
 ];
 
-const howSteps = [
-  { icon: Globe,  step: '01', title: 'Connect Your Business',   body: 'Paste your URL or describe your business. The AI learns your brand, voice, and products in minutes.' },
-  { icon: Brain,  step: '02', title: 'Generate and Schedule',   body: 'AI creates platform-native content for every connected channel and schedules it automatically, three times a day.' },
-  { icon: Rocket, step: '03', title: 'Optimize and Scale',      body: 'Review results, approve drafts, and let the AI improve continuously based on performance data.' },
+const TRUST_BRANDS = ['TechScale', 'Growloop', 'Launchify', 'NovaMark', 'Viralio', 'Scaleworks'];
+
+const STATS = [
+  { value: '15+', label: 'Platforms Supported' },
+  { value: '10+', label: 'AI Power Tools' },
+  { value: '24/7', label: 'Autonomous Operation' },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: BG, color: TEXT }}>
-      <PublicNav activePath="/" />
+    <div className="min-h-screen bg-[#06070A] text-[#F0F2F8]">
+      <PublicNav />
 
-      {/* ── Hero ── */}
-      <section className="relative pt-28 pb-10 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-screen flex items-center">
-        <ParticleBackground opacity={0.55} />
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 90% 55% at 50% -5%, rgba(37,99,255,0.22) 0%, transparent 65%)' }} />
-        <div className="absolute bottom-0 left-0 w-96 h-96 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at bottom left, rgba(34,211,238,0.06) 0%, transparent 70%)' }} />
+      {/* Hero */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-grid">
+        {/* Glow orb */}
+        <div
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)',
+          }}
+        />
 
-        <div className="relative max-w-7xl mx-auto w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div variants={staggerContainer(0.12, 0.05)} initial="hidden" animate="show">
-              <motion.div variants={fadeUp}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-7"
-                style={{ background: 'rgba(37,99,255,0.12)', border: '1px solid rgba(37,99,255,0.32)', color: '#93c5fd' }}>
-                <Sparkles className="w-3.5 h-3.5" />
-                Autonomous AI Marketing Platform
-              </motion.div>
-              <motion.h1 variants={fadeUp}
-                className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-black leading-[1.04] tracking-tight mb-7">
-                <span style={{ color: TEXT }}>Your marketing.</span>
-                <br />
-                <span style={{ background: `linear-gradient(90deg, ${ACCENT} 10%, ${CYAN} 90%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  Fully automated.
-                </span>
-              </motion.h1>
-              <motion.p variants={fadeUp} className="text-lg sm:text-xl leading-relaxed mb-9 max-w-lg" style={{ color: SUB }}>
-                AmarktAI Marketing learns your brand, generates platform-native content, and publishes
-                across 12 social channels \u2014 every day, without lifting a finger.
-              </motion.p>
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 mb-10">
-                <Link to="/register">
-                  <Button size="lg" className="w-full sm:w-auto px-9 font-bold text-base"
-                    style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: `0 0 28px rgba(37,99,255,0.35)` }}>
-                    Get Started →
-                  </Button>
-                </Link>
-                <Link to="/features">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto px-9 font-medium text-base"
-                    style={{ borderColor: 'rgba(255,255,255,0.15)', color: SUB, background: 'rgba(255,255,255,0.04)' }}>
-                    See the Platform →
-                  </Button>
-                </Link>
-              </motion.div>
-              <motion.p variants={fadeUp} className="text-sm" style={{ color: MUTED }}>
-                Trusted by agencies, operators, and modern growth teams.
-              </motion.p>
-            </motion.div>
-            <motion.div variants={fadeIn} initial="hidden" animate="show" transition={{ delay: 0.3 }} className="hidden lg:block">
-              <AIHeroVisual />
-            </motion.div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 rounded-full px-4 py-1.5 text-blue-400 text-sm font-medium mb-8">
+              <Zap className="w-3.5 h-3.5" />
+              Powered by Qwen + HuggingFace AI
+            </div>
+
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6">
+              Your Marketing.<br />
+              <span style={{ background: 'linear-gradient(135deg, #2563EB, #06B6D4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Fully Autonomous.
+              </span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-[#9AA3B8] max-w-2xl mx-auto mb-10 leading-relaxed">
+              Amarkt<span className="text-blue-500">AI</span> generates, schedules, and publishes high-converting content
+              across every platform — powered by AI that never stops.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-4 rounded-xl text-base transition-all duration-200 hover:shadow-lg hover:shadow-blue-600/25"
+              >
+                Start Free — No Card Required
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/features"
+                className="inline-flex items-center gap-2 text-[#9AA3B8] hover:text-white border border-[#252A3A] hover:border-[#374151] font-medium px-8 py-4 rounded-xl text-base transition-all duration-200"
+              >
+                See How It Works
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Floating metric badges */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {[
+                { label: '12.4x engagement lift', icon: TrendingUp },
+                { label: 'Zero manual effort', icon: CheckCircle },
+                { label: '15 platforms', icon: Star },
+              ].map((badge) => (
+                <div
+                  key={badge.label}
+                  className="flex items-center gap-2 bg-[#0D0F14] border border-[#252A3A] rounded-full px-4 py-2 text-sm text-[#9AA3B8]"
+                >
+                  <badge.icon className="w-3.5 h-3.5 text-blue-400" />
+                  {badge.label}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trust Band */}
+      <section className="border-y border-[#1E2130] bg-[#0D0F14] py-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <p className="text-center text-[#5A6478] text-sm font-medium mb-8 uppercase tracking-widest">
+            Trusted by growth teams at
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {TRUST_BRANDS.map((brand) => (
+              <div
+                key={brand}
+                className="px-5 py-2 bg-[#141720] border border-[#252A3A] rounded-full text-[#9AA3B8] text-sm font-medium"
+              >
+                {brand}
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Stats */}
-          <motion.div variants={staggerContainer(0.08, 0.5)} initial="hidden" animate="show"
-            className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {trustStats.map((s) => (
-              <motion.div key={s.stat} variants={scaleIn}
-                className="flex flex-col items-center py-5 rounded-2xl"
-                style={{ background: 'rgba(11,18,32,0.7)', border: '1px solid rgba(37,99,255,0.18)', backdropFilter: 'blur(12px)' }}>
-                <span className="text-3xl font-black" style={{ color: ACCENT }}>{s.stat}</span>
-                <span className="text-xs mt-1 font-medium" style={{ color: MUTED }}>{s.label}</span>
+      {/* Platform Capabilities */}
+      <section className="py-24 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.p variants={fadeUp} className="text-blue-500 text-sm font-semibold uppercase tracking-widest mb-4">
+              Distribution
+            </motion.p>
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              One platform. Every channel.
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-[#9AA3B8] text-lg mb-12 max-w-2xl mx-auto">
+              Publish simultaneously across every major social platform with a single workflow.
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3">
+              {PLATFORMS.map((p) => (
+                <span
+                  key={p}
+                  className="px-4 py-2 bg-[#0D0F14] border border-[#252A3A] rounded-full text-[#9AA3B8] text-sm font-medium hover:border-blue-600/40 hover:text-white transition-all"
+                >
+                  {p}
+                </span>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 px-4 sm:px-6 bg-[#0D0F14]">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.p variants={fadeUp} className="text-blue-500 text-sm font-semibold uppercase tracking-widest mb-4">
+              How It Works
+            </motion.p>
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white">
+              Three steps to full autonomy
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {STEPS.map((step) => (
+              <motion.div key={step.num} variants={fadeUp} className="relative">
+                <div className="text-6xl font-black text-[#1E2130] mb-4">{step.num}</div>
+                <h3 className="text-white font-semibold text-xl mb-3">{step.title}</h3>
+                <p className="text-[#9AA3B8] leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-28 px-4 sm:px-6 lg:px-8">
-        <Section>
-          <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
-                style={{ background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.25)', color: CYAN }}>
-                How It Works
-              </div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5" style={{ color: TEXT }}>
-                From website to fully automated
-                <br /><span style={{ color: CYAN }}>in minutes</span>
-              </h2>
-              <p className="text-lg max-w-xl mx-auto" style={{ color: MUTED }}>
-                No technical setup. No content briefs. No agency retainer.
-                Connect your business and the AI handles the rest.
-              </p>
-            </motion.div>
-            <motion.div variants={staggerContainer(0.1)} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
-              {howSteps.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <motion.div key={s.step} variants={fadeUp} className="relative rounded-2xl p-7"
-                    style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
-                      style={{ background: 'rgba(37,99,255,0.12)', border: '1px solid rgba(37,99,255,0.3)', boxShadow: '0 0 18px rgba(37,99,255,0.2)' }}>
-                      <Icon className="w-5 h-5" style={{ color: ACCENT }} />
-                    </div>
-                    <div className="absolute top-5 right-5 text-xs font-black" style={{ color: 'rgba(37,99,255,0.35)' }}>{s.step}</div>
-                    <h3 className="font-bold mb-2 text-base" style={{ color: TEXT }}>{s.title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{s.body}</p>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-            <motion.div variants={fadeIn} className="rounded-2xl p-8"
-              style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
-              <p className="text-xs font-semibold text-center mb-6" style={{ color: MUTED }}>THE AUTONOMOUS PIPELINE</p>
-              <AIWorkflowVisual />
-            </motion.div>
-            <LiveWorkflowPanel />
-          </div>
-        </Section>
-      </section>
-
-      {/* ── Dashboard Showcase ── */}
-      <section className="py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-        style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(37,99,255,0.05) 0%, transparent 70%)' }}>
-        <Section>
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-14 items-center">
-              <motion.div variants={staggerContainer(0.1)}>
-                <motion.div variants={fadeUp}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
-                  style={{ background: 'rgba(37,99,255,0.10)', border: '1px solid rgba(37,99,255,0.25)', color: '#93c5fd' }}>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Your Command Center
-                </motion.div>
-                <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-5 leading-tight" style={{ color: TEXT }}>
-                  One dashboard.<br />
-                  <span style={{ color: ACCENT }}>Every channel.</span><br />
-                  Total control.
-                </motion.h2>
-                <motion.p variants={fadeUp} className="text-base leading-relaxed mb-7" style={{ color: MUTED }}>
-                  See exactly what's being posted, where, and when — across all 12 platforms.
-                  Manage campaigns for up to 20 businesses from a single intelligent workspace.
-                </motion.p>
-                <motion.ul variants={staggerContainer(0.08)} className="space-y-3 mb-8">
-                  {[
-                    'Live content queue — every scheduled post at a glance',
-                    'Per-platform performance analytics in real time',
-                    'AI-generated insights and optimisation suggestions',
-                    'Up to 20 businesses, all managed from one account',
-                  ].map((item) => (
-                    <motion.li key={item} variants={fadeUp} className="flex items-start gap-3 text-sm" style={{ color: SUB }}>
-                      <Check className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#10B981' }} />
-                      {item}
-                    </motion.li>
-                  ))}
-                </motion.ul>
-                <motion.div variants={fadeUp}>
-                  <Link to="/register">
-                    <Button size="lg" className="font-semibold"
-                      style={{ background: ACCENT, color: '#fff', boxShadow: '0 0 20px rgba(37,99,255,0.28)' }}>
-                      Try It Free
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </Link>
-                </motion.div>
-              </motion.div>
-              <motion.div variants={fadeIn}>
-                <AIDashboardMock />
-              </motion.div>
-            </div>
-          </div>
-        </Section>
-      </section>
-
-      {/* ── Feature Cards ── */}
-      <Section className="py-24 px-4 sm:px-6 lg:px-8">
+      {/* Feature Proof */}
+      <section className="py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <motion.div variants={fadeUp} className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
-              style={{ background: 'rgba(37,99,255,0.10)', border: '1px solid rgba(37,99,255,0.25)', color: '#93c5fd' }}>
-              Platform Capabilities
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: TEXT }}>
-              Everything you need.<br /><span style={{ color: ACCENT }}>Nothing you don't.</span>
-            </h2>
-            <p className="text-base max-w-xl mx-auto" style={{ color: MUTED }}>
-              Built for founders and lean teams who need enterprise-grade marketing without the overhead.
-            </p>
+          <motion.div
+            className="text-center mb-16"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.p variants={fadeUp} className="text-blue-500 text-sm font-semibold uppercase tracking-widest mb-4">
+              Capabilities
+            </motion.p>
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white">
+              Everything you need to dominate
+            </motion.h2>
           </motion.div>
-          <motion.div variants={staggerContainer(0.07)} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {featureCards.map((f) => {
+
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {FEATURES.map((f) => {
               const Icon = f.icon;
               return (
-                <motion.div key={f.title} variants={fadeUp}
-                  className="rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1"
-                  style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
-                  whileHover={{ boxShadow: `0 0 0 1px ${f.color}30, 0 12px 32px rgba(0,0,0,0.3)` }}>
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5"
-                    style={{ background: `${f.color}1A`, color: f.color }}>
+                <motion.div
+                  key={f.title}
+                  variants={fadeUp}
+                  whileHover={{ y: -4 }}
+                  className="bg-[#0D0F14] border border-[#1E2130] rounded-2xl p-6 hover:border-[#252A3A] transition-all cursor-default"
+                >
+                  <div className={`w-10 h-10 rounded-xl bg-[#141720] flex items-center justify-center mb-5 ${f.color}`}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="font-bold mb-2.5 text-sm" style={{ color: TEXT }}>{f.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{f.description}</p>
+                  <h3 className="text-white font-semibold text-base mb-2">{f.title}</h3>
+                  <p className="text-[#9AA3B8] text-sm leading-relaxed">{f.desc}</p>
                 </motion.div>
               );
             })}
           </motion.div>
-          <motion.div variants={fadeUp} className="text-center mt-10">
-            <Link to="/features">
-              <Button variant="outline" className="font-medium"
-                style={{ borderColor: 'rgba(255,255,255,0.12)', color: SUB, background: 'transparent' }}>
-                View full feature list
-                <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Button>
-            </Link>
-          </motion.div>
         </div>
-      </Section>
+      </section>
 
-      {/* ── Platforms ── */}
-      <Section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto text-center">
-          <motion.div variants={fadeUp} className="mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: TEXT }}>Every Platform. One Intelligence.</h2>
-            <p className="text-base" style={{ color: MUTED }}>
-              Post natively to all 12 platforms simultaneously — each post crafted for that platform's audience and format.
-            </p>
-          </motion.div>
-          <motion.div variants={staggerContainer(0.04)} className="flex flex-wrap justify-center gap-2.5">
-            {platforms.map((p) => (
-              <motion.div key={p.name} variants={scaleIn}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-                style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(255,255,255,0.09)', color: '#CBD5E1', backdropFilter: 'blur(12px)' }}
-                whileHover={{ borderColor: `${p.color}60`, color: TEXT }}>
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-                {p.name}
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </Section>
-
-      {/* ── Pricing Preview ── */}
-      <Section className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Dashboard Showcase */}
+      <section className="py-24 px-4 sm:px-6 bg-[#0D0F14]">
         <div className="max-w-5xl mx-auto">
-          <motion.div variants={fadeUp} className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: TEXT }}>Simple, Transparent Pricing</h2>
-            <p className="text-base" style={{ color: MUTED }}>Start free — no credit card required.</p>
+          <motion.div
+            className="text-center mb-12"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              The command center for your entire marketing operation
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-[#9AA3B8] text-lg">
+              One unified dashboard. Full visibility. Total control.
+            </motion.p>
           </motion.div>
-          <motion.div variants={staggerContainer(0.08)} className="grid sm:grid-cols-3 gap-5 mb-8">
-            {[
-              { name: 'Starter', price: '$49', desc: '1 business · 3 platforms', highlighted: false },
-              { name: 'Growth',  price: '$149', desc: '5 businesses · 8 platforms', highlighted: true },
-              { name: 'Agency',  price: '$399', desc: '20 businesses · all 12 platforms', highlighted: false },
-            ].map((t) => (
-              <motion.div key={t.name} variants={scaleIn}
-                className="rounded-2xl p-6 text-center"
-                style={{
-                  background: t.highlighted ? `linear-gradient(135deg, rgba(37,99,255,0.18) 0%, rgba(34,211,238,0.10) 100%)` : SURFACE,
-                  border: t.highlighted ? `1px solid rgba(37,99,255,0.4)` : `1px solid ${BORDER}`,
-                  boxShadow: t.highlighted ? `0 0 32px rgba(37,99,255,0.12)` : 'none',
-                }}>
-                {t.highlighted && (
-                  <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3"
-                    style={{ background: 'rgba(37,99,255,0.2)', color: '#93c5fd', border: '1px solid rgba(37,99,255,0.3)' }}>
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="text-lg font-bold mb-1" style={{ color: TEXT }}>{t.name}</h3>
-                <p className="text-3xl font-black mb-1" style={{ color: t.highlighted ? ACCENT : TEXT }}>{t.price}<span className="text-sm font-normal" style={{ color: MUTED }}>/mo</span></p>
-                <p className="text-xs mb-0" style={{ color: MUTED }}>{t.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-          <motion.div variants={fadeUp} className="text-center">
-            <Link to="/pricing">
-              <Button variant="outline" className="font-medium"
-                style={{ borderColor: 'rgba(255,255,255,0.12)', color: SUB, background: 'transparent' }}>
-                View Full Pricing
-                <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </Section>
 
-      {/* ── CTA ── */}
-      <Section className="py-28 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <motion.div variants={staggerContainer(0.1)}
-            className="rounded-3xl p-12 relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, rgba(37,99,255,0.18) 0%, rgba(34,211,238,0.09) 100%)', border: '1px solid rgba(37,99,255,0.30)', boxShadow: '0 0 80px rgba(37,99,255,0.12)' }}>
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 110%, rgba(37,99,255,0.16) 0%, transparent 70%)' }} />
-            <ParticleBackground opacity={0.2} />
-            <div className="relative">
-              <motion.div variants={fadeUp}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-6"
-                style={{ background: 'rgba(37,99,255,0.12)', border: '1px solid rgba(37,99,255,0.3)', color: '#93c5fd' }}>
-                <Zap className="w-3.5 h-3.5" />
-                7-Day Free Trial — No Card Required
-              </motion.div>
-              <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5" style={{ color: TEXT }}>
-                Ready to put your marketing<br />on autopilot?
-              </motion.h2>
-              <motion.p variants={fadeUp} className="text-lg mb-9 max-w-md mx-auto" style={{ color: MUTED }}>
-                Start your 7-day free trial. No credit card required.
-              </motion.p>
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/register">
-                  <Button size="lg" className="px-10 font-bold text-base"
-                    style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: '0 0 28px rgba(37,99,255,0.38)' }}>
-                    Get Started Free →
-                  </Button>
-                </Link>
-                <a href="https://cal.com/amarktai" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" variant="outline" className="px-10 font-medium text-base"
-                    style={{ borderColor: 'rgba(255,255,255,0.15)', color: SUB, background: 'transparent' }}>
-                    Book a Walkthrough
-                  </Button>
-                </a>
-              </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="rounded-2xl border border-[#252A3A] overflow-hidden shadow-2xl"
+            style={{ boxShadow: '0 0 80px rgba(37, 99, 235, 0.08)' }}
+          >
+            {/* Browser chrome */}
+            <div className="bg-[#141720] px-4 py-3 flex items-center gap-2 border-b border-[#252A3A]">
+              <div className="w-3 h-3 rounded-full bg-red-500/60" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+              <div className="w-3 h-3 rounded-full bg-green-500/60" />
+              <div className="flex-1 mx-4 bg-[#06070A] rounded px-3 py-1 text-[#5A6478] text-xs font-mono">
+                app.amarktai.com/dashboard
+              </div>
+            </div>
+            {/* Mock dashboard */}
+            <div className="bg-[#06070A] p-6">
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {[
+                  { label: 'Posts Published', value: '284', change: '+12%' },
+                  { label: 'Engagement Rate', value: '8.4%', change: '+2.1%' },
+                  { label: 'Leads Captured', value: '1,204', change: '+34%' },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-[#0D0F14] border border-[#1E2130] rounded-xl p-4">
+                    <p className="text-[#5A6478] text-xs mb-1">{stat.label}</p>
+                    <p className="text-white font-bold text-xl">{stat.value}</p>
+                    <p className="text-emerald-400 text-xs mt-1">{stat.change} this week</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-[#0D0F14] border border-[#1E2130] rounded-xl p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-white font-medium text-sm">Upcoming Content Queue</p>
+                  <span className="text-blue-400 text-xs font-medium">12 items</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { platform: 'LinkedIn', type: 'Thought Leadership', status: 'Scheduled', time: '2h' },
+                    { platform: 'Twitter/X', type: 'Thread — Product Update', status: 'Pending Review', time: '4h' },
+                    { platform: 'Instagram', type: 'Carousel — Tips & Tricks', status: 'Generating', time: '6h' },
+                  ].map((item) => (
+                    <div key={item.platform + item.time} className="flex items-center justify-between py-2 border-b border-[#1E2130] last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-blue-600/20 flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-white text-xs font-medium">{item.platform}</p>
+                          <p className="text-[#5A6478] text-xs">{item.type}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          item.status === 'Scheduled' ? 'bg-emerald-400/10 text-emerald-400' :
+                          item.status === 'Pending Review' ? 'bg-yellow-400/10 text-yellow-400' :
+                          'bg-blue-400/10 text-blue-400'
+                        }`}>
+                          {item.status}
+                        </span>
+                        <span className="text-[#5A6478] text-xs">in {item.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
-      </Section>
+      </section>
+
+      {/* Stats */}
+      <section className="py-24 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {STATS.map((s) => (
+              <motion.div key={s.value} variants={fadeUp}>
+                <div
+                  className="text-5xl sm:text-6xl font-black mb-2"
+                  style={{ background: 'linear-gradient(135deg, #2563EB, #06B6D4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+                >
+                  {s.value}
+                </div>
+                <p className="text-[#9AA3B8] font-medium">{s.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 px-4 sm:px-6 bg-[#0D0F14] border-t border-[#1E2130]">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Ready to automate your marketing?
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-[#9AA3B8] text-lg mb-10">
+              Start your free trial. No credit card. No lock-in.
+            </motion.p>
+            <motion.div variants={fadeUp}>
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-10 py-4 rounded-xl text-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-600/25"
+              >
+                Start for Free
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>
