@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { Toaster } from '@/components/ui/sonner';
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import AuthProvider from '@/components/auth/AuthProvider';
+import { useAuth } from '@/lib/auth';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/app/page'));
@@ -33,9 +34,6 @@ const BlogPage = lazy(() => import('@/app/blog/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
 const FeaturesPage = lazy(() => import('@/app/features/page'));
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const isValidClerkKey = clerkPubKey && clerkPubKey.startsWith('pk_');
-
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
@@ -50,13 +48,20 @@ function PageLoader() {
   );
 }
 
+/** Redirect to /login when not authenticated; wait while auth is loading. */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <SignedIn>{children}</SignedIn>
-      <SignedOut><RedirectToSignIn /></SignedOut>
-    </>
-  );
+  const { isAuthenticated, isLoaded } = useAuth();
+  if (!isLoaded) return <PageLoader />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+/** Redirect authenticated users away from login/register. */
+function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoaded } = useAuth();
+  if (!isLoaded) return <PageLoader />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
 }
 
 function AppRoutes() {
@@ -71,16 +76,14 @@ function AppRoutes() {
         <Route path="/features" element={<FeaturesPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+        <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
         <Route
           path="/dashboard"
           element={
-            isValidClerkKey ? (
-              <ProtectedRoute><DashboardLayout /></ProtectedRoute>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
           }
         >
           <Route index element={<DashboardPage />} />
@@ -108,49 +111,15 @@ function AppRoutes() {
 }
 
 function App() {
-  const content = (
-    <BrowserRouter>
-      <ScrollToTop />
-      <AppRoutes />
-      <Toaster position="top-right" richColors theme="dark" />
-    </BrowserRouter>
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <AppRoutes />
+        <Toaster position="top-right" richColors theme="dark" />
+      </BrowserRouter>
+    </AuthProvider>
   );
-
-  if (isValidClerkKey) {
-    return (
-      <ClerkProvider
-        publishableKey={clerkPubKey}
-        appearance={{
-          elements: {
-            formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
-            footerActionLink: 'text-blue-400 hover:text-blue-300',
-            card: 'bg-[#0B0F14] border border-white/10',
-            headerTitle: 'text-white',
-            headerSubtitle: 'text-slate-400',
-            formFieldLabel: 'text-slate-300',
-            formFieldInput: 'bg-[#111827] border-white/10 text-white',
-            identityPreviewText: 'text-slate-300',
-            dividerLine: 'bg-white/10',
-            dividerText: 'text-slate-500',
-            socialButtonsBlockButton: 'bg-[#111827] border-white/10 text-white hover:bg-[#1a2332]',
-          },
-          variables: {
-            colorPrimary: '#2563FF',
-            colorBackground: '#0B0F14',
-            colorText: '#F8FAFC',
-            colorTextSecondary: '#94A3B8',
-            colorInputBackground: '#111827',
-            colorInputText: '#F8FAFC',
-            borderRadius: '0.75rem',
-          },
-        }}
-      >
-        {content}
-      </ClerkProvider>
-    );
-  }
-
-  return content;
 }
 
 export default App;

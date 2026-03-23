@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useUser, UserButton } from '@clerk/clerk-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/auth';
 import {
   LayoutDashboard,
   Globe,
@@ -23,6 +23,8 @@ import {
   Plus,
   Key,
   CheckSquare,
+  LogOut,
+  UserCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -133,26 +135,44 @@ function WorkspaceSwitcher() {
   );
 }
 
-function UserAreaAuthenticated() {
-  const { user } = useUser();
+function UserArea() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/', { replace: true });
+  };
+
   return (
     <div
       className="flex items-center gap-3 p-3"
       style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
     >
-      <UserButton afterSignOutUrl="/" />
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: 'rgba(37,99,255,0.18)' }}
+      >
+        <UserCircle className="w-4.5 h-4.5" style={{ color: '#4F7DFF' }} />
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-slate-200 truncate">
-          {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Account'}
+          {user?.name || user?.email || 'Account'}
         </p>
-        <p className="text-xs text-slate-500">AmarktAI Pro</p>
+        <p className="text-xs text-slate-500">
+          {user?.name ? 'AmarktAI Marketing' : 'Free Plan'}
+        </p>
       </div>
+      <button
+        onClick={handleLogout}
+        className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-colors shrink-0"
+        title="Sign out"
+        aria-label="Sign out"
+      >
+        <LogOut className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
-}
-
-function UserArea() {
-  return <UserAreaAuthenticated />;
 }
 
 export default function DashboardLayout() {
@@ -193,7 +213,11 @@ export default function DashboardLayout() {
             >
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-bold tracking-tight"><span className="text-white">Amarkt</span><span style={{ color: '#2563FF' }}>AI</span></span>
+            <span className="text-sm font-bold tracking-tight leading-none">
+              <span className="text-white">Amarkt</span>
+              <span style={{ color: '#2563FF' }}>AI</span>
+              <span className="text-white"> Marketing</span>
+            </span>
           </Link>
           <button
             className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 text-slate-400"

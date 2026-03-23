@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "AmarktAI Marketing"
     DEBUG: bool = False
     FRONTEND_URL: str = "https://marketing.amarktai.com"
-    ADMIN_USER_IDS: str = ""  # comma-separated list of admin Clerk user IDs
+    ADMIN_USER_IDS: str = ""  # comma-separated list of admin user IDs
     # Platform owner's email — always granted unlimited access at no cost.
     # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
@@ -25,11 +25,10 @@ class Settings(BaseSettings):
         "https://marketing.amarktai.com",
     ]
     
-    # Clerk Auth
-    CLERK_SECRET_KEY: str = ""
-    CLERK_PUBLISHABLE_KEY: str = ""
-    CLERK_WEBHOOK_SECRET: str = ""  # From Clerk Dashboard → Webhooks → Signing Secret
-    
+    # App-owned JWT Auth
+    # Generate with: openssl rand -hex 32
+    JWT_SECRET: str = "change-me-in-production-use-openssl-rand-hex-32"
+
     # Encryption (for API keys and tokens)
     ENCRYPTION_KEY: str = "your-encryption-key-here-change-in-production"
     
@@ -201,3 +200,12 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 settings = Settings()
+
+# Warn if JWT_SECRET is set to the insecure default value
+_DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
+if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "JWT_SECRET is set to the default insecure value. "
+        "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+    )

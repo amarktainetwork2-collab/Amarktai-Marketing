@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/lib/auth';
 
 const cardStyle = {
   background: 'rgba(17,24,39,0.72)',
@@ -15,7 +15,7 @@ const cardStyle = {
 };
 
 export default function SettingsPage() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState({
     emailDaily: true,
     emailWeekly: true,
@@ -248,11 +248,11 @@ export default function SettingsPage() {
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold mr-3"
                 style={{ background: 'linear-gradient(135deg, #2563FF 0%, #22D3EE 100%)' }}
               >
-                {user?.firstName?.[0] ?? user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() ?? '?'}
+                {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? '?'}
               </div>
               <div>
                 <p className="font-medium text-slate-200">
-                  {user?.primaryEmailAddress?.emailAddress ?? 'Account'}
+                  {user?.email ?? 'Account'}
                 </p>
                 <p className="text-sm text-slate-400">AmarktAI Account</p>
               </div>

@@ -80,8 +80,7 @@ const KEY_GROUPS: { label: string; keys: string[] }[] = [
   {
     label: 'Auth & Payments',
     keys: [
-      'CLERK_SECRET_KEY',
-      'CLERK_PUBLISHABLE_KEY',
+      'JWT_SECRET',
       'STRIPE_SECRET_KEY',
     ],
   },
