@@ -82,9 +82,11 @@ async def admin_health(
     # Check configured system keys
     configured_keys: list[str] = []
     key_names = [
+        "QWEN_API_KEY",
         "HUGGINGFACE_TOKEN",
         "OPENAI_API_KEY",
         "GROQ_API_KEY",
+        "FIRECRAWL_API_KEY",
         "TWITTER_API_KEY",
         "META_APP_ID",
         "LINKEDIN_CLIENT_ID",
@@ -127,6 +129,7 @@ _ALLOWED_SYSTEM_KEYS = {
     "OPENAI_API_KEY",
     "GROQ_API_KEY",
     "GOOGLE_GEMINI_API_KEY",
+    "FIRECRAWL_API_KEY",
     "TWITTER_API_KEY",
     "TWITTER_API_SECRET",
     "TWITTER_BEARER_TOKEN",

@@ -55,10 +55,17 @@ const KEY_GROUPS: { label: string; keys: string[] }[] = [
   {
     label: 'AI Engine / LLM',
     keys: [
+      'QWEN_API_KEY',
       'HUGGINGFACE_TOKEN',
       'OPENAI_API_KEY',
       'GROQ_API_KEY',
       'GOOGLE_GEMINI_API_KEY',
+    ],
+  },
+  {
+    label: 'Web Scraping',
+    keys: [
+      'FIRECRAWL_API_KEY',
     ],
   },
   {

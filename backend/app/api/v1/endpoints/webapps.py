@@ -21,16 +21,28 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 async def _run_scrape(webapp_id: str) -> None:
-    """Background task: scrape the webapp URL and store the results."""
+    """Background task: scrape the webapp URL and store the results.
+
+    Uses Firecrawl as the primary scraping provider when FIRECRAWL_API_KEY is
+    configured; falls back to httpx + BeautifulSoup automatically.
+    """
+    import logging
     from app.db.base import SessionLocal
     from app.services.scraper import scrape_page
+    from app.core.config import settings
 
+    _logger = logging.getLogger(__name__)
     db = SessionLocal()
     try:
         webapp = db.query(WebAppModel).filter(WebAppModel.id == webapp_id).first()
         if not webapp:
             return
-        scraped = await scrape_page(str(webapp.url), timeout=20)
+        firecrawl_key = settings.FIRECRAWL_API_KEY or None
+        scraped = await scrape_page(
+            str(webapp.url),
+            timeout=30,
+            firecrawl_api_key=firecrawl_key,
+        )
         webapp.scraped_data = {
             "scraped_at": datetime.utcnow().isoformat(),
             "title": scraped.title,
@@ -41,11 +53,11 @@ async def _run_scrape(webapp_id: str) -> None:
             "full_text": scraped.full_text[:2000],
             "error": scraped.error,
             "status": "error" if scraped.error else "ok",
+            "provider": scraped.provider,
         }
         db.commit()
     except Exception as exc:
-        import logging
-        logging.getLogger(__name__).warning(
+        _logger.warning(
             "Background scrape failed for webapp %s: %s", webapp_id, exc
         )
     finally:
@@ -125,10 +137,12 @@ async def scrape_webapp(
     """
     Scrape the webapp URL synchronously and store results.
 
-    Returns the scraped_data dict so the frontend can display insights
-    immediately without waiting for a nightly job.
+    Uses Firecrawl as primary provider when FIRECRAWL_API_KEY is configured;
+    falls back to httpx + BeautifulSoup.  Returns the scraped_data dict so
+    the frontend can display insights immediately.
     """
     from app.services.scraper import scrape_page
+    from app.core.config import settings
 
     webapp = db.query(WebAppModel).filter(
         WebAppModel.id == webapp_id,
@@ -137,7 +151,12 @@ async def scrape_webapp(
     if not webapp:
         raise HTTPException(status_code=404, detail="Web app not found")
 
-    scraped = await scrape_page(str(webapp.url), timeout=20)
+    firecrawl_key = settings.FIRECRAWL_API_KEY or None
+    scraped = await scrape_page(
+        str(webapp.url),
+        timeout=30,
+        firecrawl_api_key=firecrawl_key,
+    )
     scraped_data: dict[str, Any] = {
         "scraped_at": datetime.utcnow().isoformat(),
         "title": scraped.title,
@@ -148,6 +167,7 @@ async def scrape_webapp(
         "full_text": scraped.full_text[:2000],
         "error": scraped.error,
         "status": "error" if scraped.error else "ok",
+        "provider": scraped.provider,
     }
     webapp.scraped_data = scraped_data
     db.commit()

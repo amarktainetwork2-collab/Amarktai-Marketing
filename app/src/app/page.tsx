@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, type Variants } from 'framer-motion';
 import { EASE_OUT_CURVE } from '@/lib/motion';
@@ -6,6 +6,7 @@ import {
   Zap, BarChart3, Shield, Clock,
   Check, ChevronRight, Sparkles,
   Brain, Globe, ArrowRight, Users,
+  CheckCircle2, Loader2, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PublicNav from '@/components/layout/PublicNav';
@@ -54,6 +55,123 @@ const howItWorksSteps = [
   { step: '03', title: 'Content is generated and scheduled', description: 'Platform-native posts, captions, and scripts are created and scheduled across all your social channels.' },
   { step: '04', title: 'You review, approve, and grow', description: 'Every post goes into your approval queue. Approve in one click, edit inline, or reject and regenerate.' },
 ];
+
+type WorkflowStage = 'done' | 'active' | 'pending';
+
+interface WorkflowStep {
+  id: string;
+  label: string;
+  detail: string;
+}
+
+const WORKFLOW_STEPS: WorkflowStep[] = [
+  { id: 'discover', label: 'Website discovered', detail: 'example.com → 12 pages indexed' },
+  { id: 'index', label: 'Pages indexed', detail: 'Home, About, Pricing, Blog + 8 more' },
+  { id: 'brand', label: 'Brand voice extracted', detail: 'Tone: professional, friendly · Niche: SaaS' },
+  { id: 'products', label: 'Products & services inferred', detail: '3 plans detected · 5 features mapped' },
+  { id: 'channels', label: 'Channels connected', detail: 'Instagram · LinkedIn · X · Facebook' },
+  { id: 'content', label: 'Content generated', detail: '12 posts ready across 4 platforms' },
+  { id: 'schedule', label: 'Schedule prepared', detail: 'Optimal slots: 9 AM, 1 PM, 6 PM' },
+  { id: 'running', label: 'Automations running', detail: 'First posts queued · Analytics live' },
+];
+
+function LiveWorkflowPanel() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const [activeStep, setActiveStep] = useState<number>(-1);
+  const [completedUntil, setCompletedUntil] = useState<number>(-1);
+
+  useEffect(() => {
+    if (!inView) return;
+    let step = 0;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const advance = () => {
+      setActiveStep(step);
+      const t1 = setTimeout(() => {
+        setCompletedUntil(step);
+        step += 1;
+        if (step < WORKFLOW_STEPS.length) {
+          const t2 = setTimeout(advance, 420);
+          timers.push(t2);
+        } else {
+          setActiveStep(-1);
+        }
+      }, 900);
+      timers.push(t1);
+    };
+
+    const initial = setTimeout(advance, 300);
+    timers.push(initial);
+    return () => { timers.forEach(clearTimeout); };
+  }, [inView]);
+
+  const getStatus = (i: number): WorkflowStage => {
+    if (i <= completedUntil) return 'done';
+    if (i === activeStep) return 'active';
+    return 'pending';
+  };
+
+  return (
+    <div ref={ref}
+      className="mt-14 rounded-2xl overflow-hidden"
+      style={{ background: '#070D1A', border: '1px solid rgba(37,99,255,0.25)', boxShadow: '0 0 60px rgba(37,99,255,0.08)' }}>
+      {/* Terminal-style header */}
+      <div className="flex items-center gap-2 px-5 py-3" style={{ background: 'rgba(37,99,255,0.10)', borderBottom: '1px solid rgba(37,99,255,0.18)' }}>
+        <span className="w-3 h-3 rounded-full" style={{ background: '#FF5F57' }} />
+        <span className="w-3 h-3 rounded-full" style={{ background: '#FFBD2E' }} />
+        <span className="w-3 h-3 rounded-full" style={{ background: '#28C840' }} />
+        <span className="ml-3 text-xs font-mono" style={{ color: '#4F7DFF' }}>AmarktAI · Live Workflow Monitor</span>
+        <span className="ml-auto flex items-center gap-1.5 text-xs" style={{ color: '#22D3EE' }} aria-label="Live status indicator">
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#22D3EE' }} aria-hidden="true" />
+          LIVE
+        </span>
+      </div>
+      {/* Steps */}
+      <div className="grid sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        {[WORKFLOW_STEPS.slice(0, 4), WORKFLOW_STEPS.slice(4)].map((col, ci) => (
+          <div key={ci} className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            {col.map((step, ri) => {
+              const i = ci * 4 + ri;
+              const status = getStatus(i);
+              return (
+                <div key={step.id}
+                  className="flex items-start gap-3 px-5 py-3.5 transition-all duration-300"
+                  style={{ background: status === 'active' ? 'rgba(37,99,255,0.08)' : 'transparent' }}>
+                  <div className="flex-shrink-0 mt-0.5">
+                    {status === 'done' && <CheckCircle2 className="w-4 h-4" style={{ color: '#10B981' }} />}
+                    {status === 'active' && <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#2563FF' }} />}
+                    {status === 'pending' && <Circle className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.2)' }} />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium leading-snug" style={{ color: status === 'pending' ? 'rgba(248,250,252,0.35)' : TEXT }}>
+                      {step.label}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: status === 'done' ? '#4ADE80' : status === 'active' ? '#93c5fd' : 'rgba(148,163,184,0.4)' }}>
+                      {status === 'pending' ? '— awaiting' : step.detail}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <span className="text-xs" style={{ color: MUTED }}>
+          {completedUntil >= WORKFLOW_STEPS.length - 1
+            ? '✓ System fully configured — all automations active'
+            : 'Configuring your autonomous marketing system…'}
+        </span>
+        <Link to="/register">
+          <button className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: 'rgba(37,99,255,0.2)', color: '#93c5fd', border: '1px solid rgba(37,99,255,0.35)' }}>
+            Start Free →
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 const featureCards = [
   { icon: Brain, title: 'AI Content Generation', description: 'Platform-native posts generated 3× daily for every social channel — no prompts needed.', color: ACCENT },
@@ -225,6 +343,7 @@ export default function LandingPage() {
                 </motion.div>
               ))}
             </motion.div>
+            <LiveWorkflowPanel />
           </div>
         </Section>
       </section>

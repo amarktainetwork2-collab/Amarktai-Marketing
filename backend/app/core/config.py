@@ -134,10 +134,8 @@ class Settings(BaseSettings):
     GNEWS_API_KEY: str = ""
     
     # ==================== WEB SCRAPING ====================
-    # ScrapingBee (for web app crawling)
-    SCRAPINGBEE_API_KEY: str = ""
-    
-    # Firecrawl (for web app crawling)
+    # Firecrawl — primary scraping provider (set FIRECRAWL_API_KEY to enable)
+    # Falls back to httpx + BeautifulSoup when not set.
     FIRECRAWL_API_KEY: str = ""
     
     # ==================== PAYMENTS ====================
