@@ -5,7 +5,7 @@
  * Enables offline support and makes the app installable as a PWA.
  */
 
-const CACHE_NAME = 'amarktai-v1';
+const CACHE_NAME = 'amarktai-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -33,48 +33,39 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API calls, cache-first for static assets
+// Fetch: network-first for all routes; API routes are network-only
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Always fetch API requests from network (never cache)
+  // Always fetch API requests from network — never cache
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request));
     return;
   }
 
-  // Cache-first strategy for static assets
+  // Network-first strategy for all other requests
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(request)
-        .then((response) => {
-          // Cache successful GET responses for static assets
-          if (
-            response.ok &&
-            request.method === 'GET' &&
-            (url.pathname.startsWith('/assets/') ||
-              url.pathname.endsWith('.js') ||
-              url.pathname.endsWith('.css') ||
-              url.pathname.endsWith('.png') ||
-              url.pathname.endsWith('.ico') ||
-              url.pathname === '/')
-          ) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => {
-          // Offline fallback: return cached index.html for navigation requests
-          if (request.mode === 'navigate') {
-            return caches.match('/');
-          }
-          return new Response('Offline', { status: 503 });
-        });
-    })
+    fetch(request)
+      .then((response) => {
+        // Cache only successful GET responses for the shell assets
+        if (
+          response.ok &&
+          request.method === 'GET' &&
+          (url.pathname === '/' || url.pathname === '/manifest.json')
+        ) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() => {
+        // Offline fallback: serve cached '/' for navigation requests only
+        if (request.mode === 'navigate') {
+          return caches.match('/');
+        }
+        return new Response('Offline', { status: 503 });
+      })
   );
 });
 

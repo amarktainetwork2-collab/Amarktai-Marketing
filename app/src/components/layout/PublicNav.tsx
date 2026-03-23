@@ -14,11 +14,10 @@ const SUB = '#CBD5E1';
 const SURFACE = '#0B1220';
 
 const NAV_LINKS = [
-  { label: 'Home',       to: '/' },
-  { label: 'About Us',   to: '/about' },
-  { label: 'Features',   to: '/features' },
-  { label: 'Pricing',    to: '/pricing' },
-  { label: 'Contact Us', to: '/contact' },
+  { label: 'Platform',     to: '/features' },
+  { label: 'How It Works', to: '/#how-it-works' },
+  { label: 'Features',     to: '/features' },
+  { label: 'Pricing',      to: '/pricing' },
 ];
 
 interface Props {
@@ -73,7 +72,7 @@ export default function PublicNav({ activePath = '' }: Props) {
             </Link>
             <Link to="/register">
               <Button size="sm" className="text-sm font-semibold" style={{ background: ACCENT, color: '#fff' }}>
-                Start Free
+                Get Started
               </Button>
             </Link>
           </div>
@@ -117,7 +116,7 @@ export default function PublicNav({ activePath = '' }: Props) {
               </Link>
               <Link to="/register" onClick={() => setOpen(false)}>
                 <Button className="w-full font-semibold" style={{ background: ACCENT, color: '#fff' }}>
-                  Start Free
+                  Get Started
                 </Button>
               </Link>
             </div>

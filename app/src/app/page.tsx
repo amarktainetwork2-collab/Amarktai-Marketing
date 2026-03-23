@@ -6,7 +6,7 @@ import {
   Zap, BarChart3, Shield, Clock,
   Check, ChevronRight, Sparkles,
   Brain, Globe, ArrowRight, Users,
-  CheckCircle2, Loader2, Circle, Bot, Rocket,
+  CheckCircle2, Loader2, Circle, Rocket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PublicNav from '@/components/layout/PublicNav';
@@ -183,10 +183,9 @@ const trustStats = [
 ];
 
 const howSteps = [
-  { icon: Globe,   step: '01', title: 'Add your business',           body: 'Paste your website URL or fill in a quick brief. The AI immediately begins learning your brand, products, and voice.' },
-  { icon: Brain,   step: '02', title: 'AI builds your strategy',     body: 'Our intelligence engine extracts your brand identity, maps your products, and builds a bespoke content strategy.' },
-  { icon: Bot,     step: '03', title: 'Content is created & queued', body: 'Platform-native posts are generated and scheduled across all connected channels \u2014 automatically, three times a day.' },
-  { icon: Rocket,  step: '04', title: 'Review, approve & grow',      body: 'Posts land in your approval queue. One click to publish. Every approval trains the AI to improve future content.' },
+  { icon: Globe,  step: '01', title: 'Connect Your Business',   body: 'Paste your URL or describe your business. The AI learns your brand, voice, and products in minutes.' },
+  { icon: Brain,  step: '02', title: 'Generate and Schedule',   body: 'AI creates platform-native content for every connected channel and schedules it automatically, three times a day.' },
+  { icon: Rocket, step: '03', title: 'Optimize and Scale',      body: 'Review results, approve drafts, and let the AI improve continuously based on performance data.' },
 ];
 
 export default function LandingPage() {
@@ -227,26 +226,19 @@ export default function LandingPage() {
                 <Link to="/register">
                   <Button size="lg" className="w-full sm:w-auto px-9 font-bold text-base"
                     style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: `0 0 28px rgba(37,99,255,0.35)` }}>
-                    Start Free \u2014 7 Days
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                    Get Started →
                   </Button>
                 </Link>
                 <Link to="/features">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto px-9 font-medium text-base"
                     style={{ borderColor: 'rgba(255,255,255,0.15)', color: SUB, background: 'rgba(255,255,255,0.04)' }}>
-                    See All Features
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    See the Platform →
                   </Button>
                 </Link>
               </motion.div>
-              <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4">
-                {['12 platforms', 'No credit card required', 'Free 7-day trial'].map((t) => (
-                  <div key={t} className="flex items-center gap-1.5 text-sm" style={{ color: MUTED }}>
-                    <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#10B981' }} />
-                    {t}
-                  </div>
-                ))}
-              </motion.div>
+              <motion.p variants={fadeUp} className="text-sm" style={{ color: MUTED }}>
+                Trusted by agencies, operators, and modern growth teams.
+              </motion.p>
             </motion.div>
             <motion.div variants={fadeIn} initial="hidden" animate="show" transition={{ delay: 0.3 }} className="hidden lg:block">
               <AIHeroVisual />
@@ -269,7 +261,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="py-28 px-4 sm:px-6 lg:px-8">
+      <section id="how-it-works" className="py-28 px-4 sm:px-6 lg:px-8">
         <Section>
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-16">
@@ -286,7 +278,7 @@ export default function LandingPage() {
                 Connect your business and the AI handles the rest.
               </p>
             </motion.div>
-            <motion.div variants={staggerContainer(0.1)} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+            <motion.div variants={staggerContainer(0.1)} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
               {howSteps.map((s) => {
                 const Icon = s.icon;
                 return (
@@ -434,6 +426,50 @@ export default function LandingPage() {
         </div>
       </Section>
 
+      {/* ── Pricing Preview ── */}
+      <Section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <motion.div variants={fadeUp} className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: TEXT }}>Simple, Transparent Pricing</h2>
+            <p className="text-base" style={{ color: MUTED }}>Start free — no credit card required.</p>
+          </motion.div>
+          <motion.div variants={staggerContainer(0.08)} className="grid sm:grid-cols-3 gap-5 mb-8">
+            {[
+              { name: 'Starter', price: '$49', desc: '1 business · 3 platforms', highlighted: false },
+              { name: 'Growth',  price: '$149', desc: '5 businesses · 8 platforms', highlighted: true },
+              { name: 'Agency',  price: '$399', desc: '20 businesses · all 12 platforms', highlighted: false },
+            ].map((t) => (
+              <motion.div key={t.name} variants={scaleIn}
+                className="rounded-2xl p-6 text-center"
+                style={{
+                  background: t.highlighted ? `linear-gradient(135deg, rgba(37,99,255,0.18) 0%, rgba(34,211,238,0.10) 100%)` : SURFACE,
+                  border: t.highlighted ? `1px solid rgba(37,99,255,0.4)` : `1px solid ${BORDER}`,
+                  boxShadow: t.highlighted ? `0 0 32px rgba(37,99,255,0.12)` : 'none',
+                }}>
+                {t.highlighted && (
+                  <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-3"
+                    style={{ background: 'rgba(37,99,255,0.2)', color: '#93c5fd', border: '1px solid rgba(37,99,255,0.3)' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="text-lg font-bold mb-1" style={{ color: TEXT }}>{t.name}</h3>
+                <p className="text-3xl font-black mb-1" style={{ color: t.highlighted ? ACCENT : TEXT }}>{t.price}<span className="text-sm font-normal" style={{ color: MUTED }}>/mo</span></p>
+                <p className="text-xs mb-0" style={{ color: MUTED }}>{t.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+          <motion.div variants={fadeUp} className="text-center">
+            <Link to="/pricing">
+              <Button variant="outline" className="font-medium"
+                style={{ borderColor: 'rgba(255,255,255,0.12)', color: SUB, background: 'transparent' }}>
+                View Full Pricing
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+      </Section>
+
       {/* ── CTA ── */}
       <Section className="py-28 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
@@ -451,25 +487,24 @@ export default function LandingPage() {
                 7-Day Free Trial — No Card Required
               </motion.div>
               <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5" style={{ color: TEXT }}>
-                Ready to automate<br />your marketing?
+                Ready to put your marketing<br />on autopilot?
               </motion.h2>
               <motion.p variants={fadeUp} className="text-lg mb-9 max-w-md mx-auto" style={{ color: MUTED }}>
-                Join businesses already using AmarktAI Marketing to generate, schedule, and publish content — automatically, every single day.
+                Start your 7-day free trial. No credit card required.
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link to="/register">
                   <Button size="lg" className="px-10 font-bold text-base"
                     style={{ background: `linear-gradient(135deg, ${ACCENT}, #1d4ed8)`, color: '#fff', boxShadow: '0 0 28px rgba(37,99,255,0.38)' }}>
-                    Start Free — 7 Days
-                    <ChevronRight className="w-4 h-4 ml-1.5" />
+                    Get Started Free →
                   </Button>
                 </Link>
-                <Link to="/contact">
+                <a href="https://cal.com/amarktai" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="outline" className="px-10 font-medium text-base"
                     style={{ borderColor: 'rgba(255,255,255,0.15)', color: SUB, background: 'transparent' }}>
-                    Talk to Us
+                    Book a Walkthrough
                   </Button>
-                </Link>
+                </a>
               </motion.div>
             </div>
           </motion.div>
