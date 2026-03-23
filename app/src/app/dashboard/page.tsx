@@ -2,325 +2,192 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  TrendingUp,
-  Eye,
-  Heart,
-  MousePointer,
-  ArrowRight,
-  Clock,
-  CheckCircle,
-  Globe,
-  Share2
+  FileText, TrendingUp, Users, Zap, Calendar, BarChart2,
+  PenTool, ArrowRight, Activity
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import type { Content, AnalyticsSummary } from '@/types';
-import { contentApi, analyticsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 
-const cardStyle = {
-  background: 'rgba(17,24,39,0.72)',
-  border: '1px solid rgba(255,255,255,0.10)',
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+interface DashboardStats {
+  postsPublished: number;
+  engagementRate: string;
+  leadsCaptures: number;
+  tokensUsed: number;
+}
+
 export default function DashboardPage() {
-  const [pendingContent, setPendingContent] = useState<Content[]>([]);
-  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  })();
+
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  });
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [pending, stats] = await Promise.all([
-          contentApi.getPending(),
-          analyticsApi.getSummary(),
-        ]);
-        setPendingContent(pending);
-        setAnalytics(stats);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    const token = localStorage.getItem('amarktai_token');
+    fetch('/api/v1/dashboard/insights', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((r) => r.json())
+      .then((d) => setStats(d))
+      .catch(() => {
+        // Graceful fallback with stub stats
+        setStats({ postsPublished: 0, engagementRate: '—', leadsCaptures: 0, tokensUsed: 0 });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const statsCards = [
-    {
-      title: 'Total Posts',
-      value: analytics?.totalPosts || 0,
-      change: '+12%',
-      icon: TrendingUp,
-      iconColor: '#2563FF',
-      iconBg: 'rgba(37,99,255,0.12)',
-    },
-    {
-      title: 'Total Views',
-      value: analytics?.totalViews.toLocaleString() || '0',
-      change: '+28%',
-      icon: Eye,
-      iconColor: '#22D3EE',
-      iconBg: 'rgba(34,211,238,0.12)',
-    },
-    {
-      title: 'Engagement',
-      value: analytics?.totalEngagement.toLocaleString() || '0',
-      change: '+15%',
-      icon: Heart,
-      iconColor: '#10B981',
-      iconBg: 'rgba(16,185,129,0.12)',
-    },
-    {
-      title: 'Avg. CTR',
-      value: `${analytics?.avgCtr || 0}%`,
-      change: '+5%',
-      icon: MousePointer,
-      iconColor: '#F59E0B',
-      iconBg: 'rgba(245,158,11,0.12)',
-    },
+  const STAT_CARDS = [
+    { label: 'Posts Published', value: loading ? '—' : String(stats?.postsPublished ?? 0), icon: FileText, color: 'text-blue-400 bg-blue-400/10' },
+    { label: 'Engagement Rate', value: loading ? '—' : (stats?.engagementRate ?? '—'), icon: TrendingUp, color: 'text-emerald-400 bg-emerald-400/10' },
+    { label: 'Leads Captured', value: loading ? '—' : String(stats?.leadsCaptures ?? 0), icon: Users, color: 'text-purple-400 bg-purple-400/10' },
+    { label: 'AI Tokens Used', value: loading ? '—' : String(stats?.tokensUsed ?? 0), icon: Zap, color: 'text-orange-400 bg-orange-400/10' },
   ];
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse" style={cardStyle}>
-              <CardContent className="p-6">
-                <div className="h-4 rounded w-24 mb-4" style={{ background: 'rgba(255,255,255,0.08)' }} />
-                <div className="h-8 rounded w-16" style={{ background: 'rgba(255,255,255,0.08)' }} />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const QUICK_ACTIONS = [
+    { label: 'Generate Content', desc: 'Create posts with AI', href: '/dashboard/content', icon: PenTool, color: 'text-blue-400' },
+    { label: 'View Scheduler', desc: 'Manage posting schedule', href: '/dashboard/scheduler', icon: Calendar, color: 'text-cyan-400' },
+    { label: 'Check Analytics', desc: 'See your performance', href: '/dashboard/analytics', icon: BarChart2, color: 'text-purple-400' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div
-        className="rounded-xl p-6"
-        style={{
-          background: 'linear-gradient(135deg, rgba(37,99,255,0.2) 0%, rgba(34,211,238,0.1) 100%)',
-          border: '1px solid rgba(37,99,255,0.25)',
-        }}
-      >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="space-y-8">
+      {/* Header */}
+      <motion.div variants={stagger} initial="hidden" animate="visible">
+        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2">Good morning! 👋</h2>
-            <p className="text-slate-300">
-              You have {pendingContent.length} posts waiting for approval today.
-            </p>
+            <h1 className="text-white font-bold text-2xl sm:text-3xl mb-1">
+              {greeting}, {user?.name?.split(' ')[0] ?? 'there'} 👋
+            </h1>
+            <p className="text-[#9AA3B8] text-sm">{dateStr}</p>
           </div>
-          <Link to="/dashboard/approval" className="mt-4 md:mt-0">
-            <Button
-              variant="outline"
-              style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#CBD5E1', background: 'rgba(255,255,255,0.05)' }}
-            >
-              Review Content
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat, i) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08, duration: 0.4 }}
+          <Link
+            to="/dashboard/content"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all self-start sm:self-auto"
           >
-            <Card style={cardStyle}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-400">{stat.title}</p>
-                    <p className="text-2xl font-bold mt-1 text-slate-100">{stat.value}</p>
-                    <p className="text-xs mt-1" style={{ color: '#10B981' }}>{stat.change} from last month</p>
-                  </div>
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ background: stat.iconBg }}
-                  >
-                    <stat.icon className="w-6 h-6" style={{ color: stat.iconColor }} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+            <PenTool className="w-4 h-4" />
+            Generate Content
+          </Link>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Pending Approval */}
-        <Card className="lg:col-span-2" style={cardStyle}>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center text-slate-100">
-              <CheckCircle className="w-5 h-5 mr-2" style={{ color: '#2563FF' }} />
-              Pending Approval
-            </CardTitle>
-            <Link to="/dashboard/approval">
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-                View All
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {pendingContent.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle className="w-12 h-12 mx-auto mb-4" style={{ color: '#10B981' }} />
-                <p className="text-slate-400">All caught up! No pending content.</p>
-                <p className="text-sm text-slate-500 mt-1">
-                  New content will be generated tonight at 2:00 AM.
-                </p>
+      {/* Stats */}
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        {STAT_CARDS.map((card) => {
+          const Icon = card.icon;
+          return (
+            <motion.div
+              key={card.label}
+              variants={fadeUp}
+              className="bg-[#0D0F14] border border-[#1E2130] rounded-2xl p-5"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[#9AA3B8] text-sm">{card.label}</p>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.color}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {pendingContent.slice(0, 3).map((content) => (
-                  <div
-                    key={content.id}
-                    className="flex items-start space-x-4 p-4 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.04)' }}
-                  >
-                    <div
-                      className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.08)' }}
-                    >
-                      {content.mediaUrls[0] ? (
-                        <img
-                          src={content.mediaUrls[0]}
-                          alt={content.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <TrendingUp className="w-6 h-6 text-slate-500" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="capitalize" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#94A3B8' }}>
-                          {content.platform}
-                        </Badge>
-                        <span className="text-sm text-slate-500 capitalize">
-                          {content.type}
-                        </span>
-                      </div>
-                      <p className="font-medium mt-1 truncate text-slate-200">{content.title}</p>
-                      <p className="text-sm text-slate-400 line-clamp-2">
-                        {content.caption}
-                      </p>
-                    </div>
+              <p className="text-white font-bold text-2xl">
+                {loading ? (
+                  <span className="inline-block w-12 h-6 bg-[#1E2130] rounded animate-pulse" />
+                ) : card.value}
+              </p>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.h2 variants={fadeUp} className="text-white font-semibold mb-4">Quick Actions</motion.h2>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          variants={stagger}
+        >
+          {QUICK_ACTIONS.map((action) => {
+            const Icon = action.icon;
+            return (
+              <motion.div key={action.label} variants={fadeUp}>
+                <Link
+                  to={action.href}
+                  className="group flex items-center gap-4 bg-[#0D0F14] hover:bg-[#141720] border border-[#1E2130] hover:border-[#252A3A] rounded-2xl p-5 transition-all"
+                >
+                  <div className={`w-10 h-10 rounded-xl bg-[#141720] group-hover:bg-[#1E2130] flex items-center justify-center flex-shrink-0 transition-all ${action.color}`}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                ))}
-                {pendingContent.length > 3 && (
-                  <p className="text-center text-sm text-slate-500">
-                    +{pendingContent.length - 3} more items
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium text-sm">{action.label}</p>
+                    <p className="text-[#5A6478] text-xs">{action.desc}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#5A6478] group-hover:text-[#9AA3B8] flex-shrink-0 transition-colors" />
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </motion.div>
 
-        {/* Quick Actions & Status */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card style={cardStyle}>
-            <CardHeader>
-              <CardTitle className="text-slate-100">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link to="/dashboard/webapps/new">
-                <Button variant="outline" className="w-full justify-start" style={{ borderColor: 'rgba(255,255,255,0.10)', color: '#94A3B8', background: 'transparent' }}>
-                  <Globe className="w-4 h-4 mr-2" />
-                  Add New Web App
-                </Button>
-              </Link>
-              <Link to="/dashboard/platforms">
-                <Button variant="outline" className="w-full justify-start" style={{ borderColor: 'rgba(255,255,255,0.10)', color: '#94A3B8', background: 'transparent' }}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Connect Platforms
-                </Button>
-              </Link>
-              <Link to="/dashboard/content">
-                <Button variant="outline" className="w-full justify-start" style={{ borderColor: 'rgba(255,255,255,0.10)', color: '#94A3B8', background: 'transparent' }}>
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  View Content Library
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* System Status */}
-          <Card style={cardStyle}>
-            <CardHeader>
-              <CardTitle className="text-slate-100">System Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2" style={{ color: '#10B981' }} />
-                  <span className="text-sm text-slate-300">Automation Engine</span>
-                </div>
-                <Badge variant="outline" style={{ borderColor: 'rgba(16,185,129,0.4)', color: '#10B981' }}>Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2" style={{ color: '#10B981' }} />
-                  <span className="text-sm text-slate-300">Platform APIs</span>
-                </div>
-                <Badge variant="outline" style={{ borderColor: 'rgba(16,185,129,0.4)', color: '#10B981' }}>Connected</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-2" style={{ color: '#2563FF' }} />
-                  <span className="text-sm text-slate-300">Next Generation</span>
-                </div>
-                <span className="text-sm text-slate-400">2:00 AM</span>
-              </div>
-              <div className="pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Monthly Usage</span>
-                  <span className="font-medium text-slate-200">340 / 360 posts</span>
-                </div>
-                <Progress value={94} className="mt-2" />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Recent Activity */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-white font-semibold flex items-center gap-2">
+            <Activity className="w-4 h-4 text-blue-400" />
+            Recent Activity
+          </h2>
         </div>
-      </div>
-
-      {/* Platform Performance */}
-      <Card style={cardStyle}>
-        <CardHeader>
-          <CardTitle className="text-slate-100">Platform Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            {analytics && Object.entries(analytics.platformBreakdown).map(([platform, stats]) => (
-              <div key={platform} className="p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                <p className="text-sm text-slate-400 capitalize">{platform}</p>
-                <p className="text-xl font-bold text-slate-100">{stats.views.toLocaleString()}</p>
-                <p className="text-xs text-slate-500">views</p>
-                <div className="mt-2 flex items-center text-sm">
-                  <Heart className="w-3 h-3 mr-1" style={{ color: '#10B981' }} />
-                  <span className="text-slate-300">{stats.engagement.toLocaleString()}</span>
-                </div>
+        <div className="bg-[#0D0F14] border border-[#1E2130] rounded-2xl overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="w-8 h-8 border-2 border-[#252A3A] border-t-blue-600 rounded-full animate-spin mx-auto" />
+            </div>
+          ) : (
+            <div className="p-6">
+              <div className="text-center py-8">
+                <p className="text-[#5A6478] text-sm">
+                  Activity will appear here once you start creating and scheduling content.
+                </p>
+                <Link
+                  to="/dashboard/content"
+                  className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm font-medium mt-3 transition-colors"
+                >
+                  Generate your first post
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }

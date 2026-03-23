@@ -1,61 +1,102 @@
 import { Link } from 'react-router-dom';
-import { Zap } from 'lucide-react';
-
-const BORDER = 'rgba(255,255,255,0.08)';
-const ACCENT = '#2563FF';
-const CYAN = '#22D3EE';
-const TEXT = '#F8FAFC';
-const MUTED = '#94A3B8';
+import { Zap, Linkedin, Twitter, Github } from 'lucide-react';
 
 export default function PublicFooter() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="px-4 sm:px-6 lg:px-8 py-16" style={{ borderTop: `1px solid ${BORDER}` }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="grid sm:grid-cols-3 gap-10 mb-12">
+    <footer className="bg-[#0D0F14] border-t border-[#1E2130]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${CYAN} 100%)` }}>
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold">
-                <span style={{ color: '#F8FAFC' }}>Amarkt</span>
-                <span style={{ background: 'linear-gradient(90deg,#2563FF,#22D3EE)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>AI</span>
-                <span style={{ color: '#F8FAFC' }}> Marketing</span>
+              <span className="text-white font-bold text-lg">
+                Amarkt<span className="text-blue-500">AI</span> Marketing
               </span>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
-              Autonomous AI marketing for modern growth teams.
+            <p className="text-[#5A6478] text-sm leading-relaxed">
+              Autonomous AI marketing at scale.
             </p>
+            <div className="flex items-center gap-3 mt-6">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
+                <Github className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Product */}
           <div>
-            <h4 className="text-sm font-semibold mb-4" style={{ color: TEXT }}>Product</h4>
+            <h3 className="text-white text-sm font-semibold mb-4">Product</h3>
             <ul className="space-y-3">
-              <li><Link to="/features" className="text-sm hover:underline" style={{ color: MUTED }}>Platform</Link></li>
-              <li><Link to="/pricing" className="text-sm hover:underline" style={{ color: MUTED }}>Pricing</Link></li>
-              <li><Link to="/#how-it-works" className="text-sm hover:underline" style={{ color: MUTED }}>How It Works</Link></li>
+              {[
+                { label: 'Features', href: '/features' },
+                { label: 'Pricing', href: '/pricing' },
+                { label: 'Contact', href: '/contact' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="text-[#5A6478] hover:text-white text-sm transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h4 className="text-sm font-semibold mb-4" style={{ color: TEXT }}>Company</h4>
+            <h3 className="text-white text-sm font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
-              <li><Link to="/privacy" className="text-sm hover:underline" style={{ color: MUTED }}>Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-sm hover:underline" style={{ color: MUTED }}>Terms of Service</Link></li>
-              <li><Link to="/register" className="text-sm hover:underline" style={{ color: MUTED }}>Get Started</Link></li>
+              {[
+                { label: 'About', href: '/about' },
+                { label: 'Blog', href: '/dashboard/blog' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="text-[#5A6478] hover:text-white text-sm transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="text-white text-sm font-semibold mb-4">Legal</h3>
+            <ul className="space-y-3">
+              {[
+                { label: 'Privacy Policy', href: '/privacy' },
+                { label: 'Terms of Service', href: '/terms' },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="text-[#5A6478] hover:text-white text-sm transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="pt-8 text-sm" style={{ borderTop: `1px solid ${BORDER}`, color: MUTED }}>
-          <p>© {new Date().getFullYear()} AmarktAI Marketing. All rights reserved.</p>
+        {/* Bottom bar */}
+        <div className="border-t border-[#1E2130] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-[#5A6478] text-sm">
+            © {year} Amarkt<span className="text-blue-500">AI</span> Marketing. Built for scale.
+          </p>
+          <p className="text-[#5A6478] text-xs">
+            Powered by Qwen · HuggingFace · Firecrawl
+          </p>
         </div>
       </div>
     </footer>
   );
 }
-
