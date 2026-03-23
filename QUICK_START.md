@@ -180,8 +180,7 @@ This repository audit has produced **4 comprehensive documents** totaling **3,39
 ```env
 DATABASE_URL=postgresql://user:pass@localhost:5432/amarktai_prod
 REDIS_URL=redis://:password@localhost:6379/0
-CLERK_SECRET_KEY=sk_live_...
-CLERK_PUBLISHABLE_KEY=pk_live_...
+JWT_SECRET=<generated-with-openssl-rand-hex-32>
 ENCRYPTION_KEY=<generated-with-openssl>
 GROQ_API_KEY=gsk_...  # FREE tier
 HUGGINGFACE_TOKEN=hf_...  # FREE
@@ -286,7 +285,6 @@ openssl rand -base64 32
 - **Summary**: [AUDIT_SUMMARY.md](./AUDIT_SUMMARY.md)
 
 ### External Resources
-- **Clerk Docs**: https://clerk.com/docs
 - **FastAPI Docs**: https://fastapi.tiangolo.com
 - **React Docs**: https://react.dev
 - **PostgreSQL Docs**: https://www.postgresql.org/docs/
@@ -296,7 +294,7 @@ openssl rand -base64 32
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind + shadcn/ui
 - **Backend**: FastAPI + SQLAlchemy + PostgreSQL + Redis + Celery
 - **AI**: CrewAI + LangGraph + OpenAI/Anthropic/Groq
-- **Auth**: Clerk
+- **Auth**: App-owned JWT (HS256, no external dependency)
 - **Deployment**: Ubuntu + Nginx + Systemd
 
 ---

@@ -15,6 +15,7 @@ It generates, schedules, and publishes content across social platforms with **ze
 |-------|-------|
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
 | Backend | FastAPI, SQLAlchemy, PostgreSQL, Redis, Celery |
+| Auth | App-owned JWT (HS256, no external auth dependency) |
 | Auth | App-owned JWT (HS256) — no third-party auth dependency |
 | AI Providers | **HuggingFace** (Qwen 2.5-72B, Mistral-7B), **Qwen** (DashScope), **OpenAI** (optional, gpt-4o-mini) |
 
@@ -34,6 +35,7 @@ It generates, schedules, and publishes content across social platforms with **ze
 ```bash
 cd app
 npm install
+cp .env.example .env.local   # set VITE_API_URL if needed (optional, defaults to /api proxy)
 cp .env.example .env.local   # VITE_API_URL is optional (default: /api)
 npm run dev                   # http://localhost:5173
 ```
@@ -65,6 +67,7 @@ celery -A app.workers.celery_app beat --loglevel=info
 
 | Variable | Required | Description |
 |----------|----------|-------------|
+| `VITE_API_URL` | No | Backend API URL (default: `/api/v1` via Nginx proxy) |
 | `VITE_API_URL` | No | Backend API URL for Vite dev-server proxy. Leave empty when using Nginx (requests go to `/api`). Set to `http://localhost:8000` for local dev without Docker. |
 
 ### Backend (`backend/.env`)
@@ -73,6 +76,9 @@ celery -A app.workers.celery_app beat --loglevel=info
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `REDIS_URL` | Yes | Redis connection string |
+| `JWT_SECRET` | Yes | Secret for signing JWT tokens (generate: `openssl rand -hex 32`) |
+| `ENCRYPTION_KEY` | Yes | 32-byte key for API key encryption (Fernet) |
+| `ADMIN_EMAIL` | No | Platform admin email (default: `amarktainetwork@gmail.com`) |
 | `JWT_SECRET` | Yes | HS256 signing secret — generate with `openssl rand -hex 32`. **Never commit to version control; store in a secrets manager in production.** |
 | `ENCRYPTION_KEY` | Yes | 32-byte key for API key encryption |
 | `ADMIN_EMAIL` | No | Platform admin email (default: `amarktainetwork@gmail.com`) |

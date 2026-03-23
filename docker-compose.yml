@@ -106,7 +106,6 @@ services:
       dockerfile: ../Dockerfile.frontend
       args:
         VITE_API_URL: ${VITE_API_URL:-}
-        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
     restart: unless-stopped
     ports:
       - "3000:3000"

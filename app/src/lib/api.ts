@@ -20,8 +20,19 @@ import { getStoredToken } from '@/lib/auth';
 // ─── Base helpers ────────────────────────────────────────────────────────────
 
 const BASE = '/api/v1';
+const TOKEN_KEY = 'amarktai_token';
+
+function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch (e) {
+    console.warn('[api] localStorage unavailable, cannot read auth token:', e);
+    return null;
+  }
+}
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getToken();
   const token = getStoredToken();
   const authHeaders: Record<string, string> = token
     ? { Authorization: `Bearer ${token}` }
