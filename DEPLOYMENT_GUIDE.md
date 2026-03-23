@@ -33,7 +33,6 @@
 - Main domain for frontend: `yourdomain.com`
 
 ### Required Accounts/Keys
-- Clerk account (for authentication)
 - At least one LLM API key (Groq recommended for free tier)
 - HuggingFace account (for free image generation)
 - Social platform developer accounts (optional initially)
@@ -246,9 +245,9 @@ REDIS_URL="redis://:your-redis-password@localhost:6379/0"
 # CORS Origins (your production domain)
 CORS_ORIGINS="https://yourdomain.com,https://api.yourdomain.com"
 
-# Clerk Authentication
-CLERK_SECRET_KEY="sk_live_YOUR_PRODUCTION_KEY"
-CLERK_PUBLISHABLE_KEY="pk_live_YOUR_PRODUCTION_KEY"
+# JWT Authentication (app-owned, no external dependency)
+# Generate a strong secret with: openssl rand -hex 32
+JWT_SECRET="GENERATE_UNIQUE_SECRET_HERE"
 
 # Encryption Key (generate with: openssl rand -base64 32)
 ENCRYPTION_KEY="GENERATE_UNIQUE_KEY_HERE"
@@ -382,7 +381,6 @@ nano .env.production
 
 ```env
 VITE_API_URL=https://api.yourdomain.com
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_PRODUCTION_KEY
 ```
 
 ```bash
@@ -701,7 +699,7 @@ sudo journalctl -u amarktai-beat -f
 |----------|----------|-------------|---------|
 | `DATABASE_URL` | ✅ Yes | PostgreSQL connection | `postgresql://user:pass@localhost:5432/db` |
 | `REDIS_URL` | ✅ Yes | Redis connection | `redis://:password@localhost:6379/0` |
-| `CLERK_SECRET_KEY` | ✅ Yes | Clerk authentication | `sk_live_...` |
+| `JWT_SECRET` | ✅ Yes | JWT signing secret | Generate with openssl |
 | `ENCRYPTION_KEY` | ✅ Yes | API key encryption | Generate with openssl |
 | `GROQ_API_KEY` | Recommended | Free LLM access | `gsk_...` |
 | `HUGGINGFACE_TOKEN` | Recommended | Free image gen | `hf_...` |
@@ -937,7 +935,7 @@ psql -h localhost -U amarktai -d amarktai_prod
 
 # 2. Missing environment variables
 cd /var/www/amarktai/Amarktai-Marketing/backend
-cat .env | grep -E "(DATABASE_URL|REDIS_URL|CLERK)"
+cat .env | grep -E "(DATABASE_URL|REDIS_URL|JWT_SECRET)"
 
 # 3. Port already in use
 sudo lsof -i :8000
@@ -1079,7 +1077,7 @@ ANALYZE analytics;
 - [ ] Log rotation configured
 - [ ] Backups scheduled
 - [ ] Monitoring alerts configured
-- [ ] Clerk authentication working
+- [ ] JWT authentication working (register/login/protected routes)
 
 ### Testing
 

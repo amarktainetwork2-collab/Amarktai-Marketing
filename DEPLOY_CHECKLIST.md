@@ -77,7 +77,6 @@ FRONTEND_URL="https://marketing.amarktai.com"
 
 ```env
 VITE_API_URL=                        # empty = use Nginx /api proxy
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
 VITE_APP_NAME=AmarktAI Marketing
 VITE_APP_VERSION=1.0.0
 VITE_APP_ENVIRONMENT=production
@@ -157,12 +156,12 @@ git clone https://github.com/amarktainetwork-blip/Amarktai-Marketing.git \
 # 5 — Configure backend env
 cd /var/www/amarktai-marketing/backend
 cp .env.example .env
-nano .env   # fill in DATABASE_URL, CLERK keys, REDIS_URL, AMARKTAI_* etc.
+nano .env   # fill in DATABASE_URL, JWT_SECRET, REDIS_URL, AMARKTAI_* etc.
 
 # 6 — Configure frontend env
 cd /var/www/amarktai-marketing/app
 cp .env.example .env
-nano .env   # fill in VITE_CLERK_PUBLISHABLE_KEY
+nano .env   # fill in VITE_API_URL (or leave empty for Nginx proxy)
 
 # 7 — Build & install
 cd /var/www/amarktai-marketing

@@ -19,10 +19,24 @@ import type {
 // ─── Base helpers ────────────────────────────────────────────────────────────
 
 const BASE = '/api/v1';
+const TOKEN_KEY = 'amarktai_token';
+
+function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch (e) {
+    console.warn('[api] localStorage unavailable, cannot read auth token:', e);
+    return null;
+  }
+}
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getToken();
+  const authHeaders: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { 'Content-Type': 'application/json', ...authHeaders, ...init?.headers },
     ...init,
   });
   if (!res.ok) {

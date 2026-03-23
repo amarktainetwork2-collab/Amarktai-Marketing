@@ -15,7 +15,7 @@ It generates, schedules, and publishes content across social platforms with **ze
 |-------|-------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
 | Backend | FastAPI, SQLAlchemy, PostgreSQL, Redis, Celery |
-| Auth | Clerk (production) · Demo mode (development) |
+| Auth | App-owned JWT (HS256, no external auth dependency) |
 | AI Providers | **HuggingFace** (Qwen 2.5-72B, Mistral-7B), **Qwen** (DashScope), **OpenAI** (optional, gpt-4o-mini) |
 
 ---
@@ -34,7 +34,7 @@ It generates, schedules, and publishes content across social platforms with **ze
 ```bash
 cd app
 npm install
-cp .env.example .env.local   # set VITE_CLERK_PUBLISHABLE_KEY
+cp .env.example .env.local   # set VITE_API_URL if needed (optional, defaults to /api proxy)
 npm run dev                   # http://localhost:5173
 ```
 
@@ -65,8 +65,7 @@ celery -A app.workers.celery_app beat --loglevel=info
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_CLERK_PUBLISHABLE_KEY` | For prod auth | Clerk publishable key. Omit for demo mode. |
-| `VITE_API_URL` | No | Backend API URL (default: `/api/v1`) |
+| `VITE_API_URL` | No | Backend API URL (default: `/api/v1` via Nginx proxy) |
 
 ### Backend (`backend/.env`)
 
@@ -74,10 +73,9 @@ celery -A app.workers.celery_app beat --loglevel=info
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `REDIS_URL` | Yes | Redis connection string |
-| `CLERK_SECRET_KEY` | For prod auth | Clerk secret key. Omit for demo mode. |
+| `JWT_SECRET` | Yes | Secret for signing JWT tokens (generate: `openssl rand -hex 32`) |
 | `ENCRYPTION_KEY` | Yes | 32-byte key for API key encryption (Fernet) |
 | `ADMIN_EMAIL` | No | Platform admin email (default: `amarktainetwork@gmail.com`) |
-| `ADMIN_USER_IDS` | No | Comma-separated Clerk user IDs for admin |
 | **AI Providers** | | |
 | `HUGGINGFACE_TOKEN` | Recommended | HuggingFace Inference API token |
 | `QWEN_API_KEY` | Recommended | Qwen / DashScope API key (primary LLM) |
