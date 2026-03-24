@@ -117,3 +117,30 @@ def login(body: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
         email=user.email,
         name=user.name,
     )
+
+
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+bearer_scheme = HTTPBearer()
+
+
+@router.get("/me", response_model=TokenResponse)
+def get_me(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> TokenResponse:
+    """Return the current authenticated user."""
+    from app.core.security import decode_access_token
+    user_id = decode_access_token(credentials.credentials)
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token.")
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    token = create_access_token(user.id)
+    return TokenResponse(
+        access_token=token,
+        user_id=user.id,
+        email=user.email,
+        name=user.name,
+    )

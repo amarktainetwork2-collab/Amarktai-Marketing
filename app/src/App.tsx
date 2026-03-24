@@ -30,7 +30,6 @@ const EngagementPage = lazy(() => import('@/app/engagement/page'));
 const AdminPage = lazy(() => import('@/app/admin/page'));
 const ToolsPage = lazy(() => import('@/app/tools/page'));
 const LeadsPage = lazy(() => import('@/app/leads/page'));
-const BlogPage = lazy(() => import('@/app/blog/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
 const FeaturesPage = lazy(() => import('@/app/features/page'));
 
@@ -100,7 +99,6 @@ function AppRoutes() {
           <Route path="engagement" element={<EngagementPage />} />
           <Route path="tools" element={<ToolsPage />} />
           <Route path="leads" element={<LeadsPage />} />
-          <Route path="blog" element={<BlogPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="admin" element={<AdminPage />} />
         </Route>

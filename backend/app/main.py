@@ -27,9 +27,6 @@ limiter = Limiter(
     default_limits=["200/hour", "30/minute"],
 )
 
-Base.metadata.create_all(bind=engine)
-
-
 async def _heartbeat_loop() -> None:
     """Periodic heartbeat task — runs every 5 minutes while the app is alive."""
     from app.services.integration import send_heartbeat
@@ -57,6 +54,11 @@ async def _heartbeat_loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up AmarktAI Marketing API (v%s)…", settings.APP_VERSION)
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables verified / created.")
+    except Exception as exc:
+        logger.warning("DB create_all failed (DB may not be ready): %s", exc)
 
     # Start the periodic heartbeat task if integration is enabled
     heartbeat_task = None

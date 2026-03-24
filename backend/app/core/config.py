@@ -38,9 +38,9 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     GROQ_API_KEY: str = ""  # Fast inference
 
-    # Qwen (Alibaba Cloud) – low-cost, high quality
-    QWEN_API_KEY: str = ""  # DashScope API key from console.aliyun.com
-    QWEN_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"  # HF model ID or DashScope model name
+    # AI provider config
+    QWEN_API_KEY: str = ""
+    QWEN_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"
     
     # Gemini (Google) — optional add-on
     GOOGLE_GEMINI_API_KEY: str = ""
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     STABILITY_API_KEY: str = ""  # Stability AI
     
     # Free/Cheap alternatives
-    HUGGINGFACE_TOKEN: str = ""  # Hugging Face Inference API (primary – free tier)
+    HUGGINGFACE_TOKEN: str = ""
     FAL_AI_KEY: str = ""  # fal.ai
     SILICONFLOW_API_KEY: str = ""  # SiliconFlow
     REPLICATE_API_TOKEN: str = ""  # Replicate
@@ -135,8 +135,7 @@ class Settings(BaseSettings):
     GNEWS_API_KEY: str = ""
     
     # ==================== WEB SCRAPING ====================
-    # Firecrawl — primary scraping provider (set FIRECRAWL_API_KEY to enable)
-    # Falls back to httpx + BeautifulSoup when not set.
+    # Web scraping (optional external provider)
     FIRECRAWL_API_KEY: str = ""
     
     # ==================== PAYMENTS ====================
