@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { PLATFORM_COUNT_PLUS } from '@/lib/platformConstants';
 
 const BENEFITS = [
-  'AI content generation across 15+ platforms',
+  `AI content generation across ${PLATFORM_COUNT_PLUS} platforms`,
   'Smart scheduling with engagement optimization',
   'Viral predictor + A/B testing built in',
   'No credit card required to start',
