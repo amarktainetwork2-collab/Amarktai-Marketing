@@ -8,6 +8,7 @@ import {
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
 import ParticleBackground from '@/components/ui/ParticleBackground';
+import { PLATFORM_COUNT_PLUS } from '@/lib/platformConstants';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -35,7 +36,7 @@ const FEATURE_GROUPS = [
     color: 'cyan',
     features: [
       { icon: Calendar, title: 'Smart Scheduler', desc: 'AI analyzes your audience behavior and posts at the exact moment engagement is highest.' },
-      { icon: Share2, title: 'Multi-Platform Posting', desc: 'Publish to 15+ platforms simultaneously with format-specific optimization for each channel.' },
+      { icon: Share2, title: 'Multi-Platform Posting', desc: `Publish to ${PLATFORM_COUNT_PLUS} platforms simultaneously with format-specific optimization for each channel.` },
       { icon: Zap, title: 'Autonomous Publishing', desc: 'Set rules, define goals, and let the AI manage the entire publishing pipeline hands-free.' },
       { icon: CheckSquare, title: 'Approval Queue', desc: 'Review and approve AI-generated content before it goes live. Full control with minimal effort.' },
     ],
@@ -163,7 +164,7 @@ export default function FeaturesPage() {
             viewport={{ once: true }}
           >
             <motion.h2 variants={fadeUp} className="text-3xl font-bold text-white mb-4">
-              15+ Platforms. One Dashboard.
+              {PLATFORM_COUNT_PLUS} Platforms. One Dashboard.
             </motion.h2>
             <motion.p variants={fadeUp} className="text-[#9AA3B8] text-lg mb-10">
               YouTube, TikTok, Instagram, LinkedIn, Twitter/X, Facebook, Pinterest, Reddit, Bluesky, Telegram, Snapchat, Discord, and more.

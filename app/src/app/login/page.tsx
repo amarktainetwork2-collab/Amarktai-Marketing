@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Shield, TrendingUp, Clock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { PLATFORM_COUNT_PLUS } from '@/lib/platformConstants';
 
 const BENEFITS = [
-  { icon: TrendingUp, text: 'AI-generated content across 15+ platforms' },
+  { icon: TrendingUp, text: `AI-generated content across ${PLATFORM_COUNT_PLUS} platforms` },
   { icon: Clock, text: 'Fully autonomous — works while you sleep' },
   { icon: Shield, text: 'Secure JWT auth — your data stays yours' },
 ];

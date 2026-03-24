@@ -165,7 +165,7 @@ class ViralScore(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    content = relationship("Content", back_populates="viral_score")
+    content = relationship("Content", back_populates="viral_score_rel")
     user = relationship("User", back_populates="viral_scores")
 
 

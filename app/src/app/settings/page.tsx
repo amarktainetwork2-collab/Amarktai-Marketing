@@ -23,8 +23,8 @@ interface ApiKeyField {
 }
 
 const AI_KEY_FIELDS: ApiKeyField[] = [
-  { name: 'QWEN_API_KEY', label: 'Qwen / Hugging Face Key (Primary AI)', description: 'Primary AI content generation — Qwen2.5 via Hugging Face Serverless.', placeholder: 'hf_...' },
-  { name: 'HUGGINGFACE_TOKEN', label: 'Hugging Face Token (AI Fallback)', description: 'Fallback AI via Hugging Face Inference API.', placeholder: 'hf_...' },
+  { name: 'QWEN_API_KEY', label: 'AmarktAI Network Key (Primary AI)', description: 'Primary AI content generation — powered by AmarktAI Network.', placeholder: 'hf_...' },
+  { name: 'HUGGINGFACE_TOKEN', label: 'AmarktAI Network Token (AI Fallback)', description: 'Fallback AI via AmarktAI Network Inference API.', placeholder: 'hf_...' },
   { name: 'OPENAI_API_KEY', label: 'OpenAI API Key (AI Fallback)', description: 'Optional OpenAI fallback for content generation.', placeholder: 'sk-...' },
   { name: 'FIRECRAWL_API_KEY', label: 'Firecrawl API Key (Web Scraping)', description: 'Primary web scraping for richer brand extraction.', placeholder: 'fc-...' },
 ];
