@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Zap, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { PLATFORM_COUNT_PLUS } from '@/lib/platformConstants';
+import ParticleBackground from '@/components/ui/ParticleBackground';
 
 const BENEFITS = [
   `AI content generation across ${PLATFORM_COUNT_PLUS} platforms`,
@@ -50,6 +51,10 @@ export default function RegisterPage() {
       setError('Password must be at least 8 characters.');
       return;
     }
+    if (form.password.length > 72) {
+      setError('Password must be 72 characters or fewer.');
+      return;
+    }
     setLoading(true);
     try {
       await register(form.email, form.password, form.name);
@@ -64,7 +69,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#06070A] flex">
       {/* Left: Branding panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12 relative overflow-hidden">
+        <ParticleBackground variant="network" opacity={0.25} />
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />

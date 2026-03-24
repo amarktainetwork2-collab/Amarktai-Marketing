@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
     },
     {
       title: 'Total Views',
-      value: analytics?.totalViews.toLocaleString() || '0',
+      value: (analytics?.totalViews ?? 0).toLocaleString(),
       change: '+28%',
       trend: 'up',
       icon: Eye,
@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
     },
     {
       title: 'Total Engagement',
-      value: analytics?.totalEngagement.toLocaleString() || '0',
+      value: (analytics?.totalEngagement ?? 0).toLocaleString(),
       change: '+15%',
       trend: 'up',
       icon: Heart,

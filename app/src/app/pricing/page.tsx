@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Check, ArrowRight, Zap } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
+import ParticleBackground from '@/components/ui/ParticleBackground';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -94,7 +95,8 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#06070A] text-[#F0F2F8]">
+    <div className="min-h-screen bg-[#06070A] text-[#F0F2F8] relative overflow-hidden">
+      <ParticleBackground variant="stars" opacity={0.2} />
       <PublicNav />
 
       {/* Hero */}

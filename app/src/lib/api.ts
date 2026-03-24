@@ -11,6 +11,8 @@ import type {
   PlatformConnection,
   Content,
   AnalyticsSummary,
+  PlatformStats,
+  DailyStat,
   Platform,
   Lead,
   LeadStats,
@@ -267,9 +269,37 @@ export const contentApi = {
 
 // ─── Analytics ───────────────────────────────────────────────────────────────
 
+function mapAnalyticsSummary(raw: Record<string, unknown>): AnalyticsSummary {
+  const rawPlatforms = (raw.platform_breakdown as Record<string, Record<string, unknown>>) ?? {};
+  const platformBreakdown: Record<string, PlatformStats> = {};
+  for (const [platform, stats] of Object.entries(rawPlatforms)) {
+    platformBreakdown[platform] = {
+      posts: (stats.posts as number) ?? 0,
+      views: (stats.views as number) ?? 0,
+      engagement: (stats.engagement as number) ?? 0,
+      ctr: (stats.ctr as number) ?? 0,
+    };
+  }
+  const dailyStats: DailyStat[] = ((raw.daily_stats as Record<string, unknown>[]) ?? []).map((d) => ({
+    date: d.date as string,
+    posts: (d.posts as number) ?? 0,
+    views: (d.views as number) ?? 0,
+    engagement: (d.engagement as number) ?? 0,
+  }));
+  return {
+    totalPosts: (raw.total_posts as number) ?? 0,
+    totalViews: (raw.total_views as number) ?? 0,
+    totalEngagement: (raw.total_engagement as number) ?? 0,
+    avgCtr: (raw.avg_ctr as number) ?? 0,
+    platformBreakdown: platformBreakdown as Record<Platform, PlatformStats>,
+    dailyStats,
+  };
+}
+
 export const analyticsApi = {
   getSummary: async (): Promise<AnalyticsSummary> => {
-    return apiFetch<AnalyticsSummary>('/analytics/summary');
+    const raw = await apiFetch<Record<string, unknown>>('/analytics/summary');
+    return mapAnalyticsSummary(raw);
   },
 
   getPlatformStats: async (

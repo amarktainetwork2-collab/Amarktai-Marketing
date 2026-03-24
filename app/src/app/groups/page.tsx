@@ -36,6 +36,7 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState<BusinessGroup[]>([]);
   const [webapps, setWebapps] = useState<WebApp[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
 
   const [filterWebapp, setFilterWebapp] = useState('');
@@ -57,15 +58,18 @@ export default function GroupsPage() {
 
   const loadAll = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [g, w] = await Promise.all([
         groupsApi.list(filterWebapp || undefined, filterPlatform || undefined, filterStatus || undefined),
         webAppApi.getAll(),
       ]);
       setGroups(g);
-      setWebapps(w);
-    } catch {
-      toast.error('Failed to load groups');
+      setWebapps(w as WebApp[]);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to load groups';
+      setLoadError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -154,6 +158,16 @@ export default function GroupsPage() {
           <RefreshCw className="w-4 h-4 mr-2" /> Refresh
         </Button>
       </div>
+
+      {/* Load error */}
+      {loadError && (
+        <Card>
+          <CardContent className="pt-4 pb-4 flex items-center gap-3 text-red-600">
+            <span className="text-sm">{loadError}</span>
+            <Button variant="outline" size="sm" onClick={loadAll}>Retry</Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Mail, MessageSquare, Calendar, Clock, Users, ArrowRight } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
+import ParticleBackground from '@/components/ui/ParticleBackground';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -40,7 +41,8 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#06070A] text-[#F0F2F8]">
+    <div className="min-h-screen bg-[#06070A] text-[#F0F2F8] relative overflow-hidden">
+      <ParticleBackground variant="stars" opacity={0.18} />
       <PublicNav />
 
       {/* Hero */}
