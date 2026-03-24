@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
 import ParticleBackground from '@/components/ui/ParticleBackground';
+import { PLATFORM_COUNT_LABEL } from '@/lib/platformConstants';
 
 const BG = '#05070B';
 const SURFACE = '#0B1220';
@@ -132,7 +133,7 @@ export default function AboutPage() {
               <div className="space-y-6">
                 {[
                   { label: 'Who it\'s for', value: 'Founders & small teams' },
-                  { label: 'Platforms supported', value: '12 social channels' },
+                  { label: 'Platforms supported', value: `${PLATFORM_COUNT_LABEL} social channels` },
                   { label: 'Content generated', value: '3× daily, automatically' },
                   { label: 'Setup time', value: 'Under 5 minutes' },
                   { label: 'Ecosystem', value: 'AmarktAI' },

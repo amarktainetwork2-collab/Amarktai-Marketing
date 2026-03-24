@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Calendar, TrendingUp, Users, BarChart2, GitBranch, CheckCircle, Star } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
+import { PLATFORM_COUNT_PLUS, PLATFORM_COUNT_LABEL } from '@/lib/platformConstants';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -77,7 +78,7 @@ const STEPS = [
 ];
 
 const STATS = [
-  { value: '15+', label: 'Platforms Supported' },
+  { value: PLATFORM_COUNT_PLUS, label: 'Platforms Supported' },
   { value: '10+', label: 'AI Power Tools' },
   { value: '24/7', label: 'Autonomous Operation' },
 ];
@@ -142,7 +143,7 @@ export default function LandingPage() {
               {[
                 { label: '12.4x engagement lift', icon: TrendingUp },
                 { label: 'Zero manual effort', icon: CheckCircle },
-                { label: '15 platforms', icon: Star },
+                { label: `${PLATFORM_COUNT_LABEL} platforms`, icon: Star },
               ].map((badge) => (
                 <div
                   key={badge.label}

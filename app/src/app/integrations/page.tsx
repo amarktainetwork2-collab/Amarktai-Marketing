@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { PLATFORM_COUNT } from '@/lib/platformConstants';
 
 interface APIKey {
   id: string;
@@ -251,7 +252,7 @@ export default function IntegrationsPage() {
                     step: '3',
                     icon: Settings,
                     title: 'Connect your social media accounts',
-                    desc: 'Go to the Platforms page to connect all 12 social accounts via OAuth.',
+                    desc: `Go to the Platforms page to connect all ${PLATFORM_COUNT} social accounts via OAuth.`,
                     link: '/dashboard/platforms',
                     done: integrations.some(i => i.is_connected),
                   },
@@ -302,7 +303,7 @@ export default function IntegrationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Connected Platforms</p>
-                <p className="text-2xl font-bold">{connectedPlatformsCount}/12</p>
+                <p className="text-2xl font-bold">{connectedPlatformsCount}/{PLATFORM_COUNT}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <Check className="w-5 h-5 text-green-600" />
