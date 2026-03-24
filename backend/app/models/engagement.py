@@ -123,8 +123,13 @@ class ABTest(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    user = relationship("User", back_populates="ab_tests")
-    content = relationship("Content", back_populates="ab_tests")
+    user = relationship("User", foreign_keys=[user_id], back_populates="ab_tests")
+    content = relationship(
+        "Content",
+        primaryjoin="ABTest.content_id == Content.id",
+        foreign_keys=[content_id],
+        back_populates="ab_tests"
+    )
 
 
 class ViralScore(Base):

@@ -81,5 +81,10 @@ class Content(Base):
     # Relationships
     user = relationship("User", back_populates="content")
     webapp = relationship("WebApp", back_populates="content")
-    ab_tests = relationship("ABTest", back_populates="content")
+    ab_tests = relationship(
+        "ABTest",
+        primaryjoin="ABTest.content_id == Content.id",
+        foreign_keys="[ABTest.content_id]",
+        back_populates="content"
+    )
     viral_score_rel = relationship("ViralScore", back_populates="content", uselist=False)

@@ -60,7 +60,13 @@ class User(Base):
     # New relationships
     api_keys = relationship("UserAPIKey", back_populates="user", cascade="all, delete-orphan")
     integrations = relationship("UserIntegration", back_populates="user", cascade="all, delete-orphan")
-    engagement_replies = relationship("EngagementReply", foreign_keys="[EngagementReply.user_id]", back_populates="user", cascade="all, delete-orphan")
+    engagement_replies = relationship(
+        "EngagementReply",
+        primaryjoin="EngagementReply.user_id == User.id",
+        foreign_keys="[EngagementReply.user_id]",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
     ab_tests = relationship("ABTest", back_populates="user", cascade="all, delete-orphan")
     viral_scores = relationship("ViralScore", back_populates="user", cascade="all, delete-orphan")
     cost_tracking = relationship("CostTracking", back_populates="user", cascade="all, delete-orphan")
