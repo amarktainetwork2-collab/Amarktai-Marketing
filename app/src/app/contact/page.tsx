@@ -42,7 +42,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-[#06070A] text-[#F0F2F8] relative overflow-hidden">
-      <ParticleBackground variant="stars" opacity={0.18} />
+      <ParticleBackground variant="stars" opacity={0.2} />
       <PublicNav />
 
       {/* Hero */}
