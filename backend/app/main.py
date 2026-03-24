@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+import os
 
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -108,6 +110,12 @@ app.include_router(api_router, prefix="/api/v1")
 # (in addition to /api/v1/amarktai/status) for AmarktAI Network pollers that
 # use the short form.
 app.include_router(amarktai_status_router, prefix="/api/amarktai", tags=["integration"])
+
+# Serve uploaded brand media assets at /media/<user_id>/<webapp_id>/<filename>
+# The directory is created on first upload; we create it here to avoid startup errors.
+_media_dir = settings.MEDIA_UPLOAD_DIR or "/tmp/amarktai_media"
+os.makedirs(_media_dir, exist_ok=True)
+app.mount("/media", StaticFiles(directory=_media_dir), name="media")
 
 
 @app.get("/")

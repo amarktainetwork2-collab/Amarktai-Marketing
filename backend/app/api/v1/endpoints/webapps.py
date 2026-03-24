@@ -246,7 +246,6 @@ async def upload_media(
     Returns the stored asset metadata including a relative URL.
     """
     import os
-    import shutil
     from app.core.config import settings
 
     webapp = db.query(WebAppModel).filter(
@@ -270,7 +269,7 @@ async def upload_media(
         raise HTTPException(status_code=413, detail="File exceeds 50 MB limit.")
 
     # Determine storage directory
-    upload_dir = getattr(settings, "MEDIA_UPLOAD_DIR", None) or "/tmp/amarktai_media"
+    upload_dir = settings.MEDIA_UPLOAD_DIR or "/tmp/amarktai_media"
     webapp_dir = os.path.join(upload_dir, current_user.id, webapp_id)
     os.makedirs(webapp_dir, exist_ok=True)
 
@@ -328,7 +327,7 @@ async def delete_media(
 
     # Try to delete the physical file (best-effort)
     try:
-        upload_dir = getattr(settings, "MEDIA_UPLOAD_DIR", None) or "/tmp/amarktai_media"
+        upload_dir = settings.MEDIA_UPLOAD_DIR or "/tmp/amarktai_media"
         ext = os.path.splitext(asset.get("name", ""))[1] or ".bin"
         filename = f"{asset_id}{ext}"
         file_path = os.path.join(upload_dir, current_user.id, webapp_id, filename)

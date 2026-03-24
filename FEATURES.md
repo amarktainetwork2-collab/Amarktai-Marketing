@@ -4,6 +4,25 @@ All features listed below are implemented and available in the current release u
 
 ---
 
+## Business & App Management
+
+### Multi-Business Setup ✅
+Add and manage up to 20 businesses or apps per user account. Each business stores its own name, website URL, description, category, target audience, key features, brand voice, market/location, and content goals. All content generation and scheduling runs in the context of the selected business.
+
+Route: **Dashboard → Businesses** (`/dashboard/webapps`)
+
+### Brand Media Upload ✅
+Upload brand assets (logos, product images, marketing media) directly to a business profile. Accepted formats: JPEG, PNG, GIF, WebP, SVG, MP4, WebM, QuickTime, PDF — up to 50 MB per file. Assets are stored server-side and referenced by AI workflows during content generation.
+
+Route: **Dashboard → Businesses → Edit Business → Brand Media Assets**
+
+### Scraper Source URLs ✅
+Beyond the main website URL, users can specify additional pages to scrape (e.g. product pages, pricing pages, blog). The AI uses all scraped content as context for content generation. Scraping is powered by Firecrawl (primary) with httpx + BeautifulSoup as fallback.
+
+Route: **Dashboard → Businesses → Add / Edit Business → Additional Scraper Source URLs**
+
+---
+
 ## Core AI Features
 
 ### AI Content Generation ✅
