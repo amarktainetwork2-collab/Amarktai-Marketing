@@ -66,6 +66,11 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)) -> TokenRespo
             detail="Password must be at least 8 characters.",
         )
 
+    if len(body.password) > 72:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password must be 72 characters or fewer.",
+        )
     user_id = str(uuid.uuid4())
     user = UserModel(
         id=user_id,

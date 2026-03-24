@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Zap, Shield, TrendingUp, Clock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { PLATFORM_COUNT_PLUS } from '@/lib/platformConstants';
+import ParticleBackground from '@/components/ui/ParticleBackground';
 
 const BENEFITS = [
   { icon: TrendingUp, text: `AI-generated content across ${PLATFORM_COUNT_PLUS} platforms` },
@@ -37,7 +38,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#06070A] flex">
       {/* Left: Branding panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12 relative overflow-hidden">
+        <ParticleBackground variant="network" opacity={0.25} />
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
