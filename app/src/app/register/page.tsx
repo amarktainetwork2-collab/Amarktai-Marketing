@@ -64,14 +64,14 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#06070A] flex">
       {/* Left: Branding panel */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 bg-[#0D0F14] border-r border-[#1E2130] p-12">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
           </div>
           <span className="text-white font-bold text-lg">
             Amarkt<span className="text-blue-500">AI</span> Marketing
           </span>
-        </div>
+        </Link>
 
         <div>
           <motion.div
@@ -126,14 +126,14 @@ export default function RegisterPage() {
           className="w-full max-w-md"
         >
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
+          <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden hover:opacity-90 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-bold text-lg">
               Amarkt<span className="text-blue-500">AI</span> Marketing
             </span>
-          </div>
+          </Link>
 
           <h1 className="text-white font-bold text-3xl mb-2">Create your account</h1>
           <p className="text-[#9AA3B8] mb-8">14-day free trial. No credit card required.</p>
