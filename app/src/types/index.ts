@@ -23,8 +23,20 @@ export interface WebApp {
   brandVoice?: string;
   marketLocation?: string;
   contentGoals?: string;
+  scraperSourceUrls?: string[];
+  scrapedData?: Record<string, unknown> | null;
+  mediaAssets?: MediaAsset[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MediaAsset {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
 }
 
 export type Platform =

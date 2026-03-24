@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 import uuid
 
@@ -216,5 +216,126 @@ async def delete_webapp(
         raise HTTPException(status_code=404, detail="Web app not found")
 
     db.delete(db_webapp)
+    db.commit()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Media upload
+# ---------------------------------------------------------------------------
+
+_ALLOWED_MEDIA_TYPES = {
+    "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+    "video/mp4", "video/webm", "video/quicktime",
+    "application/pdf",
+}
+_MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+
+
+@router.post("/{webapp_id}/media")
+async def upload_media(
+    webapp_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Upload a brand media asset and attach it to the business/app.
+
+    Accepts images, videos, and PDFs up to 50 MB.
+    Files are stored under MEDIA_UPLOAD_DIR (default: /tmp/amarktai_media).
+    Returns the stored asset metadata including a relative URL.
+    """
+    import os
+    from app.core.config import settings
+
+    webapp = db.query(WebAppModel).filter(
+        WebAppModel.id == webapp_id,
+        WebAppModel.user_id == current_user.id,
+    ).first()
+    if not webapp:
+        raise HTTPException(status_code=404, detail="Web app not found")
+
+    # Validate content type
+    content_type = file.content_type or ""
+    if content_type not in _ALLOWED_MEDIA_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{content_type}'. Allowed: images, videos, PDF.",
+        )
+
+    # Read and validate size
+    data = await file.read()
+    if len(data) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 50 MB limit.")
+
+    # Determine storage directory
+    upload_dir = settings.MEDIA_UPLOAD_DIR or "/tmp/amarktai_media"
+    webapp_dir = os.path.join(upload_dir, current_user.id, webapp_id)
+    os.makedirs(webapp_dir, exist_ok=True)
+
+    # Build a unique filename preserving the extension
+    ext = os.path.splitext(file.filename or "")[1] or ".bin"
+    asset_id = str(uuid.uuid4())
+    filename = f"{asset_id}{ext}"
+    file_path = os.path.join(webapp_dir, filename)
+
+    with open(file_path, "wb") as fh:
+        fh.write(data)
+
+    # Build relative URL served via static mount (or direct path for now)
+    relative_url = f"/media/{current_user.id}/{webapp_id}/{filename}"
+
+    # Append to media_assets JSON list
+    asset_meta: dict[str, Any] = {
+        "id": asset_id,
+        "name": file.filename or filename,
+        "url": relative_url,
+        "type": content_type,
+        "size": len(data),
+        "uploaded_at": datetime.utcnow().isoformat(),
+    }
+    current_assets: list = list(webapp.media_assets or [])
+    current_assets.append(asset_meta)
+    webapp.media_assets = current_assets
+    db.commit()
+
+    return {"message": "Upload successful", "asset": asset_meta}
+
+
+@router.delete("/{webapp_id}/media/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_media(
+    webapp_id: str,
+    asset_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """Remove a previously uploaded media asset from the business/app."""
+    import os
+    from app.core.config import settings
+
+    webapp = db.query(WebAppModel).filter(
+        WebAppModel.id == webapp_id,
+        WebAppModel.user_id == current_user.id,
+    ).first()
+    if not webapp:
+        raise HTTPException(status_code=404, detail="Web app not found")
+
+    current_assets: list = list(webapp.media_assets or [])
+    asset = next((a for a in current_assets if a.get("id") == asset_id), None)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    # Try to delete the physical file (best-effort)
+    try:
+        upload_dir = settings.MEDIA_UPLOAD_DIR or "/tmp/amarktai_media"
+        ext = os.path.splitext(asset.get("name", ""))[1] or ".bin"
+        filename = f"{asset_id}{ext}"
+        file_path = os.path.join(upload_dir, current_user.id, webapp_id, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception:
+        pass
+
+    webapp.media_assets = [a for a in current_assets if a.get("id") != asset_id]
     db.commit()
     return None

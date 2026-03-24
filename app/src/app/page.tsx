@@ -141,7 +141,7 @@ export default function LandingPage() {
             {/* Floating metric badges */}
             <div className="flex flex-wrap items-center justify-center gap-3">
               {[
-                { label: '12.4x engagement lift', icon: TrendingUp },
+                { label: 'AI-powered automation', icon: TrendingUp },
                 { label: 'Zero manual effort', icon: CheckCircle },
                 { label: `${PLATFORM_COUNT_LABEL} platforms`, icon: Star },
               ].map((badge) => (
@@ -296,7 +296,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
           >
             <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              The command center for your entire marketing operation
+              Your entire marketing operation, intelligently automated.
             </motion.h2>
             <motion.p variants={fadeUp} className="text-[#9AA3B8] text-lg">
               One unified dashboard. Full visibility. Total control.
@@ -324,14 +324,13 @@ export default function LandingPage() {
             <div className="bg-[#06070A] p-6">
               <div className="grid grid-cols-3 gap-4 mb-6">
                 {[
-                  { label: 'Posts Published', value: '284', change: '+12%' },
-                  { label: 'Engagement Rate', value: '8.4%', change: '+2.1%' },
-                  { label: 'Leads Captured', value: '1,204', change: '+34%' },
+                  { label: 'Posts Published', desc: 'Across all connected platforms' },
+                  { label: 'Platforms Supported', desc: `${PLATFORM_COUNT_LABEL} social channels` },
+                  { label: 'Businesses per Account', desc: 'Up to 20 workspaces' },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-[#0D0F14] border border-[#1E2130] rounded-xl p-4">
-                    <p className="text-[#5A6478] text-xs mb-1">{stat.label}</p>
-                    <p className="text-white font-bold text-xl">{stat.value}</p>
-                    <p className="text-emerald-400 text-xs mt-1">{stat.change} this week</p>
+                    <p className="text-[#5A6478] text-xs mb-2">{stat.label}</p>
+                    <p className="text-[#9AA3B8] text-xs leading-relaxed">{stat.desc}</p>
                   </div>
                 ))}
               </div>

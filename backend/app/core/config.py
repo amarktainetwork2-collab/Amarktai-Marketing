@@ -190,6 +190,12 @@ class Settings(BaseSettings):
     MAX_ENGAGEMENT_REPLIES_PER_DAY: int = 50
     MAX_MEDIA_GENERATIONS_PER_DAY: int = 20
 
+    # ==================== MEDIA UPLOAD ====================
+    # Local filesystem directory for uploaded brand media assets.
+    # In production this should be a persistent volume, e.g. /var/www/media.
+    # Served by FastAPI StaticFiles at the /media path.
+    MEDIA_UPLOAD_DIR: str = "/tmp/amarktai_media"
+
     # ==================== BUSINESS LIMITS ====================
     MAX_BUSINESSES_PER_USER: int = 20  # Max web apps / businesses per account
     

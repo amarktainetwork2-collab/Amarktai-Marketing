@@ -8,6 +8,7 @@
 
 import type {
   WebApp,
+  MediaAsset,
   PlatformConnection,
   Content,
   AnalyticsSummary,
@@ -67,6 +68,9 @@ function mapWebApp(raw: Record<string, unknown>): WebApp {
     brandVoice: (c.brandVoice as string) ?? undefined,
     marketLocation: (c.marketLocation as string) ?? undefined,
     contentGoals: (c.contentGoals as string) ?? undefined,
+    scraperSourceUrls: (c.scraperSourceUrls as string[]) ?? undefined,
+    scrapedData: (c.scrapedData as Record<string, unknown>) ?? null,
+    mediaAssets: (c.mediaAssets as MediaAsset[]) ?? [],
     createdAt: c.createdAt as string,
     updatedAt: (c.updatedAt as string) ?? c.createdAt as string,
   };
@@ -137,6 +141,31 @@ export const webAppApi = {
     }
   },
 
+  update: async (id: string, payload: Partial<WebApp>): Promise<WebApp> => {
+    const body: Record<string, unknown> = {};
+    if (payload.name !== undefined) body.name = payload.name;
+    if (payload.url !== undefined) body.url = payload.url;
+    if (payload.description !== undefined) body.description = payload.description;
+    if (payload.category !== undefined) body.category = payload.category;
+    if (payload.targetAudience !== undefined) body.target_audience = payload.targetAudience;
+    if (payload.keyFeatures !== undefined) body.key_features = payload.keyFeatures;
+    if (payload.logo !== undefined) body.logo = payload.logo;
+    if (payload.isActive !== undefined) body.is_active = payload.isActive;
+    if (payload.brandVoice !== undefined) body.brand_voice = payload.brandVoice;
+    if (payload.marketLocation !== undefined) body.market_location = payload.marketLocation;
+    if (payload.contentGoals !== undefined) body.content_goals = payload.contentGoals;
+    if (payload.scraperSourceUrls !== undefined) body.scraper_source_urls = payload.scraperSourceUrls;
+    const data = await apiFetch<Record<string, unknown>>(`/webapps/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+    return mapWebApp(data);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiFetch<void>(`/webapps/${id}`, { method: 'DELETE' });
+  },
+
   create: async (
     payload: Omit<WebApp, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
   ): Promise<WebApp> => {
@@ -152,6 +181,7 @@ export const webAppApi = {
       brand_voice: payload.brandVoice ?? null,
       market_location: payload.marketLocation ?? null,
       content_goals: payload.contentGoals ?? null,
+      scraper_source_urls: payload.scraperSourceUrls ?? null,
     };
     const data = await apiFetch<Record<string, unknown>>('/webapps/', {
       method: 'POST',
@@ -160,28 +190,33 @@ export const webAppApi = {
     return mapWebApp(data);
   },
 
-  update: async (id: string, payload: Partial<WebApp>): Promise<WebApp> => {
-    const body: Record<string, unknown> = {};
-    if (payload.name !== undefined) body.name = payload.name;
-    if (payload.url !== undefined) body.url = payload.url;
-    if (payload.description !== undefined) body.description = payload.description;
-    if (payload.category !== undefined) body.category = payload.category;
-    if (payload.targetAudience !== undefined) body.target_audience = payload.targetAudience;
-    if (payload.keyFeatures !== undefined) body.key_features = payload.keyFeatures;
-    if (payload.logo !== undefined) body.logo = payload.logo;
-    if (payload.isActive !== undefined) body.is_active = payload.isActive;
-    if (payload.brandVoice !== undefined) body.brand_voice = payload.brandVoice;
-    if (payload.marketLocation !== undefined) body.market_location = payload.marketLocation;
-    if (payload.contentGoals !== undefined) body.content_goals = payload.contentGoals;
-    const data = await apiFetch<Record<string, unknown>>(`/webapps/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
+  uploadMedia: async (webAppId: string, file: File): Promise<MediaAsset> => {
+    const token = getStoredToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`/api/v1/webapps/${webAppId}/media`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
     });
-    return mapWebApp(data);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as { detail?: string }).detail || 'Upload failed');
+    }
+    const json = await res.json() as { asset: Record<string, unknown> };
+    const a = toCamel(json.asset);
+    return {
+      id: a.id as string,
+      name: a.name as string,
+      url: a.url as string,
+      type: a.type as string,
+      size: a.size as number,
+      uploadedAt: a.uploadedAt as string,
+    };
   },
 
-  delete: async (id: string): Promise<void> => {
-    await apiFetch<void>(`/webapps/${id}`, { method: 'DELETE' });
+  deleteMedia: async (webAppId: string, assetId: string): Promise<void> => {
+    await apiFetch<void>(`/webapps/${webAppId}/media/${assetId}`, { method: 'DELETE' });
   },
 };
 
@@ -202,11 +237,10 @@ export const platformApi = {
     }
   },
 
-  connect: async (platform: Platform, accountName: string): Promise<PlatformConnection> => {
-    const data = await apiFetch<Record<string, unknown>>(
-      `/platforms/${platform}/connect?account_name=${encodeURIComponent(accountName)}`,
-      { method: 'POST' }
-    );
+  connect: async (platform: Platform, accountName: string, accountId?: string): Promise<PlatformConnection> => {
+    let url = `/platforms/${platform}/connect?account_name=${encodeURIComponent(accountName)}`;
+    if (accountId) url += `&account_id=${encodeURIComponent(accountId)}`;
+    const data = await apiFetch<Record<string, unknown>>(url, { method: 'POST' });
     return mapPlatform(data);
   },
 

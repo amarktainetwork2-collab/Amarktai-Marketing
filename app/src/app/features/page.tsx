@@ -55,8 +55,7 @@ const FEATURE_GROUPS = [
     label: 'Engagement & Leads',
     color: 'emerald',
     features: [
-      { icon: MessageCircle, title: 'Engagement Engine', desc: 'Auto-reply to comments, manage DMs, and keep your audience engaged around the clock.' },
-      { icon: MessageCircle, title: 'Comment Auto-Reply', desc: 'AI responds intelligently to comments in your brand voice — scaling human-like engagement.' },
+      { icon: MessageCircle, title: 'Engagement Engine', desc: 'Auto-reply to comments, manage DMs, and keep your audience engaged around the clock — AI responds in your brand voice.' },
       { icon: Users, title: 'Lead Capture', desc: 'Convert social followers into qualified leads with automated CTA flows and form capture.' },
       { icon: Users, title: 'Lead Management', desc: 'Track, score, and nurture leads generated from your social content through a built-in CRM.' },
     ],

@@ -76,18 +76,11 @@ async def create_api_key(
     """Add a new API key for the current user."""
     # Validate key name
     valid_keys = [
-        "GROQ_API_KEY",
-        "HUGGINGFACE_TOKEN",
+        "FIRECRAWL_API_KEY",
         "QWEN_API_KEY",
-        "GOOGLE_GEMINI_API_KEY",
-        "LEONARDO_API_KEY",
-        "ELEVENLABS_API_KEY",
+        "HUGGINGFACE_TOKEN",
         "OPENAI_API_KEY",
-        "REPLICATE_API_TOKEN",
-        "FAL_AI_KEY",
-        "SILICONFLOW_API_KEY",
-        "COQUI_API_KEY",
-        "PLAYHT_API_KEY",
+        "GEMINI_API_KEY",
     ]
     
     if api_key.key_name not in valid_keys:
