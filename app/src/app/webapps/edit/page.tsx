@@ -54,7 +54,7 @@ export default function EditWebAppPage() {
             category: app.category,
             targetAudience: app.targetAudience,
             keyFeatures: app.keyFeatures.length > 0 ? app.keyFeatures : [''],
-            brandVoice: (app as unknown as { brandVoice?: string }).brandVoice ?? '',
+            brandVoice: app.brandVoice ?? '',
           });
         } else {
           toast.error('Web app not found');
@@ -80,7 +80,7 @@ export default function EditWebAppPage() {
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
         brandVoice: formData.brandVoice.trim() || undefined,
-      } as Parameters<typeof webAppApi.update>[1]);
+      });
       toast.success('Web app updated successfully');
       navigate('/dashboard/webapps');
     } catch (error) {
@@ -242,6 +242,20 @@ export default function EditWebAppPage() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Feature
               </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brandVoice">Brand Voice &amp; Tone</Label>
+              <Textarea
+                id="brandVoice"
+                placeholder="Describe your brand's voice and tone. e.g. 'Professional yet approachable, uses plain language, avoids jargon, energetic and motivating.'"
+                value={formData.brandVoice}
+                onChange={(e) => setFormData({ ...formData, brandVoice: e.target.value })}
+                rows={3}
+              />
+              <p className="text-xs text-gray-500">
+                This guides AI content generation to match your brand personality.
+              </p>
             </div>
 
             <div className="flex items-center justify-end space-x-4 pt-4">

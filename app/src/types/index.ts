@@ -20,6 +20,7 @@ export interface WebApp {
   keyFeatures: string[];
   logo?: string;
   isActive: boolean;
+  brandVoice?: string;
   createdAt: string;
   updatedAt: string;
 }
