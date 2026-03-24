@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Calendar, TrendingUp, Users, BarChart2, GitBranch, CheckCircle, Star } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
+import { PLATFORM_COUNT_PLUS, PLATFORM_COUNT_LABEL } from '@/lib/platformConstants';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -77,7 +78,7 @@ const STEPS = [
 ];
 
 const STATS = [
-  { value: '15+', label: 'Platforms Supported' },
+  { value: PLATFORM_COUNT_PLUS, label: 'Platforms Supported' },
   { value: '10+', label: 'AI Power Tools' },
   { value: '24/7', label: 'Autonomous Operation' },
 ];
@@ -105,7 +106,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 rounded-full px-4 py-1.5 text-blue-400 text-sm font-medium mb-8">
               <Zap className="w-3.5 h-3.5" />
-              Powered by Amarkt<span className="text-blue-300">AI</span> Network
+              Powered by <span className="whitespace-nowrap">Amarkt<span className="text-blue-300">AI</span></span> Network
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6">
@@ -116,7 +117,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-[#9AA3B8] max-w-2xl mx-auto mb-10 leading-relaxed">
-              Amarkt<span className="text-blue-500">AI</span> generates, schedules, and publishes high-converting content
+              <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> generates, schedules, and publishes high-converting content
               across every platform — powered by AI that never stops.
             </p>
 
@@ -142,7 +143,7 @@ export default function LandingPage() {
               {[
                 { label: '12.4x engagement lift', icon: TrendingUp },
                 { label: 'Zero manual effort', icon: CheckCircle },
-                { label: '15 platforms', icon: Star },
+                { label: `${PLATFORM_COUNT_LABEL} platforms`, icon: Star },
               ].map((badge) => (
                 <div
                   key={badge.label}
@@ -165,7 +166,7 @@ export default function LandingPage() {
             "The brands that win in the next decade won't be the ones with the biggest teams — they'll be the ones with the smartest automation."
           </blockquote>
           <p className="text-[#5A6478] text-sm">
-            Amarkt<span className="text-blue-500">AI</span> Marketing — built to give every business unfair AI leverage.
+            <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing — built to give every business unfair AI leverage.
           </p>
         </div>
       </section>

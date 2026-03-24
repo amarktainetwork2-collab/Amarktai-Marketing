@@ -42,7 +42,7 @@ export default function LoginPage() {
             <Zap className="w-4 h-4 text-white" />
           </div>
           <span className="text-white font-bold text-lg">
-            Amarkt<span className="text-blue-500">AI</span> Marketing
+            <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
           </span>
         </Link>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-bold text-lg">
-              Amarkt<span className="text-blue-500">AI</span> Marketing
+              <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
             </span>
           </Link>
 

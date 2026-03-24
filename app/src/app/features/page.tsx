@@ -90,7 +90,7 @@ export default function FeaturesPage() {
             Everything you need to dominate your market
           </motion.h1>
           <motion.p variants={fadeUp} className="text-[#9AA3B8] text-xl max-w-2xl mx-auto mb-10">
-            Amarkt<span className="text-blue-500">AI</span> bundles the entire marketing stack into one autonomous platform — from creation to conversion.
+            <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> bundles the entire marketing stack into one autonomous platform — from creation to conversion.
           </motion.p>
           <motion.div variants={fadeUp}>
             <Link

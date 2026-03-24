@@ -78,7 +78,7 @@ const FAQ = [
   },
   {
     q: 'What AI powers the platform?',
-    a: 'AmarktAI Marketing is powered by the Amarktai Network AI infrastructure — a multi-model system optimized for marketing content generation at scale. You can optionally connect your own API keys in settings for additional providers.',
+    a: 'AmarktAI Marketing is powered by the AmarktAI Network AI infrastructure — a multi-model system optimized for marketing content generation at scale. You can optionally connect your own API keys in settings for additional providers.',
   },
   {
     q: 'What platforms are supported?',
@@ -86,7 +86,7 @@ const FAQ = [
   },
   {
     q: 'Is there a free trial?',
-    a: 'Yes. All plans include a 14-day free trial — no credit card required to start.',
+    a: 'Yes. All plans include a 7-day free trial — no credit card required to start.',
   },
 ];
 
@@ -260,7 +260,7 @@ export default function PricingPage() {
           viewport={{ once: true }}
         >
           <motion.h2 variants={fadeUp} className="text-3xl font-bold text-white mb-4">
-            Start your 14-day free trial
+            Start your 7-day free trial
           </motion.h2>
           <motion.p variants={fadeUp} className="text-[#9AA3B8] mb-8">
             No credit card required. Cancel anytime.

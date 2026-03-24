@@ -185,7 +185,7 @@ export default function ContactPage() {
                 <Calendar className="w-5 h-5" />
               </div>
               <h3 className="text-white font-semibold mb-2">Book a Demo</h3>
-              <p className="text-[#9AA3B8] text-sm mb-4">See Amarkt<span className="text-blue-500">AI</span> in action with a live walkthrough tailored to your needs.</p>
+              <p className="text-[#9AA3B8] text-sm mb-4">See <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> in action with a live walkthrough tailored to your needs.</p>
               <button className="bg-[#141720] hover:bg-[#1E2130] border border-[#252A3A] text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all">
                 Schedule a call →
               </button>
@@ -197,7 +197,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-start gap-3 px-2">
               <Users className="w-4 h-4 text-[#5A6478] mt-0.5 flex-shrink-0" />
-              <p className="text-[#5A6478] text-sm">Join 500+ marketing teams already using Amarkt<span className="text-blue-400">AI</span>.</p>
+              <p className="text-[#5A6478] text-sm">Join 500+ marketing teams already using <span className="whitespace-nowrap">Amarkt<span className="text-blue-400">AI</span></span>.</p>
             </div>
           </motion.div>
         </div>

@@ -134,7 +134,7 @@ export default function TermsPage() {
       {/* Footer */}
       <footer className="px-4 sm:px-6 lg:px-8 py-10" style={{ borderTop: `1px solid ${BORDER}` }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm" style={{ color: MUTED }}>
-          <p>© {new Date().getFullYear()} AmarktAI Marketing. Part of AmarktAI Network.</p>
+          <p>© {new Date().getFullYear()} AmarktAI Marketing. Part of <a href="https://amarktai.com" target="_blank" rel="noopener noreferrer" style={{ color: ACCENT }}>AmarktAI Network</a>.</p>
           <div className="flex items-center gap-6">
             <Link to="/privacy" className="hover:underline" style={{ color: MUTED }}>Privacy</Link>
             <Link to="/terms" className="hover:underline" style={{ color: MUTED }}>Terms</Link>
