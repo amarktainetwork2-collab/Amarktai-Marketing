@@ -21,6 +21,8 @@ export interface WebApp {
   logo?: string;
   isActive: boolean;
   brandVoice?: string;
+  marketLocation?: string;
+  contentGoals?: string;
   createdAt: string;
   updatedAt: string;
 }

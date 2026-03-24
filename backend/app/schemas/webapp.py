@@ -12,6 +12,8 @@ class WebAppBase(BaseModel):
     logo: Optional[str] = None
     is_active: bool = True
     brand_voice: Optional[str] = None
+    market_location: Optional[str] = None
+    content_goals: Optional[str] = None
 
 class WebAppCreate(WebAppBase):
     pass
@@ -26,6 +28,8 @@ class WebAppUpdate(BaseModel):
     logo: Optional[str] = None
     is_active: Optional[bool] = None
     brand_voice: Optional[str] = None
+    market_location: Optional[str] = None
+    content_goals: Optional[str] = None
 
 class WebApp(WebAppBase):
     id: str

@@ -37,6 +37,8 @@ export default function EditWebAppPage() {
     targetAudience: '',
     keyFeatures: [''] as string[],
     brandVoice: '',
+    marketLocation: '',
+    contentGoals: '',
   });
 
   useEffect(() => {
@@ -55,6 +57,8 @@ export default function EditWebAppPage() {
             targetAudience: app.targetAudience,
             keyFeatures: app.keyFeatures.length > 0 ? app.keyFeatures : [''],
             brandVoice: app.brandVoice ?? '',
+            marketLocation: app.marketLocation ?? '',
+            contentGoals: app.contentGoals ?? '',
           });
         } else {
           toast.error('Web app not found');
@@ -80,6 +84,8 @@ export default function EditWebAppPage() {
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
         brandVoice: formData.brandVoice.trim() || undefined,
+        marketLocation: formData.marketLocation.trim() || undefined,
+        contentGoals: formData.contentGoals.trim() || undefined,
       });
       toast.success('Web app updated successfully');
       navigate('/dashboard/webapps');
@@ -255,6 +261,33 @@ export default function EditWebAppPage() {
               />
               <p className="text-xs text-gray-500">
                 This guides AI content generation to match your brand personality.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="marketLocation">Market / Location</Label>
+              <Input
+                id="marketLocation"
+                placeholder="e.g., United Kingdom, Global, US - New York"
+                value={formData.marketLocation}
+                onChange={(e) => setFormData({ ...formData, marketLocation: e.target.value })}
+              />
+              <p className="text-xs text-gray-500">
+                The geographic market or region you are targeting.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contentGoals">Content Goals</Label>
+              <Textarea
+                id="contentGoals"
+                placeholder="e.g., Drive app signups, build brand awareness, grow newsletter subscribers"
+                value={formData.contentGoals}
+                onChange={(e) => setFormData({ ...formData, contentGoals: e.target.value })}
+                rows={3}
+              />
+              <p className="text-xs text-gray-500">
+                What do you want your content to achieve? This shapes AI generation priorities.
               </p>
             </div>
 

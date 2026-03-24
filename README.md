@@ -100,8 +100,8 @@ npm run dev                 # http://localhost:5173
 | `FIRECRAWL_API_KEY` | ⭐       | Recommended for competitor scraping and web data             |
 | `OPENAI_API_KEY`    | ⬜       | Optional AI enhancement                                      |
 | `GEMINI_API_KEY`    | ⬜       | Optional AI enhancement                                      |
-| `SENDGRID_API_KEY`  | ⭐       | Recommended for transactional email                          |
-| `STRIPE_SECRET_KEY` | ⭐       | Recommended for subscription billing                         |
+| `SENDGRID_API_KEY`  | ⬜       | Deferred — SMTP email not required for beta                  |
+| `STRIPE_SECRET_KEY` | ⬜       | Deferred — Payments not integrated in beta                   |
 | `ADMIN_EMAIL`       | ✅       | Default admin account email address                          |
 | `CORS_ORIGINS`      | ✅       | Comma-separated allowed frontend origins                     |
 

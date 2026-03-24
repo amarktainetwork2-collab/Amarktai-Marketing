@@ -53,18 +53,18 @@ All platforms use OAuth 2.0. Store tokens via the platform credentials settings 
 
 ## Email
 
-| Integration | Env Variable        | Status        | Notes                                     |
-|-------------|---------------------|---------------|-------------------------------------------|
-| SendGrid    | `SENDGRID_API_KEY`  | ⭐ Recommended| Transactional email (verification, alerts)|
-| Mailgun     | `MAILGUN_API_KEY`   | ⬜ Optional   | Alternative transactional email provider  |
+| Integration | Env Variable        | Status                  | Notes                                                             |
+|-------------|---------------------|-------------------------|-------------------------------------------------------------------|
+| SendGrid    | `SENDGRID_API_KEY`  | ⬜ Deferred (beta)      | Transactional email — will be configured post-beta                |
+| Mailgun     | `MAILGUN_API_KEY`   | ⬜ Optional             | Alternative transactional email provider                          |
 
 ---
 
 ## Payments
 
-| Integration | Env Variable                                            | Status        | Notes                          |
-|-------------|----------------------------------------------------------|---------------|--------------------------------|
-| Stripe      | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | ⭐ Recommended | Subscription billing and metered usage |
+| Integration | Env Variable                                                             | Status                  | Notes                                              |
+|-------------|--------------------------------------------------------------------------|-------------------------|----------------------------------------------------|
+| Stripe      | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`  | ⬜ Deferred (beta)      | Subscription billing — not integrated in beta      |
 
 ---
 

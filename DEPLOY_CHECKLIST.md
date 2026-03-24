@@ -51,8 +51,8 @@ Complete every item before going live. Items marked ✅ are hard requirements.
 
 ## Optional Integrations
 
-- [ ] `SENDGRID_API_KEY` set (transactional email, recommended)
-- [ ] `STRIPE_SECRET_KEY` set (subscription billing, recommended)
+- [ ] `SENDGRID_API_KEY` — ⬜ Deferred (beta): transactional email not required for beta launch
+- [ ] `STRIPE_SECRET_KEY` — ⬜ Deferred (beta): subscription billing not integrated in beta
 - [ ] `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_S3_BUCKET` set (media storage, optional)
 
 ---

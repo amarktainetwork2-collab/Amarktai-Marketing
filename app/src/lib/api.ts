@@ -65,6 +65,8 @@ function mapWebApp(raw: Record<string, unknown>): WebApp {
     logo: c.logo as string | undefined,
     isActive: c.isActive as boolean,
     brandVoice: (c.brandVoice as string) ?? undefined,
+    marketLocation: (c.marketLocation as string) ?? undefined,
+    contentGoals: (c.contentGoals as string) ?? undefined,
     createdAt: c.createdAt as string,
     updatedAt: (c.updatedAt as string) ?? c.createdAt as string,
   };
@@ -148,6 +150,8 @@ export const webAppApi = {
       logo: payload.logo,
       is_active: payload.isActive,
       brand_voice: payload.brandVoice ?? null,
+      market_location: payload.marketLocation ?? null,
+      content_goals: payload.contentGoals ?? null,
     };
     const data = await apiFetch<Record<string, unknown>>('/webapps/', {
       method: 'POST',
@@ -167,6 +171,8 @@ export const webAppApi = {
     if (payload.logo !== undefined) body.logo = payload.logo;
     if (payload.isActive !== undefined) body.is_active = payload.isActive;
     if (payload.brandVoice !== undefined) body.brand_voice = payload.brandVoice;
+    if (payload.marketLocation !== undefined) body.market_location = payload.marketLocation;
+    if (payload.contentGoals !== undefined) body.content_goals = payload.contentGoals;
     const data = await apiFetch<Record<string, unknown>>(`/webapps/${id}`, {
       method: 'PUT',
       body: JSON.stringify(body),
