@@ -34,6 +34,8 @@ export default function NewWebAppPage() {
     targetAudience: '',
     keyFeatures: [''] as string[],
     brandVoice: '',
+    marketLocation: '',
+    contentGoals: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +47,8 @@ export default function NewWebAppPage() {
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
         brandVoice: formData.brandVoice.trim() || undefined,
+        marketLocation: formData.marketLocation.trim() || undefined,
+        contentGoals: formData.contentGoals.trim() || undefined,
         isActive: true,
       });
 
@@ -239,7 +243,36 @@ export default function NewWebAppPage() {
               </p>
             </motion.div>
 
-            <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
+            <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show" className="space-y-2">
+              <Label htmlFor="marketLocation">Market / Location</Label>
+              <Input
+                id="marketLocation"
+                placeholder="e.g., United Kingdom, Global, US - New York"
+                value={formData.marketLocation}
+                onChange={(e) => setFormData({ ...formData, marketLocation: e.target.value })}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-gray-500">
+                The geographic market or region you are targeting.
+              </p>
+            </motion.div>
+
+            <motion.div custom={8} variants={fadeUp} initial="hidden" animate="show" className="space-y-2">
+              <Label htmlFor="contentGoals">Content Goals</Label>
+              <Textarea
+                id="contentGoals"
+                placeholder="e.g., Drive app signups, build brand awareness, grow newsletter subscribers"
+                value={formData.contentGoals}
+                onChange={(e) => setFormData({ ...formData, contentGoals: e.target.value })}
+                rows={3}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-gray-500">
+                What do you want your content to achieve? This shapes AI generation priorities.
+              </p>
+            </motion.div>
+
+            <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate('/dashboard/webapps')} disabled={isSubmitting}>
                 Cancel
               </Button>

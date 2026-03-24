@@ -161,7 +161,7 @@ export default function DashboardLayout() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-medium truncate">{user?.name ?? user?.email ?? 'User'}</p>
-            <p className="text-[#5A6478] text-xs">Pro Plan</p>
+            <p className="text-[#5A6478] text-xs">Beta</p>
           </div>
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function DashboardLayout() {
                     className="absolute right-0 top-full mt-1 w-52 bg-[#0D0F14] border border-[#252A3A] rounded-xl shadow-xl z-50 overflow-hidden"
                   >
                     <div className="p-3 border-b border-[#1E2130]">
-                      <p className="text-white text-sm font-medium truncate">{user?.name ?? 'User'}</p>
+                      <p className="text-white text-sm font-medium truncate">{user?.name ?? user?.email ?? 'User'}</p>
                       <p className="text-[#5A6478] text-xs truncate">{user?.email}</p>
                     </div>
                     <div className="p-1">

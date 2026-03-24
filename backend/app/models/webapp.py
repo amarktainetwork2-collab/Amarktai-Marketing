@@ -22,6 +22,10 @@ class WebApp(Base):
     is_active = Column(Boolean, default=True)
     # Brand configuration supplied by the user
     brand_voice = Column(Text, nullable=True)
+    # Market / geographic focus for the business (e.g. "United Kingdom", "Global")
+    market_location = Column(String(255), nullable=True)
+    # Primary content goals (e.g. "Drive app signups, build brand awareness")
+    content_goals = Column(Text, nullable=True)
     # Cached scrape results – refreshed nightly and before content generation
     scraped_data = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

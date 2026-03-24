@@ -107,3 +107,17 @@ The platform uses a tiered provider approach to maximise uptime and cost efficie
 | 5        | Gemini         | Optional enhancement (Gemini class)   |
 
 If a higher-priority provider fails or returns an error, the system automatically falls back to the next available provider. Only Qwen and HuggingFace keys are required for the platform to be fully operational.
+
+---
+
+## Beta Status
+
+The following limitations apply to the current beta release:
+
+| Area                       | Status                  | Detail                                                                                    |
+|----------------------------|-------------------------|-------------------------------------------------------------------------------------------|
+| Stripe payments            | ⬜ Deferred (beta)      | Subscription billing is not integrated. No payment flows exist in this release.           |
+| SMTP / transactional email | ⬜ Deferred (beta)      | Email delivery (SendGrid, Mailgun, etc.) is not configured. Will be added post-beta.       |
+| AmarktAI Network brain     | 🔮 Future               | The internal AmarktAI super brain is under development. Current generation stack is Firecrawl + Qwen + HuggingFace (+ optional OpenAI/Gemini). |
+| Platform OAuth             | ⚙️ Requires credentials | OAuth flows are wired. Each platform requires its own API credentials in `backend/.env`.  |
+
