@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Linkedin, Twitter, Github } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export default function PublicFooter() {
   const year = new Date().getFullYear();
@@ -21,17 +21,6 @@ export default function PublicFooter() {
             <p className="text-[#5A6478] text-sm leading-relaxed">
               Autonomous AI marketing at scale.
             </p>
-            <div className="flex items-center gap-3 mt-6">
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
-                <Linkedin className="w-4 h-4" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-[#141720] border border-[#252A3A] flex items-center justify-center text-[#5A6478] hover:text-white hover:border-[#2563EB] transition-all">
-                <Github className="w-4 h-4" />
-              </a>
-            </div>
           </div>
 
           {/* Product */}
