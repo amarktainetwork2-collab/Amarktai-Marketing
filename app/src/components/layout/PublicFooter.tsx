@@ -15,7 +15,7 @@ export default function PublicFooter() {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <span className="text-white font-bold text-lg">
-                Amarkt<span className="text-blue-500">AI</span> Marketing
+                <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
               </span>
             </Link>
             <p className="text-[#5A6478] text-sm leading-relaxed">
@@ -89,7 +89,7 @@ export default function PublicFooter() {
         {/* Bottom bar */}
         <div className="border-t border-[#1E2130] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#5A6478] text-sm">
-            © {year} Amarkt<span className="text-blue-500">AI</span> Marketing. All rights reserved.
+            © {year} <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing. All rights reserved.
           </p>
           <p className="text-[#5A6478] text-xs">
             Part of{' '}
@@ -99,7 +99,7 @@ export default function PublicFooter() {
               rel="noopener noreferrer"
               className="text-blue-500 hover:text-blue-400 transition-colors"
             >
-              Amarkt<span className="text-blue-300">AI</span> Network
+              <span className="whitespace-nowrap">Amarkt<span className="text-blue-300">AI</span></span> Network
             </a>
           </p>
         </div>

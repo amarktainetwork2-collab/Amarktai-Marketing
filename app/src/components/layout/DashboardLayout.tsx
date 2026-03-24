@@ -122,7 +122,7 @@ export default function DashboardLayout() {
             <Zap className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="text-white font-bold text-sm">
-            Amarkt<span className="text-blue-500">AI</span> Marketing
+            <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
           </span>
         </Link>
         {onClose && (

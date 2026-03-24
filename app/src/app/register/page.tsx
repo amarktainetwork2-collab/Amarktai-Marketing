@@ -69,7 +69,7 @@ export default function RegisterPage() {
             <Zap className="w-4 h-4 text-white" />
           </div>
           <span className="text-white font-bold text-lg">
-            Amarkt<span className="text-blue-500">AI</span> Marketing
+            <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
           </span>
         </Link>
 
@@ -131,12 +131,12 @@ export default function RegisterPage() {
               <Zap className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-bold text-lg">
-              Amarkt<span className="text-blue-500">AI</span> Marketing
+              <span className="whitespace-nowrap">Amarkt<span className="text-blue-500">AI</span></span> Marketing
             </span>
           </Link>
 
           <h1 className="text-white font-bold text-3xl mb-2">Create your account</h1>
-          <p className="text-[#9AA3B8] mb-8">14-day free trial. No credit card required.</p>
+          <p className="text-[#9AA3B8] mb-8">7-day free trial. No credit card required.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
