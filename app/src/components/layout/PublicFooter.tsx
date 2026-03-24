@@ -10,14 +10,14 @@ export default function PublicFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+            <Link to="/" className="flex items-center gap-2 mb-4 hover:opacity-90 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <span className="text-white font-bold text-lg">
                 Amarkt<span className="text-blue-500">AI</span> Marketing
               </span>
-            </div>
+            </Link>
             <p className="text-[#5A6478] text-sm leading-relaxed">
               Autonomous AI marketing at scale.
             </p>

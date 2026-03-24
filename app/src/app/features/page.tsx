@@ -76,7 +76,7 @@ export default function FeaturesPage() {
 
       {/* Hero */}
       <section className="relative py-24 px-4 sm:px-6 text-center overflow-hidden">
-        <ParticleBackground variant="stars" opacity={0.35} className="z-0" />
+        <ParticleBackground variant="stars" opacity={0.3} className="z-0" />
         <motion.div
           variants={stagger}
           initial="hidden"
