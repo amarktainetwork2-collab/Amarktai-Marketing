@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Eye, Heart, MousePointer, Download, ArrowUpRight, ArrowDownRight, Flame, Sparkles } from 'lucide-react';
+import { TrendingUp, Eye, Heart, MousePointer, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalyticsSummary } from '@/types';
 import { analyticsApi } from '@/lib/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { ViralPredictor } from '@/components/dashboard/ViralPredictor';
-import { AIInsightsFeed } from '@/components/dashboard/AIInsightsFeed';
 
 const platformColors: Record<string, string> = {
   youtube: '#FF0000',
@@ -43,8 +41,6 @@ export default function AnalyticsPage() {
     {
       title: 'Total Posts',
       value: analytics?.totalPosts || 0,
-      change: '+12%',
-      trend: 'up',
       icon: TrendingUp,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -52,8 +48,6 @@ export default function AnalyticsPage() {
     {
       title: 'Total Views',
       value: (analytics?.totalViews ?? 0).toLocaleString(),
-      change: '+28%',
-      trend: 'up',
       icon: Eye,
       color: 'text-violet-600',
       bgColor: 'bg-violet-50',
@@ -61,8 +55,6 @@ export default function AnalyticsPage() {
     {
       title: 'Total Engagement',
       value: (analytics?.totalEngagement ?? 0).toLocaleString(),
-      change: '+15%',
-      trend: 'up',
       icon: Heart,
       color: 'text-pink-600',
       bgColor: 'bg-pink-50',
@@ -70,8 +62,6 @@ export default function AnalyticsPage() {
     {
       title: 'Average CTR',
       value: `${analytics?.avgCtr || 0}%`,
-      change: '+5%',
-      trend: 'up',
       icon: MousePointer,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -129,17 +119,6 @@ export default function AnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-500">{stat.title}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  <div className="flex items-center mt-1">
-                    {stat.trend === 'up' ? (
-                      <ArrowUpRight className="w-4 h-4 text-green-500 mr-1" />
-                    ) : (
-                      <ArrowDownRight className="w-4 h-4 text-red-500 mr-1" />
-                    )}
-                    <span className={`text-sm ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                      {stat.change}
-                    </span>
-                    <span className="text-sm text-gray-400 ml-1">vs last period</span>
-                  </div>
                 </div>
                 <div className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -156,14 +135,6 @@ export default function AnalyticsPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="platforms">Platforms</TabsTrigger>
           <TabsTrigger value="engagement">Engagement</TabsTrigger>
-          <TabsTrigger value="viral">
-            <Flame className="w-4 h-4 mr-1" />
-            Viral Predictor
-          </TabsTrigger>
-          <TabsTrigger value="insights">
-            <Sparkles className="w-4 h-4 mr-1" />
-            AI Insights
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -329,14 +300,6 @@ export default function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="viral">
-          <ViralPredictor />
-        </TabsContent>
-
-        <TabsContent value="insights">
-          <AIInsightsFeed />
         </TabsContent>
       </Tabs>
     </div>

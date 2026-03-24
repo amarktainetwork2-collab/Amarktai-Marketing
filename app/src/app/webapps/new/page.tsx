@@ -33,6 +33,7 @@ export default function NewWebAppPage() {
     category: '',
     targetAudience: '',
     keyFeatures: [''] as string[],
+    brandVoice: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,6 +44,7 @@ export default function NewWebAppPage() {
       await webAppApi.create({
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
+        brandVoice: formData.brandVoice.trim() || undefined,
         isActive: true,
       });
 
@@ -222,7 +224,22 @@ export default function NewWebAppPage() {
               </Button>
             </motion.div>
 
-            <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
+            <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show" className="space-y-2">
+              <Label htmlFor="brandVoice">Brand Voice &amp; Tone</Label>
+              <Textarea
+                id="brandVoice"
+                placeholder="Describe your brand's voice and tone. e.g. 'Professional yet approachable, uses plain language, avoids jargon, energetic and motivating.'"
+                value={formData.brandVoice}
+                onChange={(e) => setFormData({ ...formData, brandVoice: e.target.value })}
+                rows={3}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-gray-500">
+                This guides AI content generation to match your brand personality.
+              </p>
+            </motion.div>
+
+            <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate('/dashboard/webapps')} disabled={isSubmitting}>
                 Cancel
               </Button>

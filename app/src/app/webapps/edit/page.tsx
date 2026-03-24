@@ -36,6 +36,7 @@ export default function EditWebAppPage() {
     category: '',
     targetAudience: '',
     keyFeatures: [''] as string[],
+    brandVoice: '',
   });
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function EditWebAppPage() {
             category: app.category,
             targetAudience: app.targetAudience,
             keyFeatures: app.keyFeatures.length > 0 ? app.keyFeatures : [''],
+            brandVoice: (app as unknown as { brandVoice?: string }).brandVoice ?? '',
           });
         } else {
           toast.error('Web app not found');
@@ -77,7 +79,8 @@ export default function EditWebAppPage() {
       await webAppApi.update(id, {
         ...formData,
         keyFeatures: formData.keyFeatures.filter(f => f.trim() !== ''),
-      });
+        brandVoice: formData.brandVoice.trim() || undefined,
+      } as Parameters<typeof webAppApi.update>[1]);
       toast.success('Web app updated successfully');
       navigate('/dashboard/webapps');
     } catch (error) {

@@ -417,22 +417,6 @@ export function SmartScheduler() {
             </CardContent>
           </Card>
 
-          {/* AI Insights */}
-          <Card className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-500/30">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-slate-200 mb-1">AI Insight</h4>
-                  <p className="text-sm text-slate-400">
-                    Your audience is most active between 6-8 PM. Posting during these hours could increase engagement by up to 34%.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </motion.div>
       </div>
     </div>

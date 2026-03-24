@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
-    remix, tools, leads, blog, groups,
+    remix, tools, leads, groups,
     amarktai_status, dashboard, settings, contact,
 )
 
@@ -32,9 +32,6 @@ api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 # Power Tools (all 10 add-ons)
 api_router.include_router(remix.router, prefix="/remix", tags=["tools"])
 api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
-
-# Blog Post Generator
-api_router.include_router(blog.router, prefix="/blog", tags=["blog"])
 
 # Dashboard feature endpoints (insights, scheduler, predictions, calendar, competitors)
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
