@@ -20,6 +20,8 @@ class WebApp(Base):
     key_features = Column(JSON, default=list)
     logo = Column(String(512), nullable=True)
     is_active = Column(Boolean, default=True)
+    # Brand configuration supplied by the user
+    brand_voice = Column(Text, nullable=True)
     # Cached scrape results – refreshed nightly and before content generation
     scraped_data = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

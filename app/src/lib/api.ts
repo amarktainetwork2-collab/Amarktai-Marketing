@@ -64,6 +64,7 @@ function mapWebApp(raw: Record<string, unknown>): WebApp {
     keyFeatures: (c.keyFeatures as string[]) ?? [],
     logo: c.logo as string | undefined,
     isActive: c.isActive as boolean,
+    brandVoice: (c.brandVoice as string) ?? undefined,
     createdAt: c.createdAt as string,
     updatedAt: (c.updatedAt as string) ?? c.createdAt as string,
   };
@@ -146,6 +147,7 @@ export const webAppApi = {
       key_features: payload.keyFeatures,
       logo: payload.logo,
       is_active: payload.isActive,
+      brand_voice: payload.brandVoice ?? null,
     };
     const data = await apiFetch<Record<string, unknown>>('/webapps/', {
       method: 'POST',
@@ -164,6 +166,7 @@ export const webAppApi = {
     if (payload.keyFeatures !== undefined) body.key_features = payload.keyFeatures;
     if (payload.logo !== undefined) body.logo = payload.logo;
     if (payload.isActive !== undefined) body.is_active = payload.isActive;
+    if (payload.brandVoice !== undefined) body.brand_voice = payload.brandVoice;
     const data = await apiFetch<Record<string, unknown>>(`/webapps/${id}`, {
       method: 'PUT',
       body: JSON.stringify(body),

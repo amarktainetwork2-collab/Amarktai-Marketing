@@ -11,6 +11,7 @@ class WebAppBase(BaseModel):
     key_features: List[str] = []
     logo: Optional[str] = None
     is_active: bool = True
+    brand_voice: Optional[str] = None
 
 class WebAppCreate(WebAppBase):
     pass
@@ -24,6 +25,7 @@ class WebAppUpdate(BaseModel):
     key_features: Optional[List[str]] = None
     logo: Optional[str] = None
     is_active: Optional[bool] = None
+    brand_voice: Optional[str] = None
 
 class WebApp(WebAppBase):
     id: str

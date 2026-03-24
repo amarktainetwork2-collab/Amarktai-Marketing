@@ -9,7 +9,6 @@ import {
   Zap,
   BarChart3,
   Users,
-  MessageCircle,
   CheckCircle2,
   ChevronRight,
   Bell,
@@ -18,7 +17,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariantsSlow, itemVariantsX } from '@/lib/motion';
 import { insightsApi } from '@/lib/api';
@@ -284,87 +282,26 @@ export function AIInsightsFeed() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-4"
         >
-          {/* Quick Stats */}
-          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-lg">This Week's Impact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">Engagement Increase</p>
-                    <p className="text-xl font-bold text-green-400">+24%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Users className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">New Followers</p>
-                    <p className="text-xl font-bold text-blue-400">+1,247</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <MessageCircle className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">Comments</p>
-                    <p className="text-xl font-bold text-purple-400">+89</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* AI Recommendations */}
           <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/30">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Zap className="w-5 h-5 text-purple-400" />
-                Top Recommendations
+                General Tips
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {[
-                { icon: Clock, text: 'Post at 6 PM for 34% more engagement', color: 'text-blue-400' },
-                { icon: BarChart3, text: 'Use 5-8 hashtags for optimal reach', color: 'text-green-400' },
-                { icon: Users, text: 'Reply to comments within 1 hour', color: 'text-yellow-400' },
-                { icon: Target, text: 'Create more video content (+3x engagement)', color: 'text-purple-400' },
+                { icon: Clock, text: 'Post at 6 PM for higher engagement on most platforms', color: 'text-blue-400' },
+                { icon: BarChart3, text: 'Use 5–8 hashtags for optimal reach', color: 'text-green-400' },
+                { icon: Users, text: 'Reply to comments within 1 hour to boost distribution', color: 'text-yellow-400' },
+                { icon: Target, text: 'Video content typically drives 3× more engagement', color: 'text-purple-400' },
               ].map((rec, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <rec.icon className={`w-4 h-4 mt-0.5 ${rec.color}`} />
                   <p className="text-sm text-slate-300">{rec.text}</p>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-
-          {/* Weekly Goal */}
-          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="text-lg">Weekly Goal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-slate-400">Posts Published</span>
-                <span className="text-sm font-medium text-slate-200">18 / 25</span>
-              </div>
-              <Progress value={72} className="h-2 mb-4" />
-              <p className="text-xs text-slate-500">
-                You're 72% towards your weekly goal. Keep it up!
-              </p>
             </CardContent>
           </Card>
         </motion.div>

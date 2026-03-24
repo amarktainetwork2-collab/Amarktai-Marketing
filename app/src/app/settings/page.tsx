@@ -1,120 +1,19 @@
 import { useState } from 'react';
-import { Bell, Clock, Shield, User, CreditCard, Sparkles, Key, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Bell, Clock, Shield, User, CreditCard, Sparkles, Key, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
-import { authFetch } from '@/lib/auth';
 
 const cardStyle = {
   background: 'rgba(17,24,39,0.72)',
   border: '1px solid rgba(255,255,255,0.10)',
 };
-
-interface ApiKeyField {
-  name: string;
-  label: string;
-  description: string;
-  placeholder: string;
-}
-
-const AI_KEY_FIELDS: ApiKeyField[] = [
-  { name: 'QWEN_API_KEY', label: 'AmarktAI Network Key (Primary AI)', description: 'Primary AI content generation — powered by AmarktAI Network.', placeholder: 'hf_...' },
-  { name: 'HUGGINGFACE_TOKEN', label: 'AmarktAI Network Token (AI Fallback)', description: 'Fallback AI via AmarktAI Network Inference API.', placeholder: 'hf_...' },
-  { name: 'OPENAI_API_KEY', label: 'OpenAI API Key (AI Fallback)', description: 'Optional OpenAI fallback for content generation.', placeholder: 'sk-...' },
-  { name: 'FIRECRAWL_API_KEY', label: 'Firecrawl API Key (Web Scraping)', description: 'Primary web scraping for richer brand extraction.', placeholder: 'fc-...' },
-];
-
-function PersonalApiKeys() {
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [visible, setVisible] = useState<Record<string, boolean>>({});
-  const [saving, setSaving] = useState(false);
-
-  const toggleVisible = (name: string) =>
-    setVisible(v => ({ ...v, [name]: !v[name] }));
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const updates = Object.entries(values)
-        .filter(([, v]) => v.trim() !== '')
-        .map(([key_name, key_value]) => ({ key_name, key_value }));
-      if (updates.length === 0) {
-        toast.info('No changes to save');
-        setSaving(false);
-        return;
-      }
-      await authFetch('/users/api-keys', {
-        method: 'POST',
-        body: JSON.stringify({ keys: updates }),
-      });
-      toast.success(`${updates.length} API key${updates.length !== 1 ? 's' : ''} saved`);
-      setValues({});
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save keys');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Card style={cardStyle}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-100">
-          <Key className="w-5 h-5" style={{ color: '#2563FF' }} />
-          Personal API Keys
-        </CardTitle>
-        <CardDescription className="text-slate-400">
-          Override system-level AI and scraping keys with your own. Keys are encrypted at rest and never exposed to the frontend.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {AI_KEY_FIELDS.map((f) => (
-          <div key={f.name} className="space-y-1.5">
-            <Label className="text-sm font-medium text-slate-200">{f.label}</Label>
-            <p className="text-xs text-slate-400">{f.description}</p>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  type={visible[f.name] ? 'text' : 'password'}
-                  placeholder={f.placeholder}
-                  value={values[f.name] ?? ''}
-                  onChange={e => setValues(v => ({ ...v, [f.name]: e.target.value }))}
-                  className="pr-10 font-mono text-sm"
-                  style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.12)', color: '#F8FAFC' }}
-                />
-                <button
-                  type="button"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-                  onClick={() => toggleVisible(f.name)}
-                >
-                  {visible[f.name] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-        <p className="text-xs text-slate-500 pt-1">
-          Leave a field blank to keep the existing key unchanged.
-          Keys take effect immediately on the next generation or scrape.
-        </p>
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          style={{ background: '#2563FF' }}
-          className="text-white hover:opacity-90"
-        >
-          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Key className="w-4 h-4 mr-2" />}
-          {saving ? 'Saving…' : 'Save API Keys'}
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -418,7 +317,26 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <PersonalApiKeys />
+      {/* API Keys — managed in Integrations */}
+      <Card style={cardStyle}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-slate-100">
+            <Key className="w-5 h-5" style={{ color: '#2563FF' }} />
+            API Keys &amp; Platform Connections
+          </CardTitle>
+          <CardDescription className="text-slate-400">
+            Manage your AI provider keys and social platform connections in one place.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/dashboard/integrations">
+            <Button style={{ background: '#2563FF' }} className="text-white hover:opacity-90">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Go to Integrations
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

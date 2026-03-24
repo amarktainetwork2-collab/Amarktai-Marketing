@@ -45,8 +45,8 @@ export default function ParticleBackground({
     let frame = 0;
 
     const isMobile = () => window.innerWidth < 768;
-    const nodeCount = () => (isMobile() ? 55 : 130);
-    const MAX_DIST = 170;
+    const nodeCount = () => (isMobile() ? 25 : 60);
+    const MAX_DIST = 140;
 
     function resize() {
       if (!canvas) return;

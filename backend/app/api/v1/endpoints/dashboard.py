@@ -20,7 +20,7 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -224,7 +224,7 @@ async def get_scheduled_posts(
                 ContentStatus.APPROVED,
             ]),
         )
-        .order_by(Content.scheduled_for.asc().nullslast(), Content.created_at.desc())
+        .order_by(func.isnull(Content.scheduled_for).asc(), Content.scheduled_for.asc(), Content.created_at.desc())
         .limit(20)
         .all()
     )
