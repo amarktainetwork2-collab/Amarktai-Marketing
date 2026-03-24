@@ -35,18 +35,11 @@ interface PlatformIntegration {
 }
 
 const AVAILABLE_API_KEYS = [
-  { key: 'HUGGINGFACE_TOKEN', name: 'AI Engine Token (Primary)', description: 'Free image & text generation (PRIMARY — required)', provider: 'AI Engine' },
-  { key: 'QWEN_API_KEY', name: 'AI Engine API Key (Secondary)', description: 'High-quality AI generation — low cost', provider: 'AI Engine' },
-  { key: 'GROQ_API_KEY', name: 'Groq API Key', description: 'Fast LLM inference for content generation', provider: 'Groq' },
-  { key: 'GOOGLE_GEMINI_API_KEY', name: 'AI Engine API Key (Google)', description: 'AI Engine for content and images', provider: 'AI Engine' },
-  { key: 'LEONARDO_API_KEY', name: 'Leonardo.ai Key', description: 'Premium AI image generation', provider: 'Leonardo.ai' },
-  { key: 'ELEVENLABS_API_KEY', name: 'ElevenLabs API Key', description: 'High-quality voiceover generation', provider: 'ElevenLabs' },
-  { key: 'OPENAI_API_KEY', name: 'AI Engine API Key', description: 'AI content generation and automation', provider: 'AI Engine' },
-  { key: 'REPLICATE_API_TOKEN', name: 'Replicate API Token', description: 'Run ML models in the cloud', provider: 'Replicate' },
-  { key: 'FAL_AI_KEY', name: 'fal.ai API Key', description: 'Fast image and video generation', provider: 'fal.ai' },
-  { key: 'SILICONFLOW_API_KEY', name: 'SiliconFlow API Key', description: 'Free tier image generation', provider: 'SiliconFlow' },
-  { key: 'COQUI_API_KEY', name: 'Coqui TTS Key', description: 'Free open-source voice synthesis', provider: 'Coqui' },
-  { key: 'PLAYHT_API_KEY', name: 'Play.ht API Key', description: 'Text-to-speech voices', provider: 'Play.ht' },
+  { key: 'FIRECRAWL_API_KEY', name: 'Firecrawl API Key', description: 'Web scraping & competitive research (REQUIRED)', provider: 'Firecrawl', required: true },
+  { key: 'QWEN_API_KEY', name: 'Qwen / DashScope API Key', description: 'Primary LLM for content generation (REQUIRED)', provider: 'Qwen (DashScope)', required: true },
+  { key: 'HUGGINGFACE_TOKEN', name: 'HuggingFace Token', description: 'Fallback LLM if Qwen is unavailable (recommended)', provider: 'HuggingFace', required: false },
+  { key: 'OPENAI_API_KEY', name: 'OpenAI API Key', description: 'Optional enhancement for content generation', provider: 'OpenAI', required: false },
+  { key: 'GEMINI_API_KEY', name: 'Google Gemini API Key', description: 'Optional enhancement for content generation', provider: 'Google Gemini', required: false },
 ];
 
 const PLATFORMS = [
@@ -235,18 +228,18 @@ export default function IntegrationsPage() {
                   {
                     step: '1',
                     icon: Key,
-                    title: 'Activate AI Content Generation',
-                    desc: 'Contact support to provision your AI engine access token.',
-                    link: '/dashboard/settings',
-                    done: apiKeys.some(k => k.key_name === 'HUGGINGFACE_TOKEN' && k.is_active),
+                    title: 'Add Qwen / DashScope API Key (Primary LLM)',
+                    desc: 'Required for AI content generation. Get your key at dashscope.aliyuncs.com.',
+                    link: '#',
+                    done: apiKeys.some(k => k.key_name === 'QWEN_API_KEY' && k.is_active),
                   },
                   {
                     step: '2',
                     icon: Globe,
-                    title: 'Configure AI API Access (optional)',
-                    desc: 'Enhance generation quality with an optional secondary AI API key.',
-                    link: '/dashboard/settings',
-                    done: apiKeys.some(k => k.key_name === 'QWEN_API_KEY' && k.is_active),
+                    title: 'Add Firecrawl API Key (Web Scraping)',
+                    desc: 'Required for website scraping and competitive research. Get your key at firecrawl.dev.',
+                    link: '#',
+                    done: apiKeys.some(k => k.key_name === 'FIRECRAWL_API_KEY' && k.is_active),
                   },
                   {
                     step: '3',
@@ -337,7 +330,7 @@ export default function IntegrationsPage() {
               Your API Keys
             </CardTitle>
             <CardDescription>
-              Add your own API keys to unlock premium AI models. Free providers used by default.
+              Configure your provider API keys. Firecrawl and Qwen are required for full functionality.
             </CardDescription>
           </div>
           <Button onClick={() => setShowAddKeyDialog(true)}>
@@ -350,7 +343,7 @@ export default function IntegrationsPage() {
             <div className="text-center py-8 text-gray-500">
               <Key className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No API keys added yet</p>
-              <p className="text-sm">Free providers will be used automatically</p>
+              <p className="text-sm">Add Firecrawl and Qwen keys to get started</p>
             </div>
           ) : (
             <div className="space-y-3">

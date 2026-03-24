@@ -28,6 +28,10 @@ class WebApp(Base):
     content_goals = Column(Text, nullable=True)
     # Cached scrape results – refreshed nightly and before content generation
     scraped_data = Column(JSON, nullable=True)
+    # Additional URLs to scrape beyond the main URL (e.g. product pages, blog)
+    scraper_source_urls = Column(JSON, nullable=True)
+    # Uploaded media assets: [{"id": str, "name": str, "url": str, "type": str, "size": int, "uploaded_at": str}]
+    media_assets = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

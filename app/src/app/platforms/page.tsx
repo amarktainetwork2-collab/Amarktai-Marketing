@@ -66,6 +66,8 @@ export default function PlatformsPage() {
   const [savingBudget, setSavingBudget] = useState(false);
   const [bizPageDialog, setBizPageDialog] = useState<BusinessPageDialogState | null>(null);
   const [savingBizPage, setSavingBizPage] = useState(false);
+  const [connectDialog, setConnectDialog] = useState<{ platform: Platform; accountName: string; accountId: string } | null>(null);
+  const [savingConnect, setSavingConnect] = useState(false);
 
   useEffect(() => { fetchConnections(); }, []);
 
@@ -78,18 +80,27 @@ export default function PlatformsPage() {
     }
   };
 
-  const handleConnect = async (platform: Platform) => {
-    setLoading(platform);
+  const openConnectDialog = (platform: Platform) => {
+    setConnectDialog({ platform, accountName: '', accountId: '' });
+  };
+
+  const handleConnect = async () => {
+    if (!connectDialog || !connectDialog.accountName.trim()) {
+      toast.error('Please enter your account name or handle');
+      return;
+    }
+    setSavingConnect(true);
+    setLoading(connectDialog.platform);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await platformApi.connect(platform, `demo_${platform}_account`);
+      await platformApi.connect(connectDialog.platform, connectDialog.accountName.trim(), connectDialog.accountId.trim() || undefined);
       await fetchConnections();
-      toast.success(`${platform} connected successfully`);
-      // Auto-load audit
-      loadAudit(platform);
+      toast.success(`${connectDialog.platform} connected`);
+      setConnectDialog(null);
+      loadAudit(connectDialog.platform);
     } catch {
-      toast.error(`Failed to connect ${platform}`);
+      toast.error(`Failed to connect ${connectDialog.platform}`);
     } finally {
+      setSavingConnect(false);
       setLoading(null);
     }
   };
@@ -359,7 +370,7 @@ export default function PlatformsPage() {
                     <Button
                       className="w-full"
                       style={{ backgroundColor: platform.color, color: 'white' }}
-                      onClick={() => handleConnect(platform.id)}
+                      onClick={() => openConnectDialog(platform.id)}
                       disabled={loading === platform.id}
                     >
                       {loading === platform.id ? (
@@ -492,6 +503,51 @@ export default function PlatformsPage() {
                   <><PlusCircle className="w-4 h-4 mr-2" />Create Business Page</>
                 )}
               </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Connect Platform Dialog */}
+      <Dialog open={!!connectDialog} onOpenChange={() => setConnectDialog(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Connect {connectDialog && platforms.find(p => p.id === connectDialog.platform)?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {connectDialog && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Enter your account details to register this connection. The system will use these to post content on your behalf once fully integrated.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="accountName">Account Name / Handle *</Label>
+                <Input
+                  id="accountName"
+                  placeholder="e.g. @yourbrand or YourChannel"
+                  value={connectDialog.accountName}
+                  onChange={e => setConnectDialog(d => d ? { ...d, accountName: e.target.value } : d)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="accountId">Account / Page ID (optional)</Label>
+                <Input
+                  id="accountId"
+                  placeholder="Platform-specific page or channel ID"
+                  value={connectDialog.accountId}
+                  onChange={e => setConnectDialog(d => d ? { ...d, accountId: e.target.value } : d)}
+                />
+                <p className="text-xs text-gray-500">
+                  Required for Facebook Pages, LinkedIn Companies, YouTube Channels. Leave blank if unsure.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setConnectDialog(null)}>Cancel</Button>
+                <Button onClick={handleConnect} disabled={savingConnect}>
+                  {savingConnect ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Connecting…</> : 'Connect'}
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

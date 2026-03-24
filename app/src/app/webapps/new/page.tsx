@@ -36,6 +36,7 @@ export default function NewWebAppPage() {
     brandVoice: '',
     marketLocation: '',
     contentGoals: '',
+    scraperSourceUrls: [''] as string[],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +50,9 @@ export default function NewWebAppPage() {
         brandVoice: formData.brandVoice.trim() || undefined,
         marketLocation: formData.marketLocation.trim() || undefined,
         contentGoals: formData.contentGoals.trim() || undefined,
+        scraperSourceUrls: formData.scraperSourceUrls.filter(u => u.trim() !== '').length > 0
+          ? formData.scraperSourceUrls.filter(u => u.trim() !== '')
+          : undefined,
         isActive: true,
       });
 
@@ -74,6 +78,15 @@ export default function NewWebAppPage() {
     const next = [...formData.keyFeatures];
     next[index] = value;
     setFormData({ ...formData, keyFeatures: next });
+  };
+
+  const addScraperUrl = () => setFormData({ ...formData, scraperSourceUrls: [...formData.scraperSourceUrls, ''] });
+  const removeScraperUrl = (index: number) =>
+    setFormData({ ...formData, scraperSourceUrls: formData.scraperSourceUrls.filter((_, i) => i !== index) });
+  const updateScraperUrl = (index: number, value: string) => {
+    const next = [...formData.scraperSourceUrls];
+    next[index] = value;
+    setFormData({ ...formData, scraperSourceUrls: next });
   };
 
   const isSubmitting = step !== 'idle';
@@ -272,7 +285,36 @@ export default function NewWebAppPage() {
               </p>
             </motion.div>
 
-            <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
+            <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show" className="space-y-2">
+              <Label>Additional Scraper Source URLs</Label>
+              <p className="text-sm text-gray-500 mb-2">
+                Add extra pages to scrape (e.g. product pages, pricing, about). The main URL above is always scraped automatically.
+              </p>
+              <div className="space-y-2">
+                {formData.scraperSourceUrls.map((url, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      type="url"
+                      placeholder={`https://yourapp.com/page-${index + 1}`}
+                      value={url}
+                      onChange={(e) => updateScraperUrl(index, e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                    {formData.scraperSourceUrls.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeScraperUrl(index)} disabled={isSubmitting}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={addScraperUrl} disabled={isSubmitting}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add URL
+              </Button>
+            </motion.div>
+
+            <motion.div custom={10} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate('/dashboard/webapps')} disabled={isSubmitting}>
                 Cancel
               </Button>

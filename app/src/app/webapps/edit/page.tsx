@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Upload, Trash2, Image, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { webAppApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { WebApp } from '@/types';
+import type { WebApp, MediaAsset } from '@/types';
 
 const categories = [
   'SaaS',
@@ -29,6 +29,9 @@ export default function EditWebAppPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [, setWebApp] = useState<WebApp | null>(null);
+  const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -39,6 +42,7 @@ export default function EditWebAppPage() {
     brandVoice: '',
     marketLocation: '',
     contentGoals: '',
+    scraperSourceUrls: [''] as string[],
   });
 
   useEffect(() => {
@@ -59,7 +63,11 @@ export default function EditWebAppPage() {
             brandVoice: app.brandVoice ?? '',
             marketLocation: app.marketLocation ?? '',
             contentGoals: app.contentGoals ?? '',
+            scraperSourceUrls: (app.scraperSourceUrls && app.scraperSourceUrls.length > 0)
+              ? app.scraperSourceUrls
+              : [''],
           });
+          setMediaAssets(app.mediaAssets ?? []);
         } else {
           toast.error('Web app not found');
           navigate('/dashboard/webapps');
@@ -86,6 +94,9 @@ export default function EditWebAppPage() {
         brandVoice: formData.brandVoice.trim() || undefined,
         marketLocation: formData.marketLocation.trim() || undefined,
         contentGoals: formData.contentGoals.trim() || undefined,
+        scraperSourceUrls: formData.scraperSourceUrls.filter(u => u.trim() !== '').length > 0
+          ? formData.scraperSourceUrls.filter(u => u.trim() !== '')
+          : undefined,
       });
       toast.success('Web app updated successfully');
       navigate('/dashboard/webapps');
@@ -111,6 +122,42 @@ export default function EditWebAppPage() {
     const newFeatures = [...formData.keyFeatures];
     newFeatures[index] = value;
     setFormData({ ...formData, keyFeatures: newFeatures });
+  };
+
+  const addScraperUrl = () => setFormData({ ...formData, scraperSourceUrls: [...formData.scraperSourceUrls, ''] });
+  const removeScraperUrl = (index: number) =>
+    setFormData({ ...formData, scraperSourceUrls: formData.scraperSourceUrls.filter((_, i) => i !== index) });
+  const updateScraperUrl = (index: number, value: string) => {
+    const next = [...formData.scraperSourceUrls];
+    next[index] = value;
+    setFormData({ ...formData, scraperSourceUrls: next });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!id || !e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setUploading(true);
+    try {
+      const asset = await webAppApi.uploadMedia(id, file);
+      setMediaAssets(prev => [...prev, asset]);
+      toast.success(`"${file.name}" uploaded`);
+    } catch (err) {
+      toast.error((err as Error).message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteAsset = async (assetId: string) => {
+    if (!id) return;
+    try {
+      await webAppApi.deleteMedia(id, assetId);
+      setMediaAssets(prev => prev.filter(a => a.id !== assetId));
+      toast.success('Asset removed');
+    } catch {
+      toast.error('Failed to remove asset');
+    }
   };
 
   if (loading) {
@@ -291,6 +338,34 @@ export default function EditWebAppPage() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <Label>Additional Scraper Source URLs</Label>
+              <p className="text-sm text-gray-500 mb-2">
+                Extra pages to scrape (e.g. product pages, pricing, about). The main URL is always scraped automatically.
+              </p>
+              <div className="space-y-2">
+                {formData.scraperSourceUrls.map((url, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      type="url"
+                      placeholder={`https://yourapp.com/page-${index + 1}`}
+                      value={url}
+                      onChange={(e) => updateScraperUrl(index, e.target.value)}
+                    />
+                    {formData.scraperSourceUrls.length > 1 && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeScraperUrl(index)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={addScraperUrl}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add URL
+              </Button>
+            </div>
+
             <div className="flex items-center justify-end space-x-4 pt-4">
               <Button
                 type="button"
@@ -308,6 +383,83 @@ export default function EditWebAppPage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Media Assets */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Image className="w-5 h-5" />
+            Brand Media Assets
+          </CardTitle>
+          <p className="text-sm text-gray-500">
+            Upload logos, product images, and marketing assets for AI-assisted content generation.
+            Accepted: images, videos, PDF — max 50 MB each.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*,application/pdf"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading…</>
+                ) : (
+                  <><Upload className="w-4 h-4 mr-2" />Upload Asset</>
+                )}
+              </Button>
+            </div>
+
+            {mediaAssets.length === 0 ? (
+              <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                <Image className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm text-gray-500">No media assets yet. Upload your first asset above.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {mediaAssets.map((asset) => (
+                  <div key={asset.id} className="relative group border rounded-lg overflow-hidden bg-gray-50">
+                    {asset.type.startsWith('image/') ? (
+                      <img
+                        src={asset.url}
+                        alt={asset.name}
+                        className="w-full h-24 object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = ''; }}
+                      />
+                    ) : (
+                      <div className="w-full h-24 flex items-center justify-center bg-gray-100">
+                        <Image className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="p-2">
+                      <p className="text-xs text-gray-700 truncate" title={asset.name}>{asset.name}</p>
+                      <p className="text-xs text-gray-400">{(asset.size / 1024).toFixed(0)} KB</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteAsset(asset.id)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
