@@ -267,8 +267,10 @@ async def oauth_callback(
     db.commit()
     logger.info("OAuth connection stored for user %s on %s (%s)", user_id, platform, account_name)
 
-    # Redirect to frontend integrations page
-    return RedirectResponse(url=f"{settings.FRONTEND_URL}/dashboard/integrations?oauth={platform}&status=success")
+    # Redirect to frontend integrations page (platform is validated against allowlist above)
+    safe_platform = platform if platform in _PLATFORM_OAUTH else "unknown"
+    redirect_url = f"{settings.FRONTEND_URL}/dashboard/integrations?oauth={safe_platform}&status=success"
+    return RedirectResponse(url=redirect_url)
 
 
 async def _fetch_account_info(platform: str, access_token: str) -> tuple[str, str]:
