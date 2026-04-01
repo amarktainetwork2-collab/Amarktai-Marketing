@@ -100,6 +100,16 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)) -> TokenRespo
     except Exception:
         pass
 
+    # Notify AmarktAI Network of new signup (non-blocking)
+    try:
+        import asyncio
+        from app.services.integration import send_event
+        asyncio.get_event_loop().create_task(
+            send_event("user.signup", {"user_id": user.id})
+        )
+    except Exception:
+        pass
+
     return TokenResponse(
         access_token=token,
         user_id=user.id,

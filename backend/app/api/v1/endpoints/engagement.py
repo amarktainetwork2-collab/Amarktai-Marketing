@@ -291,6 +291,14 @@ async def _dispatch_reply_to_platform(
     """
     Send a reply to the actual platform API.
     Returns {"success": True/False, "error": "..."}.
+
+    Supported:
+      twitter, facebook, linkedin, reddit, bluesky, threads, telegram
+    API-unsupported (returns honest error):
+      pinterest, snapchat, tiktok
+    Not yet wired (returns honest error):
+      instagram (IG comment reply API requires page token + specific permissions),
+      youtube (YouTube comment reply requires separate Data API scope)
     """
     from app.models.platform_connection import PlatformConnection as PlatformModel, PlatformType
     from app.models.user_api_key import UserAPIKey
@@ -326,17 +334,59 @@ async def _dispatch_reply_to_platform(
                 api_key=settings.TWITTER_API_KEY,
                 api_secret=settings.TWITTER_API_SECRET,
             )
-            result = tw.reply(comment_id, reply_text)
-            return result
+            return tw.reply(comment_id, reply_text)
 
         elif platform == "facebook":
             from app.integrations.platforms.facebook import FacebookPlatform
             fb = FacebookPlatform(access_token=access_token)
-            result = fb.reply(comment_id, reply_text)
-            return result
+            return fb.reply(comment_id, reply_text)
 
-        elif platform in ("instagram", "youtube", "linkedin", "tiktok"):
-            return {"success": False, "error": f"Reply dispatch not yet supported for {platform}. Reply approved but not sent."}
+        elif platform == "linkedin":
+            from app.integrations.platforms.linkedin import LinkedInPlatform
+            person_urn = getattr(conn, "account_id", "") or ""
+            li = LinkedInPlatform(access_token=access_token, person_urn=person_urn)
+            return li.reply(comment_id, reply_text)
+
+        elif platform == "reddit":
+            from app.integrations.platforms.reddit import RedditPlatform
+            from app.core.config import settings
+            rd = RedditPlatform(
+                access_token=access_token,
+                client_id=settings.REDDIT_CLIENT_ID,
+                client_secret=settings.REDDIT_CLIENT_SECRET,
+            )
+            return rd.reply(comment_id, reply_text)
+
+        elif platform == "bluesky":
+            from app.integrations.platforms.bluesky import BlueskyPlatform
+            bs = BlueskyPlatform(access_token=access_token)
+            return bs.reply(comment_id, reply_text)
+
+        elif platform == "threads":
+            from app.integrations.platforms.threads import ThreadsPlatform
+            th = ThreadsPlatform(access_token=access_token)
+            return th.reply(comment_id, reply_text)
+
+        elif platform == "telegram":
+            from app.integrations.platforms.telegram import TelegramPlatform
+            from app.core.config import settings
+            tg = TelegramPlatform(
+                access_token=access_token,
+                channel_id=settings.TELEGRAM_CHANNEL_ID,
+            )
+            return tg.reply(comment_id, reply_text)
+
+        elif platform in ("pinterest", "snapchat"):
+            return {"success": False, "error": f"{platform.title()} API does not support comment replies."}
+
+        elif platform == "tiktok":
+            return {"success": False, "error": "TikTok API does not support automated comment replies."}
+
+        elif platform == "instagram":
+            return {"success": False, "error": "Instagram comment reply requires Page-level token and specific Graph API permissions. Not yet wired."}
+
+        elif platform == "youtube":
+            return {"success": False, "error": "YouTube comment reply requires Data API commentThreads scope. Not yet wired."}
 
         else:
             return {"success": False, "error": f"Reply dispatch not implemented for {platform}"}

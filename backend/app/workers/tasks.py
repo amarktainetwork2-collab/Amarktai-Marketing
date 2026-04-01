@@ -236,6 +236,10 @@ def _post_single_item(db: Session, item: Content) -> None:
         item.status = ContentStatus.FAILED
         db.commit()
         print(f"⚠️  No credentials for {item.platform}, content {item.id}")
+        _emit_sse(item.user_id, "content:failed", {
+            "content_id": item.id, "platform": item.platform,
+            "error": f"No credentials for {item.platform}",
+        })
         return
 
     webapp = db.query(WebApp).filter(WebApp.id == item.webapp_id).first()
@@ -258,6 +262,12 @@ def _post_single_item(db: Session, item: Content) -> None:
         item.posted_at = datetime.utcnow()
         item.platform_post_id = result.post_id
         print(f"✅  Posted {item.id} → {item.platform}: {result.url}")
+        _emit_sse(item.user_id, "content:posted", {
+            "content_id": item.id, "platform": item.platform,
+            "post_id": result.post_id, "url": result.url,
+        })
+        # Send email notification + integration event
+        _notify_content_posted(db, item, result)
     else:
         item.status = ContentStatus.FAILED
         item.generation_metadata = {
@@ -265,8 +275,39 @@ def _post_single_item(db: Session, item: Content) -> None:
             "post_error": result.error,
         }
         print(f"❌  Failed to post {item.id} → {item.platform}: {result.error}")
+        _emit_sse(item.user_id, "content:failed", {
+            "content_id": item.id, "platform": item.platform,
+            "error": result.error,
+        })
 
     db.commit()
+
+
+def _emit_sse(user_id: str, event_type: str, data: dict) -> None:
+    """Publish an SSE event to connected clients. Safe to call from tasks."""
+    try:
+        from app.api.v1.endpoints.events import publish_event
+        publish_event(user_id, event_type, data)
+    except Exception:
+        pass  # SSE is best-effort — never block the task
+
+
+def _notify_content_posted(db: Session, item: Content, result) -> None:
+    """Send email notification and AmarktAI Network event after successful post."""
+    try:
+        user = db.query(User).filter(User.id == item.user_id).first()
+        if user and user.email:
+            from app.services.email_service import send_content_posted
+            send_content_posted(user.email, item.platform, item.title or "", result.url)
+    except Exception:
+        pass
+    try:
+        from app.services.integration import send_event
+        asyncio.run(send_event("content.posted", {
+            "platform": item.platform, "content_id": item.id,
+        }))
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -978,6 +1019,11 @@ def poll_and_capture_comment_leads(self):
             )
             db.add(lead)
             captured += 1
+            # SSE notification for lead capture
+            _emit_sse(eng.user_id, "lead:captured", {
+                "lead_id": lead.id, "platform": eng.platform,
+                "name": eng.author_name or "Unknown",
+            })
 
         db.commit()
         print(f"✅  Comment-to-lead: captured {captured} new leads")
@@ -1273,5 +1319,74 @@ def refresh_all_webapp_scrapes():
 
         db.commit()
         print(f"✅  Nightly scrape refresh: {refreshed}/{len(webapps)} webapps updated")
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# send_weekly_digest_emails  – weekly digest email for all users
+# ---------------------------------------------------------------------------
+
+@shared_task(name="app.workers.tasks.send_weekly_digest_emails")
+def send_weekly_digest_emails():
+    """
+    Weekly on Monday at 09:00 UTC: send a digest email summarising last week's
+    content performance to every user who has notification_email enabled.
+    """
+    from app.services.email_service import send_weekly_digest
+
+    db: Session = SessionLocal()
+    try:
+        users = db.query(User).all()
+        sent = 0
+        for user in users:
+            prefs = user.notification_preferences or {}
+            if not prefs.get("email", True):
+                continue
+            if not user.email:
+                continue
+
+            # Gather stats for last 7 days
+            cutoff = datetime.utcnow() - timedelta(days=7)
+            from sqlalchemy import func
+            posted = (
+                db.query(Content)
+                .filter(
+                    Content.user_id == user.id,
+                    Content.status == ContentStatus.POSTED,
+                    Content.posted_at >= cutoff,
+                )
+            )
+            total_posts = posted.count()
+            total_views = (
+                db.query(func.coalesce(func.sum(Content.views), 0))
+                .filter(
+                    Content.user_id == user.id,
+                    Content.status == ContentStatus.POSTED,
+                    Content.posted_at >= cutoff,
+                )
+                .scalar()
+            ) or 0
+            total_engagement = 0
+            try:
+                rows = posted.all()
+                for c in rows:
+                    total_engagement += (getattr(c, "likes", 0) or 0) + (getattr(c, "comments", 0) or 0) + (getattr(c, "shares", 0) or 0)
+            except Exception:
+                pass
+            avg_rate = (total_engagement / max(total_views, 1)) * 100 if total_views else 0.0
+
+            stats = {
+                "total_posts": total_posts,
+                "total_views": int(total_views),
+                "avg_engagement_rate": round(avg_rate, 1),
+            }
+            try:
+                send_weekly_digest(user.email, user.name, stats)
+                sent += 1
+            except Exception as exc:
+                print(f"  ⚠️  Digest email failed for {user.email}: {exc}")
+
+        print(f"✅  Weekly digest: {sent} emails sent")
     finally:
         db.close()

@@ -40,7 +40,12 @@ _GEMINI_MODEL = "gemini-pro"
 class AIProvider:
     """
     Unified AI provider that walks down a priority chain:
-    Qwen → HuggingFace → OpenAI → Gemini → Template.
+    AmarktAI Network → Qwen → HuggingFace → OpenAI → Gemini → Template.
+
+    When AMARKTAI_INTEGRATION_ENABLED=true and a valid integration token is
+    configured, the AmarktAI Network super brain is used as the top-priority
+    provider.  If it is unavailable or not configured, the chain falls through
+    to local providers transparently.
     """
 
     def __init__(
@@ -104,6 +109,52 @@ class AIProvider:
     # ------------------------------------------------------------------
     # Low-level provider calls
     # ------------------------------------------------------------------
+
+    async def _call_amarktai_network(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
+        """
+        Route through the AmarktAI Network super brain (top-priority provider).
+        Only used when integration is enabled with a valid token and dashboard URL.
+        Returns {text, model, tokens, provider, cost_usd} or None.
+        """
+        if not (
+            settings.AMARKTAI_INTEGRATION_ENABLED
+            and settings.AMARKTAI_DASHBOARD_URL
+            and settings.AMARKTAI_INTEGRATION_TOKEN
+        ):
+            return None
+        import httpx
+        try:
+            url = f"{settings.AMARKTAI_DASHBOARD_URL.rstrip('/')}/integrations/ai/generate"
+            headers = {
+                "Authorization": f"Bearer {settings.AMARKTAI_INTEGRATION_TOKEN}",
+                "Content-Type": "application/json",
+                "X-App-ID": settings.APP_ID,
+                "X-App-Slug": settings.APP_SLUG,
+            }
+            payload = {
+                "app_id": settings.APP_ID,
+                "prompt": prompt,
+                "max_tokens": max_tokens,
+                "capability": "reasoning",
+            }
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code != 200:
+                logger.debug("AmarktAI Network returned %s", resp.status_code)
+                return None
+            data = resp.json()
+            text = data.get("text") or data.get("output", {}).get("text", "")
+            if text:
+                return {
+                    "text": text,
+                    "model": data.get("model", "amarktai-brain"),
+                    "tokens": data.get("tokens_used", 0),
+                    "provider": "amarktai_network",
+                    "cost_usd": data.get("cost_usd", 0.0),
+                }
+        except Exception as exc:
+            logger.debug("AmarktAI Network call failed: %s", exc)
+        return None
 
     async def _call_qwen(self, prompt: str, max_tokens: int = 512) -> dict[str, Any] | None:
         """Call Qwen via DashScope API. Returns {text, model, tokens} or None."""
@@ -265,6 +316,7 @@ class AIProvider:
         Always returns a result — never raises.
         """
         for call in (
+            self._call_amarktai_network,
             self._call_qwen,
             self._call_huggingface,
             self._call_openai,
