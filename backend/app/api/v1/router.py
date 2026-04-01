@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
-    remix, tools, leads, groups, blog,
+    remix, tools, leads, groups, blog, oauth, billing,
     amarktai_status, dashboard, settings, contact,
 )
 
@@ -48,3 +48,9 @@ api_router.include_router(settings.router, prefix="/settings", tags=["settings"]
 
 # Contact form (public, no auth, rate limited)
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
+
+# OAuth2 flows for social platform connections
+api_router.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
+
+# Billing / Stripe subscriptions
+api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
