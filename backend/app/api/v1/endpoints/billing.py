@@ -55,7 +55,7 @@ PLANS = [
         "interval": "month",
         "quota": 50,
         "features": ["1 web app", "3 platforms", "50 posts/month", "Basic analytics"],
-        "stripe_price_id": settings.STRIPE_PRICE_ID_FREE or None,
+        "stripe_price_id": None,  # Free plan does not require a Stripe price
     },
     {
         "id": "pro",

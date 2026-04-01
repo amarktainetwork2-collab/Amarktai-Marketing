@@ -85,7 +85,8 @@ class YouTubePlatform(BasePlatform):
 
             # YouTube simple upload (metadata + media in one request)
             import json
-            boundary = "amarktai_upload_boundary"
+            import secrets as _secrets
+            boundary = f"amarktai_{_secrets.token_hex(16)}"
             body = (
                 f"--{boundary}\r\n"
                 f'Content-Type: application/json; charset=UTF-8\r\n\r\n'
