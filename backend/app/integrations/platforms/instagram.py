@@ -181,13 +181,14 @@ class InstagramPlatform(BasePlatform):
         if not self.access_token:
             return False
         try:
+            from app.core.config import settings
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.get(
                     f"{_GRAPH_BASE}/oauth/access_token",
                     params={
                         "grant_type": "fb_exchange_token",
-                        "client_id": "",  # Must be set from config at call site
-                        "client_secret": "",
+                        "client_id": settings.META_APP_ID,
+                        "client_secret": settings.META_APP_SECRET,
                         "fb_exchange_token": self.access_token,
                     },
                 )

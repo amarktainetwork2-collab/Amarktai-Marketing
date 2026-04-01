@@ -48,7 +48,7 @@ interface BillingData {
 const PLAN_DISPLAY: Record<string, { label: string; price: string }> = {
   free: { label: 'Free', price: '$0/month' },
   pro: { label: 'Pro', price: '$29/month' },
-  business: { label: 'Business', price: '$199/month' },
+  business: { label: 'Business', price: '$99/month' },
   enterprise: { label: 'Enterprise', price: 'Custom' },
 };
 

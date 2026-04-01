@@ -134,7 +134,9 @@ async def oauth_init(
         )
 
     cfg = _PLATFORM_OAUTH[platform]
-    state = f"{current_user.id}:{secrets.token_urlsafe(16)}"
+    # Generate PKCE code_verifier for platforms that require it (Twitter/X)
+    code_verifier = secrets.token_urlsafe(64)
+    state = f"{current_user.id}:{secrets.token_urlsafe(16)}:{code_verifier}" if platform == "twitter" else f"{current_user.id}:{secrets.token_urlsafe(16)}"
     redirect_uri = _get_redirect_uri(platform)
 
     params: dict[str, str] = {
@@ -142,17 +144,17 @@ async def oauth_init(
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "state": state,
+        "scope": cfg["scopes"],
     }
 
-    # Platform-specific scope parameter names
-    if platform == "tiktok":
-        params["scope"] = cfg["scopes"]
-    elif platform == "twitter":
-        params["scope"] = cfg["scopes"]
-        params["code_challenge"] = "challenge"
-        params["code_challenge_method"] = "plain"
-    else:
-        params["scope"] = cfg["scopes"]
+    # Platform-specific additions
+    if platform == "twitter":
+        import hashlib, base64
+        code_challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode()).digest()
+        ).rstrip(b"=").decode()
+        params["code_challenge"] = code_challenge
+        params["code_challenge_method"] = "S256"
 
     if platform == "youtube":
         params["access_type"] = "offline"
@@ -170,7 +172,7 @@ async def oauth_callback(
     code: str = Query(...),
     state: str = Query(""),
     db: Session = Depends(get_db),
-) -> dict[str, Any]:
+):
     """
     Handle the OAuth2 callback. Exchange the authorization code for tokens
     and store them as a PlatformConnection.
@@ -178,8 +180,10 @@ async def oauth_callback(
     if platform not in _PLATFORM_OAUTH:
         raise HTTPException(status_code=400, detail=f"OAuth not supported for '{platform}'")
 
-    # Extract user_id from state
-    user_id = state.split(":")[0] if ":" in state else ""
+    # Extract user_id (and code_verifier for Twitter PKCE) from state
+    state_parts = state.split(":") if state else []
+    user_id = state_parts[0] if state_parts else ""
+    code_verifier = state_parts[2] if len(state_parts) > 2 else ""
     if not user_id:
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
 
@@ -202,8 +206,8 @@ async def oauth_callback(
                 "client_secret": client_secret,
             }
 
-            if platform == "twitter":
-                token_data["code_verifier"] = "challenge"
+            if platform == "twitter" and code_verifier:
+                token_data["code_verifier"] = code_verifier
 
             resp = await client.post(cfg["token_url"], data=token_data)
             data = resp.json()
