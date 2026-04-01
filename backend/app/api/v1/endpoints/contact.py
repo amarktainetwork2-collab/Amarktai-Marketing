@@ -5,7 +5,6 @@ Contact form endpoint.
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -29,8 +28,8 @@ async def submit_contact(
     """
     Accept a contact form submission.
 
-    Stores the message in the DB (if available) and optionally forwards to
-    CONTACT_EMAIL via a configured email service.  No auth required.
+    Stores the message in the DB and sends email notifications via the
+    canonical email_service (Resend).  No auth required.
     """
     # Persist to DB
     try:
@@ -49,78 +48,14 @@ async def submit_contact(
             db.close()
     except Exception as exc:
         logger.error("Failed to store contact message in DB: %s", exc)
-        # Do not fail the request — continue to email fallback
 
-    # Optional: forward to CONTACT_EMAIL
-    contact_email = os.getenv("CONTACT_EMAIL", "")
-    if contact_email:
-        try:
-            import httpx
-            from app.core.config import settings
-            resend_key = getattr(settings, "RESEND_API_KEY", "")
-            if resend_key:
-                httpx.post(
-                    "https://api.resend.com/emails",
-                    headers={"Authorization": f"Bearer {resend_key}"},
-                    json={
-                        "from": getattr(settings, "FROM_EMAIL", "noreply@amarktai.com"),
-                        "to": [contact_email],
-                        "subject": f"Contact Form: {payload.name}",
-                        "text": f"From: {payload.name} <{payload.email}>\n\n{payload.message}",
-                    },
-                    timeout=10,
-                )
-        except Exception as exc:
-            logger.warning("Failed to forward contact email: %s", exc)
-
-    logger.info("Contact form submitted by %s <%s>", payload.name, payload.email)
-    return {"ok": True}
-    """
-    Accept a contact form submission.
-
-    Stores the message in the DB (if available) and optionally forwards to
-    CONTACT_EMAIL via a configured email service.  No auth required.
-    """
-    # Persist to DB
+    # Send email notifications via canonical email service
     try:
-        from app.db.session import SessionLocal
-        from app.models.contact import ContactMessage
-        db = SessionLocal()
-        try:
-            msg = ContactMessage(
-                name=payload.name[:200],
-                email=str(payload.email)[:254],
-                message=payload.message[:5000],
-            )
-            db.add(msg)
-            db.commit()
-        finally:
-            db.close()
+        from app.services.email_service import send_contact_acknowledgement, send_contact_forward
+        send_contact_acknowledgement(str(payload.email), payload.name)
+        send_contact_forward(payload.name, str(payload.email), "Contact Form", payload.message)
     except Exception as exc:
-        logger.error("Failed to store contact message in DB: %s", exc)
-        # Do not fail the request — continue to email fallback
-
-    # Optional: forward to CONTACT_EMAIL
-    contact_email = os.getenv("CONTACT_EMAIL", "")
-    if contact_email:
-        try:
-            import httpx
-            from app.core.config import settings
-            resend_key = settings.RESEND_API_KEY if hasattr(settings, "RESEND_API_KEY") else ""
-            if resend_key:
-                httpx.post(
-                    "https://api.resend.com/emails",
-                    headers={"Authorization": f"Bearer {resend_key}"},
-                    json={
-                        "from": getattr(settings, "FROM_EMAIL", "noreply@amarktai.com"),
-                        "to": [contact_email],
-                        "subject": f"Contact Form: {payload.name}",
-                        "text": f"From: {payload.name} <{payload.email}>\n\n{payload.message}",
-                    },
-                    timeout=10,
-                )
-        except Exception as exc:
-            logger.warning("Failed to forward contact email: %s", exc)
+        logger.warning("Failed to send contact emails: %s", exc)
 
     logger.info("Contact form submitted by %s <%s>", payload.name, payload.email)
     return {"ok": True}

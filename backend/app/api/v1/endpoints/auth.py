@@ -92,6 +92,14 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)) -> TokenRespo
         )
 
     token = create_access_token(user.id)
+
+    # Send welcome email (non-blocking, failure does not block registration)
+    try:
+        from app.services.email_service import send_welcome
+        send_welcome(user.email, user.name)
+    except Exception:
+        pass
+
     return TokenResponse(
         access_token=token,
         user_id=user.id,
