@@ -78,10 +78,15 @@ Complete every item before going live. Items marked ✅ are hard requirements.
 
 ## Nginx & SSL
 
+> ⚠️ The repo ships with HTTP-only nginx config. SSL must be configured on the VPS before go-live.
+> See the comments in `nginx.conf` for step-by-step SSL setup instructions.
+
+- [ ] Copy `nginx.conf` to server and replace `YOUR_DOMAIN` with your actual domain
 - [ ] Nginx config passes syntax check (`sudo nginx -t`)
 - [ ] Nginx configured to proxy `/api/` to `127.0.0.1:8000`
 - [ ] Nginx configured to serve `app/dist/` with SPA fallback (`try_files $uri /index.html`)
-- [ ] SSL certificate issued via Certbot (`sudo certbot --nginx ...`)
+- [ ] SSL certificate issued via Certbot (`sudo certbot certonly --webroot -w /var/www/certbot -d YOUR_DOMAIN`)
+- [ ] Uncomment HTTPS redirect and SSL lines in nginx.conf
 - [ ] HTTPS redirect active (HTTP → HTTPS)
 - [ ] `sudo certbot renew --dry-run` passes
 

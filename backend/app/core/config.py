@@ -205,11 +205,42 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Warn if JWT_SECRET is set to the insecure default value
+# ── Security checks for production ───────────────────────────────────────────
 _DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
+_DEFAULT_ENCRYPTION_KEY = "your-encryption-key-here-change-in-production"
+_is_production = settings.APP_ENVIRONMENT == "production"
+
+import logging as _logging
+_security_logger = _logging.getLogger(__name__)
+
 if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
-    import logging as _logging
-    _logging.getLogger(__name__).warning(
-        "JWT_SECRET is set to the default insecure value. "
-        "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
-    )
+    if _is_production:
+        _security_logger.critical(
+            "FATAL: JWT_SECRET is set to the insecure default value in PRODUCTION mode. "
+            "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+        )
+        raise SystemExit(
+            "Refusing to start: JWT_SECRET must be changed from the default value in production. "
+            "Run: openssl rand -hex 32"
+        )
+    else:
+        _security_logger.warning(
+            "JWT_SECRET is set to the default insecure value. "
+            "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+        )
+
+if settings.ENCRYPTION_KEY == _DEFAULT_ENCRYPTION_KEY:
+    if _is_production:
+        _security_logger.critical(
+            "FATAL: ENCRYPTION_KEY is set to the insecure default value in PRODUCTION mode. "
+            "Set ENCRYPTION_KEY in your .env file using: openssl rand -base64 32"
+        )
+        raise SystemExit(
+            "Refusing to start: ENCRYPTION_KEY must be changed from the default value in production. "
+            "Run: openssl rand -base64 32"
+        )
+    else:
+        _security_logger.warning(
+            "ENCRYPTION_KEY is set to the default insecure value. "
+            "Set ENCRYPTION_KEY in your .env file using: openssl rand -base64 32"
+        )
