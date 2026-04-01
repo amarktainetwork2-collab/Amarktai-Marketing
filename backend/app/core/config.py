@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import logging as _logging
 import os
 
 class Settings(BaseSettings):
@@ -210,7 +211,6 @@ _DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
 _DEFAULT_ENCRYPTION_KEY = "your-encryption-key-here-change-in-production"
 _is_production = settings.APP_ENVIRONMENT == "production"
 
-import logging as _logging
 _security_logger = _logging.getLogger(__name__)
 
 if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:

@@ -102,7 +102,7 @@ export default function SettingsPage() {
       setAutoReply(settingsData.auto_reply_enabled ?? false);
       setBilling(billingData);
     } catch {
-      // Settings load failed — use defaults, don't block the page
+      toast.error('Failed to load settings — using defaults');
     } finally {
       setLoading(false);
     }
