@@ -31,6 +31,7 @@ const AdminPage = lazy(() => import('@/app/admin/page'));
 const ToolsPage = lazy(() => import('@/app/tools/page'));
 const LeadsPage = lazy(() => import('@/app/leads/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
+const BlogPage = lazy(() => import('@/app/blog/page'));
 const FeaturesPage = lazy(() => import('@/app/features/page'));
 
 function ScrollToTop() {
@@ -100,6 +101,7 @@ function AppRoutes() {
           <Route path="tools" element={<ToolsPage />} />
           <Route path="leads" element={<LeadsPage />} />
           <Route path="groups" element={<GroupsPage />} />
+          <Route path="blog" element={<BlogPage />} />
           <Route path="admin" element={<AdminPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
