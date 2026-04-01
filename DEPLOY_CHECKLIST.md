@@ -7,7 +7,7 @@ Complete every item before going live. Items marked ✅ are hard requirements.
 ## Infrastructure
 
 - [ ] Server running Ubuntu 22.04 LTS with 4 GB+ RAM
-- [ ] MySQL 8 installed and service running (`sudo systemctl status mysql`)
+- [ ] PostgreSQL 15 installed and service running (`sudo systemctl status postgresql`)
 - [ ] Redis 7 installed and service running (`redis-cli ping` → `PONG`)
 - [ ] Nginx installed and enabled
 
@@ -15,9 +15,9 @@ Complete every item before going live. Items marked ✅ are hard requirements.
 
 ## Database
 
-- [ ] MySQL database `amarktai` created with `utf8mb4` charset
-- [ ] MySQL user created and granted full privileges on `amarktai` database
-- [ ] `DATABASE_URL` set to `mysql+pymysql://user:pass@localhost:3306/amarktai`
+- [ ] PostgreSQL database `amarktai` created
+- [ ] PostgreSQL user created and granted full privileges on `amarktai` database
+- [ ] `DATABASE_URL` set to `postgresql://amarktai_user:PASSWORD@localhost:5432/amarktai`
 - [ ] Alembic migrations applied (`alembic upgrade head` exits with no errors)
 
 ---

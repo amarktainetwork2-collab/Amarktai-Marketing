@@ -25,34 +25,32 @@ sudo apt install -y git curl wget build-essential software-properties-common
 
 ---
 
-## 2. MySQL 8 Setup
+## 2. PostgreSQL 15 Setup
 
-### Install MySQL
+### Install PostgreSQL
 
 ```bash
-sudo apt install -y mysql-server
-sudo systemctl enable --now mysql
-sudo mysql_secure_installation
+sudo apt install -y postgresql postgresql-contrib
+sudo systemctl enable --now postgresql
 ```
 
 ### Create database and user
 
 ```bash
-sudo mysql -u root -p
+sudo -u postgres psql
 ```
 
 ```sql
-CREATE DATABASE amarktai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
-GRANT ALL PRIVILEGES ON amarktai.* TO 'amarktai_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
+CREATE DATABASE amarktai;
+CREATE USER amarktai_user WITH ENCRYPTED PASSWORD 'CHANGE_THIS_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE amarktai TO amarktai_user;
+\q
 ```
 
 ### Verify connection
 
 ```bash
-mysql -u amarktai_user -p amarktai -e "SELECT 1;"
+psql -U amarktai_user -d amarktai -c "SELECT 1;"
 ```
 
 ---
@@ -101,7 +99,7 @@ nano .env
 Required values in `.env`:
 
 ```env
-DATABASE_URL=mysql+pymysql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:3306/amarktai
+DATABASE_URL=postgresql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:5432/amarktai
 JWT_SECRET=<output of: openssl rand -hex 32>
 ENCRYPTION_KEY=<output of: openssl rand -base64 32>
 REDIS_URL=redis://localhost:6379/0
@@ -138,7 +136,7 @@ sudo nano /etc/systemd/system/amarktai-api.service
 ```ini
 [Unit]
 Description=AmarktAI Marketing API
-After=network.target mysql.service redis.service
+After=network.target postgresql.service redis.service
 
 [Service]
 User=www-data
@@ -330,7 +328,7 @@ sudo certbot renew --dry-run
 
 ```bash
 # Services running
-sudo systemctl status amarktai-api amarktai-worker amarktai-beat nginx mysql redis-server
+sudo systemctl status amarktai-api amarktai-worker amarktai-beat nginx postgresql redis-server
 
 # API health check
 curl https://yourdomain.com/api/health
@@ -346,7 +344,7 @@ tail -f /var/log/amarktai/celery-worker.log
 
 | Variable            | Value Format                                              |
 |---------------------|-----------------------------------------------------------|
-| `DATABASE_URL`      | `mysql+pymysql://user:pass@localhost:3306/amarktai`       |
+| `DATABASE_URL`      | `postgresql://user:pass@localhost:5432/amarktai`          |
 | `JWT_SECRET`        | 64-char hex string (`openssl rand -hex 32`)               |
 | `ENCRYPTION_KEY`    | Base64 string (`openssl rand -base64 32`)                 |
 | `REDIS_URL`         | `redis://localhost:6379/0`                                |
@@ -355,7 +353,7 @@ tail -f /var/log/amarktai/celery-worker.log
 | `ADMIN_EMAIL`       | Valid email address                                       |
 | `CORS_ORIGINS`      | `https://yourdomain.com` (no trailing slash)              |
 
-> ⚠️ **DATABASE_URL must use `mysql+pymysql://`**. The ORM models and Alembic migrations use MySQL-specific types and collations. Using a PostgreSQL connection string will cause migration failures and runtime errors.
+> ⚠️ **DATABASE_URL must use `postgresql://`**. PostgreSQL is the canonical database for this project. The docker-compose, Alembic migrations, and all config defaults are aligned to PostgreSQL.
 
 ---
 

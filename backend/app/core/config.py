@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
-    # Database
-    DATABASE_URL: str = "mysql+pymysql://amarktai:CHANGE_THIS_PASSWORD@localhost:3306/amarktai"
+    # Database (PostgreSQL is the canonical database for this project)
+    DATABASE_URL: str = "postgresql://amarktai:CHANGE_THIS_PASSWORD@localhost:5432/amarktai"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
