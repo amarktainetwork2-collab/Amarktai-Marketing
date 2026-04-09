@@ -32,6 +32,9 @@ class WebApp(Base):
     scraper_source_urls = Column(JSON, nullable=True)
     # Uploaded media assets: [{"id": str, "name": str, "url": str, "type": str, "size": int, "uploaded_at": str}]
     media_assets = Column(JSON, nullable=True)
+    # Multi-language content generation
+    target_language = Column(String(10), nullable=True, default="en")
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

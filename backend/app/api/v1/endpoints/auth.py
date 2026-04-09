@@ -13,6 +13,7 @@ GET  /api/v1/auth/verify-email    — verify email address via token
 from __future__ import annotations
 
 import logging
+import secrets
 import uuid
 from datetime import timedelta
 
@@ -137,6 +138,7 @@ def register(request: Request, body: RegisterRequest, db: Session = Depends(get_
             detail="Password must be 72 characters or fewer.",
         )
     user_id = str(uuid.uuid4())
+    referral_code = secrets.token_urlsafe(6)
     user = UserModel(
         id=user_id,
         email=body.email,
@@ -144,6 +146,7 @@ def register(request: Request, body: RegisterRequest, db: Session = Depends(get_
         name=body.name or None,
         plan=PlanType.FREE,
         email_verified=False,
+        referral_code=referral_code,
     )
     db.add(user)
     try:
