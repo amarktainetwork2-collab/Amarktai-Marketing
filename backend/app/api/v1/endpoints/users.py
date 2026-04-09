@@ -76,13 +76,24 @@ async def upsert_api_keys(
 
     db.commit()
 
-@router.get("/me", response_model=User)
+@router.get("/me")
 async def get_me(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    """Get current user."""
-    return current_user
+    """Get current user with admin status."""
+    from app.api.deps import is_admin_user
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "name": current_user.name,
+        "avatar": current_user.avatar,
+        "plan": current_user.plan,
+        "created_at": current_user.created_at,
+        "updated_at": current_user.updated_at,
+        "is_admin": is_admin_user(current_user),
+        "email_verified": getattr(current_user, "email_verified", False) or False,
+    }
 
 @router.put("/me", response_model=User)
 async def update_me(
@@ -98,6 +109,36 @@ async def update_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.get("/onboarding-status")
+async def onboarding_status(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    """Return onboarding completion flags for the current user."""
+    from app.models.webapp import WebApp
+    from app.models.content import Content
+    from app.models.user_api_key import UserIntegration
+
+    has_webapp = db.query(WebApp.id).filter(
+        WebApp.user_id == current_user.id,
+    ).first() is not None
+
+    has_platform = db.query(UserIntegration.id).filter(
+        UserIntegration.user_id == current_user.id,
+        UserIntegration.is_connected.is_(True),
+    ).first() is not None
+
+    has_content = db.query(Content.id).filter(
+        Content.user_id == current_user.id,
+    ).first() is not None
+
+    return {
+        "has_webapp": has_webapp,
+        "has_platform": has_platform,
+        "has_content": has_content,
+    }
+
 
 @router.patch("/me/location", status_code=204)
 async def update_location(

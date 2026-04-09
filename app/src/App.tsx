@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import AuthProvider from '@/components/auth/AuthProvider';
+import PwaInstallBanner from '@/components/ui/PwaInstallBanner';
 import { useAuth } from '@/lib/auth';
 
 // Lazy load pages
@@ -32,6 +33,10 @@ const ToolsPage = lazy(() => import('@/app/tools/page'));
 const LeadsPage = lazy(() => import('@/app/leads/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
 const FeaturesPage = lazy(() => import('@/app/features/page'));
+const BlogPage = lazy(() => import('@/app/blog/page'));
+const ForgotPasswordPage = lazy(() => import('@/app/forgot-password/page'));
+const ResetPasswordPage = lazy(() => import('@/app/reset-password/page'));
+const VerifyEmailPage = lazy(() => import('@/app/verify-email/page'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -77,6 +82,9 @@ function AppRoutes() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+        <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route
           path="/dashboard"
           element={
@@ -100,6 +108,7 @@ function AppRoutes() {
           <Route path="tools" element={<ToolsPage />} />
           <Route path="leads" element={<LeadsPage />} />
           <Route path="groups" element={<GroupsPage />} />
+          <Route path="blog" element={<BlogPage />} />
           <Route path="admin" element={<AdminPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -115,6 +124,7 @@ function App() {
         <ScrollToTop />
         <AppRoutes />
         <Toaster position="top-right" richColors theme="dark" />
+        <PwaInstallBanner />
       </BrowserRouter>
     </AuthProvider>
   );

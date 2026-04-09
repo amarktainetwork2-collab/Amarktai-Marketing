@@ -6,6 +6,7 @@ import {
   PenTool, ArrowRight, Activity
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import UsageWidget from '@/components/dashboard/UsageWidget';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -87,6 +88,9 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
       </motion.div>
+
+      {/* Usage */}
+      <UsageWidget />
 
       {/* Stats */}
       <motion.div

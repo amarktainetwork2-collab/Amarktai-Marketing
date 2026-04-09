@@ -8,6 +8,7 @@ from app.models.engagement import EngagementReply, ABTest, ViralScore, CostTrack
 from app.models.lead import Lead
 from app.models.business_group import BusinessGroup
 from app.models.contact import ContactMessage
+from app.models.notification import Notification
 from app.models.tools import (
     ContentRemix, CompetitorProfile, FeedbackAnalysis,
     EchoAmplification, SeoMirageReport, ChurnShieldReport,
@@ -21,6 +22,7 @@ __all__ = [
     "Lead",
     "BusinessGroup",
     "ContactMessage",
+    "Notification",
     "ContentRemix", "CompetitorProfile", "FeedbackAnalysis",
     "EchoAmplification", "SeoMirageReport", "ChurnShieldReport",
     "HarmonyPricerReport", "ViralSparkReport", "AudienceMapReport", "AdAlchemyReport",

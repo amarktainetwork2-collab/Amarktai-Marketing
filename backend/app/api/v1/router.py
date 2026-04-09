@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
-    auth, users, webapps, platforms, content, analytics,
+    auth, users, webapps, platforms, content, analytics, analytics_export,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
-    remix, tools, leads, groups,
+    remix, tools, leads, groups, blog, billing,
     amarktai_status, dashboard, settings, contact,
+    stats, changelog, notifications,
 )
 
 api_router = APIRouter()
@@ -16,6 +17,7 @@ api_router.include_router(webapps.router, prefix="/webapps", tags=["webapps"])
 api_router.include_router(platforms.router, prefix="/platforms", tags=["platforms"])
 api_router.include_router(content.router, prefix="/content", tags=["content"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+api_router.include_router(analytics_export.router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
 api_router.include_router(groups.router, prefix="/groups", tags=["groups"])
 
@@ -33,6 +35,9 @@ api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(remix.router, prefix="/remix", tags=["tools"])
 api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
 
+# Blog (SEO blog post generator)
+api_router.include_router(blog.router, prefix="/blog", tags=["blog"])
+
 # Dashboard feature endpoints (insights, scheduler, predictions, calendar, competitors)
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 
@@ -43,5 +48,17 @@ api_router.include_router(amarktai_status.router, prefix="/amarktai", tags=["int
 # Settings & preferences (user API keys, billing, notifications)
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
 
+# Stripe billing (checkout, webhook, portal)
+api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
+
 # Contact form (public, no auth, rate limited)
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
+
+# Public stats (no auth)
+api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
+
+# Public changelog (no auth)
+api_router.include_router(changelog.router, prefix="/changelog", tags=["changelog"])
+
+# Notifications (auth required)
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
