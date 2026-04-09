@@ -6,7 +6,7 @@ import os
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -113,6 +113,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ALLOWED_HOSTS enforcement — in production, reject requests whose Host header
+# does not match any origin in CORS_ORIGINS.
+if settings.APP_ENVIRONMENT == "production":
+    from urllib.parse import urlparse
+
+    _allowed_hosts: set[str] = set()
+    for origin in settings.CORS_ORIGINS:
+        parsed = urlparse(origin)
+        if parsed.hostname:
+            _allowed_hosts.add(parsed.hostname)
+
+    @app.middleware("http")
+    async def enforce_allowed_hosts(request: Request, call_next):
+        host = request.headers.get("host", "").split(":")[0]
+        if host not in _allowed_hosts:
+            return PlainTextResponse("Invalid host header", status_code=400)
+        return await call_next(request)
+
 # API routes
 app.include_router(api_router, prefix="/api/v1")
 
@@ -163,6 +181,20 @@ async def health_v1():
         "database": "connected" if db_ok else "disconnected",
         "version": settings.APP_VERSION,
     }
+
+
+@app.get("/api/v1/health/workers")
+async def health_workers():
+    """Check whether the Celery worker pool is reachable."""
+    from app.workers.celery_app import celery_app
+
+    try:
+        result = celery_app.control.ping(timeout=5)
+        if result:
+            return {"celery": "healthy"}
+        return {"celery": "unreachable"}
+    except Exception:
+        return {"celery": "unreachable"}
 
 
 if __name__ == "__main__":

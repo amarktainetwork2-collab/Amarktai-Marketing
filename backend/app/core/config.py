@@ -237,8 +237,8 @@ if settings.ENCRYPTION_KEY == _DEFAULT_ENCRYPTION_KEY:
 
 # Guard against default DB password in production
 _db_url = settings.DATABASE_URL or ""
-if _is_production and "changeme" in _db_url:
+if _is_production and ("changeme" in _db_url.lower() or "CHANGE_THIS_PASSWORD" in _db_url):
     raise RuntimeError(
-        "FATAL: DATABASE_URL contains the default password 'changeme'. "
+        "FATAL: DATABASE_URL contains a default password. "
         "Set POSTGRES_PASSWORD in your .env file before deploying."
     )
