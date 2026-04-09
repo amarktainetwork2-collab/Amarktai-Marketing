@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import AuthProvider from '@/components/auth/AuthProvider';
+import PwaInstallBanner from '@/components/ui/PwaInstallBanner';
 import { useAuth } from '@/lib/auth';
 
 // Lazy load pages
@@ -123,6 +124,7 @@ function App() {
         <ScrollToTop />
         <AppRoutes />
         <Toaster position="top-right" richColors theme="dark" />
+        <PwaInstallBanner />
       </BrowserRouter>
     </AuthProvider>
   );

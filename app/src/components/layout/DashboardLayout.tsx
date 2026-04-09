@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useWebapp } from '@/hooks/useWebapp';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface NavItem {
   label: string;
@@ -266,6 +267,8 @@ export default function DashboardLayout() {
                 </AnimatePresence>
               </div>
             )}
+
+            <ThemeToggle />
 
             <button className="p-2 text-[#9AA3B8] hover:text-white transition-colors rounded-lg hover:bg-white/5 relative">
               <Bell className="w-5 h-5" />
