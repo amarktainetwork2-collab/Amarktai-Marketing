@@ -25,7 +25,7 @@ def _engagement_rate(row: Analytics) -> float:
     views = row.views or 0
     if views == 0:
         return 0.0
-    return round(total / views, 6)
+    return round(total / views, 4)
 
 
 def _generate_csv(rows: list[Analytics]):
