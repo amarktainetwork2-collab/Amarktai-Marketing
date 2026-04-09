@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
     remix, tools, leads, groups, blog, billing,
     amarktai_status, dashboard, settings, contact,
+    stats,
 )
 
 api_router = APIRouter()
@@ -52,3 +53,6 @@ api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
 
 # Contact form (public, no auth, rate limited)
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
+
+# Public stats (no auth)
+api_router.include_router(stats.router, prefix="/stats", tags=["stats"])

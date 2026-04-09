@@ -120,6 +120,50 @@ def _clean_json(raw: str) -> str:
     return raw.strip()
 
 
+def optimize_for_platform(text: str, platform: str) -> str:
+    """Apply platform-specific formatting rules to generated text.
+
+    * Twitter  – hard-truncate to 280 characters.
+    * LinkedIn – insert line breaks every 2-3 sentences for readability.
+    * TikTok   – prefix with a hook question when the text doesn't start with one.
+    * YouTube  – append ``#Shorts`` if not already present.
+    * Others   – returned unchanged.
+    """
+    if not text:
+        return text
+
+    p = platform.lower()
+
+    if p == "twitter":
+        if len(text) > 280:
+            text = text[:277].rsplit(" ", 1)[0] + "..."
+
+    elif p == "linkedin":
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        chunks: list[str] = []
+        buf: list[str] = []
+        for sent in sentences:
+            buf.append(sent)
+            if len(buf) >= 2:
+                chunks.append(" ".join(buf))
+                buf = []
+        if buf:
+            chunks.append(" ".join(buf))
+        text = "\n\n".join(chunks)
+
+    elif p == "tiktok":
+        if not text.lstrip().endswith("?") and not text.lstrip().startswith(
+            tuple(w for w in ["What", "How", "Why", "Did", "Can", "Do", "Is", "Are", "Have", "Want"])
+        ):
+            text = "Want to know a secret? 👀\n" + text
+
+    elif p == "youtube":
+        if "#Shorts" not in text and "#shorts" not in text:
+            text = text.rstrip() + " #Shorts"
+
+    return text
+
+
 class HuggingFaceGenerator:
     """
     Generates social media content using the HuggingFace Inference API.
@@ -933,6 +977,7 @@ Respond ONLY with a JSON object with these exact keys:
                 hashtags = obj.get("hashtags") or []
                 if isinstance(hashtags, list):
                     hashtags = [h.lstrip("#") for h in hashtags]
+                caption = optimize_for_platform(caption, platform)
                 return {"title": title, "caption": caption, "hashtags": hashtags}
         except Exception:
             pass
