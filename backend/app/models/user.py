@@ -44,6 +44,10 @@ class User(Base):
     notification_digest = Column(Boolean, default=True)
     settings_json = Column(Text, nullable=True)  # arbitrary JSON prefs
 
+    # Email verification & billing
+    email_verified = Column(Boolean, default=False)
+    stripe_customer_id = Column(String(255), nullable=True)
+
     # Geolocation (captured via browser Geolocation API on login)
     geo_lat = Column(Float, nullable=True)
     geo_lon = Column(Float, nullable=True)
