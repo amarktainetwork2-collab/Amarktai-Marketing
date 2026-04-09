@@ -76,13 +76,24 @@ async def upsert_api_keys(
 
     db.commit()
 
-@router.get("/me", response_model=User)
+@router.get("/me")
 async def get_me(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
-    """Get current user."""
-    return current_user
+    """Get current user with admin status."""
+    from app.api.deps import is_admin_user
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "name": current_user.name,
+        "avatar": current_user.avatar,
+        "plan": current_user.plan,
+        "created_at": current_user.created_at,
+        "updated_at": current_user.updated_at,
+        "is_admin": is_admin_user(current_user),
+        "email_verified": getattr(current_user, "email_verified", False) or False,
+    }
 
 @router.put("/me", response_model=User)
 async def update_me(

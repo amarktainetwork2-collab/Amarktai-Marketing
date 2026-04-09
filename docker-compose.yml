@@ -139,7 +139,19 @@ services:
       certonly --webroot --webroot-path /var/www/certbot
       --email ${ADMIN_EMAIL:-admin@example.com}
       --agree-tos --no-eff-email
-      -d ${DOMAIN:-localhost}
+      -d ${DOMAIN:-marketing.amarktai.com}
+
+  # ─── Certbot Renewal (runs daily) ──────────────────────────────────────────
+  certbot-renew:
+    image: certbot/certbot:latest
+    profiles:
+      - ssl
+    volumes:
+      - ssl_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "while :; do certbot renew --quiet --webroot --webroot-path /var/www/certbot; sleep 86400; done"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

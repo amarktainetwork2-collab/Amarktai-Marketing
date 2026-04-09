@@ -58,7 +58,22 @@ export default function SettingsPage() {
               <h3 className="text-2xl font-bold text-white">Pro</h3>
               <p className="text-sm mt-1 text-slate-300">$29/month</p>
             </div>
-            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>
+            <Button
+              variant="outline"
+              style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('amarktai_token');
+                  const res = await fetch('/api/v1/billing/portal-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                  else toast.error(data.detail || 'Unable to open billing portal');
+                } catch { toast.error('Failed to open billing portal'); }
+              }}
+            >
               <CreditCard className="w-4 h-4 mr-2" />
               Manage Subscription
             </Button>
