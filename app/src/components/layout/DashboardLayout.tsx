@@ -5,7 +5,7 @@ import {
   Home, PenTool, CheckSquare, Calendar, BarChart2,
   MessageCircle, Share2, Zap, Users, Layers,
   Plug, Settings, Shield, Menu, X, Bell, ChevronDown,
-  LogOut, User, Building2,
+  LogOut, User, Building2, FileText,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useWebapp } from '@/hooks/useWebapp';
@@ -39,6 +39,7 @@ const NAV_SECTIONS = [
     label: 'Tools',
     items: [
       { label: 'AI Tools', href: '/dashboard/tools', icon: Zap },
+      { label: 'Blog', href: '/dashboard/blog', icon: FileText },
       { label: 'Leads', href: '/dashboard/leads', icon: Users },
       { label: 'Groups', href: '/dashboard/groups', icon: Layers },
     ] as NavItem[],
@@ -80,7 +81,7 @@ export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const { webapps, activeWebapp, setActiveWebapp } = useWebapp();
 
-  const isAdmin = user?.email?.includes('admin') || false;
+  const isAdmin = user?.isAdmin || false;
 
   useEffect(() => {
     setSidebarOpen(false);

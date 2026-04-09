@@ -56,6 +56,16 @@ async def _heartbeat_loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up AmarktAI Marketing API (v%s)…", settings.APP_VERSION)
+
+    # Initialize Sentry error tracking if DSN is configured
+    if settings.SENTRY_DSN:
+        try:
+            import sentry_sdk
+            sentry_sdk.init(dsn=settings.SENTRY_DSN, traces_sample_rate=0.1)
+            logger.info("Sentry error tracking initialized.")
+        except Exception as exc:
+            logger.warning("Failed to initialize Sentry: %s", exc)
+
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables verified / created.")

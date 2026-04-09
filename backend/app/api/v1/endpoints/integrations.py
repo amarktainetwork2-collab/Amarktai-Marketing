@@ -2,12 +2,14 @@
 API Keys & Integrations Endpoints
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import List, Dict, Any
-from pydantic import BaseModel
+import logging
 import uuid
 from datetime import datetime
+from typing import List, Dict, Any
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
@@ -15,6 +17,7 @@ from app.models.user_api_key import UserAPIKey, UserIntegration
 from app.models.user import User
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Schemas
@@ -245,21 +248,58 @@ async def connect_platform(
     if not config["client_id"]:
         raise HTTPException(status_code=503, detail=f"{platform} OAuth not configured")
     
-    # Build authorization URL
+    # Build authorization URL with cryptographically secure state token
+    import secrets
     from urllib.parse import urlencode
-    
+
+    # Generate a cryptographically random state token and map it to user_id:platform
+    state_token = secrets.token_urlsafe(32)
+    # Store the state → user mapping in a temporary DB record or in-memory cache.
+    # We use a lightweight approach: store as a pending integration record.
+    pending = db.query(UserIntegration).filter(
+        UserIntegration.user_id == current_user.id,
+        UserIntegration.platform == platform,
+    ).first()
+    if not pending:
+        pending = UserIntegration(
+            id=str(uuid.uuid4()),
+            user_id=current_user.id,
+            platform=platform,
+        )
+        db.add(pending)
+    # Store the state token as oauth_state for verification at callback
+    pending.oauth_state = state_token
+    pending.is_connected = False
+
+    # For Twitter PKCE, generate and store the code_verifier
+    code_verifier = None
+    code_challenge = None
+    if platform == "twitter":
+        import hashlib
+        import base64
+        code_verifier = secrets.token_urlsafe(43)
+        pending.oauth_code_verifier = code_verifier
+        digest = hashlib.sha256(code_verifier.encode()).digest()
+        code_challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
+
+    db.commit()
+
     params = {
         "client_id": config["client_id"],
         "redirect_uri": f"{settings.FRONTEND_URL}/dashboard/settings/integrations/callback",
         "scope": config["scope"],
         "response_type": "code",
-        "state": f"{current_user.id}:{platform}",
+        "state": state_token,
         "access_type": "offline",
-        "prompt": "consent"
+        "prompt": "consent",
     }
-    
+
+    if code_challenge:
+        params["code_challenge"] = code_challenge
+        params["code_challenge_method"] = "S256"
+
     auth_url = f"{config['auth_url']}?{urlencode(params)}"
-    
+
     return {"auth_url": auth_url}
 
 @router.post("/platforms/{platform}/disconnect")
@@ -320,11 +360,22 @@ async def oauth_callback(
     db: Session = Depends(get_db)
 ):
     """Handle OAuth2 callback from platforms — exchanges code for access token."""
-    # Parse state to get user_id and platform
-    try:
-        user_id, platform = state.split(":")
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid state parameter")
+    # Validate the state token against stored server-side mapping
+    integration = db.query(UserIntegration).filter(
+        UserIntegration.oauth_state == state,
+    ).first()
+
+    if not integration:
+        raise HTTPException(status_code=400, detail="Invalid or expired state parameter. Please reconnect.")
+
+    user_id = integration.user_id
+    platform = integration.platform
+
+    # Clear the state token (one-time use)
+    stored_code_verifier = getattr(integration, "oauth_code_verifier", None)
+    integration.oauth_state = None
+    integration.oauth_code_verifier = None
+    db.flush()
 
     # Exchange code for tokens (platform-specific)
     token_endpoints: dict[str, dict] = {
@@ -400,11 +451,14 @@ async def oauth_callback(
                         headers={"User-Agent": settings.REDDIT_USER_AGENT},
                     )
                 elif platform == "twitter":
-                    import base64 as _b64, secrets as _secrets
+                    import base64 as _b64
                     creds = _b64.b64encode(f"{cfg['client_id']}:{cfg['client_secret']}".encode()).decode()
-                    # PKCE: use state-embedded verifier or a fallback random verifier
-                    # (in production the verifier should be stored in the session when initiating OAuth)
-                    code_verifier = state.split(":", 2)[2] if state.count(":") >= 2 else _secrets.token_urlsafe(43)
+                    # Use the server-stored code_verifier from the OAuth initiation
+                    code_verifier = stored_code_verifier
+                    if not code_verifier:
+                        logger.warning("No stored code_verifier for Twitter PKCE — callback may fail")
+                        import secrets as _secrets
+                        code_verifier = _secrets.token_urlsafe(43)
                     resp = await client.post(
                         cfg["url"],
                         data={"grant_type": "authorization_code", "code": code,
@@ -427,9 +481,9 @@ async def oauth_callback(
                     access_token = data.get("access_token")
                     refresh_token = data.get("refresh_token")
                 else:
-                    print(f"⚠️  OAuth token exchange failed for {platform}: {resp.text}")
+                    logger.warning("OAuth token exchange failed for %s: %s", platform, resp.text)
         except Exception as exc:
-            print(f"⚠️  OAuth error for {platform}: {exc}")
+            logger.warning("OAuth error for %s: %s", platform, exc)
 
     # Store tokens
     integration = db.query(UserIntegration).filter(

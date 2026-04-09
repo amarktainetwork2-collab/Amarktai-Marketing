@@ -89,3 +89,39 @@ async def get_admin_user(
             detail="Admin access required",
         )
     return current_user
+
+
+# ── Plan quota enforcement ───────────────────────────────────────────────────
+
+_PLAN_QUOTA_MAP: dict[str, int] = {
+    "free": 50,
+    "pro": 500,
+    "business": 2000,
+    "enterprise": 99999,
+}
+
+
+async def enforce_content_quota(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Dependency that checks the user's plan quota before content generation.
+    Admins bypass quota checks. Returns HTTP 429 when quota is exceeded.
+    """
+    if is_admin_user(current_user):
+        return current_user
+
+    plan = str(getattr(current_user, "plan", "free") or "free")
+    used = getattr(current_user, "monthly_content_used", 0) or 0
+    limit = _PLAN_QUOTA_MAP.get(plan, 50)
+
+    if used >= limit:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=(
+                f"Monthly content quota exceeded ({used}/{limit}). "
+                f"Upgrade your plan at /pricing to generate more content."
+            ),
+        )
+
+    return current_user
