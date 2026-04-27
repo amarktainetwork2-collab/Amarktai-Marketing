@@ -161,6 +161,12 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.refresh_all_webapp_scrapes",
         "schedule": crontab(hour=0, minute=30),
     },
+
+    # Weekly digest email – Monday at 09:00 UTC
+    "weekly-digest-email": {
+        "task": "app.workers.tasks.send_weekly_digest_emails",
+        "schedule": crontab(hour=9, minute=0, day_of_week=1),
+    },
 }
 
 

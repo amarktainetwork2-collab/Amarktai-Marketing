@@ -12,7 +12,7 @@ AmarktAI Marketing is a full-stack SaaS platform that automates content creation
 |--------------|-------------------------------------------------------------------------|
 | Frontend     | React 19 + Vite + TypeScript + Tailwind CSS + shadcn/ui + framer-motion |
 | Backend      | FastAPI + SQLAlchemy + Alembic + Celery                                 |
-| Database     | MySQL 8 — `mysql+pymysql://` driver — hosted on Webdock VPS             |
+| Database     | PostgreSQL 15 — `psycopg2-binary` driver — hosted on Webdock VPS        |
 | Cache/Queue  | Redis 7                                                                 |
 | Auth         | JWT HS256 — email/password only                                         |
 | AI Primary   | Qwen (DashScope)                                                        |
@@ -91,7 +91,7 @@ npm run dev                 # http://localhost:5173
 
 | Variable            | Required | Description                                                  |
 |---------------------|----------|--------------------------------------------------------------|
-| `DATABASE_URL`      | ✅       | `mysql+pymysql://user:pass@localhost:3306/amarktai`          |
+| `DATABASE_URL`      | ✅       | `postgresql://user:pass@localhost:5432/amarktai`             |
 | `JWT_SECRET`        | ✅       | Random secret for JWT signing (`openssl rand -hex 32`)       |
 | `ENCRYPTION_KEY`    | ✅       | Base64 key for credential encryption (`openssl rand -base64 32`) |
 | `REDIS_URL`         | ✅       | `redis://localhost:6379/0`                                   |
@@ -110,10 +110,10 @@ npm run dev                 # http://localhost:5173
 
 ## Deployment
 
-Deployed on a **Webdock VPS** running Ubuntu 22.04. The MySQL connection string format used throughout is:
+Deployed on a **Webdock VPS** running Ubuntu 22.04. The PostgreSQL connection string format used throughout is:
 
 ```
-mysql+pymysql://amarktai_user:yourpassword@localhost:3306/amarktai
+postgresql://amarktai_user:yourpassword@localhost:5432/amarktai
 ```
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for the full guide and [DEPLOY_CHECKLIST.md](./DEPLOY_CHECKLIST.md) for the pre-launch checklist.

@@ -32,6 +32,7 @@ const AdminPage = lazy(() => import('@/app/admin/page'));
 const ToolsPage = lazy(() => import('@/app/tools/page'));
 const LeadsPage = lazy(() => import('@/app/leads/page'));
 const GroupsPage = lazy(() => import('@/app/groups/page'));
+const BlogPage = lazy(() => import('@/app/blog/page'));
 const FeaturesPage = lazy(() => import('@/app/features/page'));
 const BlogPage = lazy(() => import('@/app/blog/page'));
 const ForgotPasswordPage = lazy(() => import('@/app/forgot-password/page'));

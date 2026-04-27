@@ -2,9 +2,10 @@
 Engagement Replies Endpoints
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 import uuid
@@ -15,6 +16,7 @@ from app.models.engagement import EngagementReply, EngagementStatus, EngagementP
 from app.models.user import User
 from app.agents.community_agent import CommunityAgent
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Schemas
@@ -278,6 +280,122 @@ async def get_engagement(
     
     return engagement
 
+
+async def _dispatch_reply_to_platform(
+    db: Session,
+    user: User,
+    platform: str,
+    comment_id: str,
+    reply_text: str,
+) -> Dict[str, Any]:
+    """
+    Send a reply to the actual platform API.
+    Returns {"success": True/False, "error": "..."}.
+
+    Supported:
+      twitter, facebook, linkedin, reddit, bluesky, threads, telegram
+    API-unsupported (returns honest error):
+      pinterest, snapchat, tiktok
+    Not yet wired (returns honest error):
+      instagram (IG comment reply API requires page token + specific permissions),
+      youtube (YouTube comment reply requires separate Data API scope)
+    """
+    from app.models.platform_connection import PlatformConnection as PlatformModel, PlatformType
+    from app.models.user_api_key import UserAPIKey
+
+    # Find the user's platform connection
+    try:
+        platform_type = PlatformType(platform)
+    except ValueError:
+        return {"success": False, "error": f"Unsupported platform: {platform}"}
+
+    conn = db.query(PlatformModel).filter(
+        PlatformModel.user_id == user.id,
+        PlatformModel.platform == platform_type,
+        PlatformModel.is_active == True,
+    ).first()
+
+    if not conn or not conn.access_token:
+        return {"success": False, "error": f"No active {platform} connection. Complete OAuth first."}
+
+    # Decrypt the token
+    try:
+        access_token = UserAPIKey.decrypt_key(conn.access_token)
+    except Exception:
+        access_token = conn.access_token
+
+    # Dispatch based on platform
+    try:
+        if platform == "twitter":
+            from app.integrations.platforms.twitter import TwitterPlatform
+            from app.core.config import settings
+            tw = TwitterPlatform(
+                access_token=access_token,
+                api_key=settings.TWITTER_API_KEY,
+                api_secret=settings.TWITTER_API_SECRET,
+            )
+            return tw.reply(comment_id, reply_text)
+
+        elif platform == "facebook":
+            from app.integrations.platforms.facebook import FacebookPlatform
+            fb = FacebookPlatform(access_token=access_token)
+            return fb.reply(comment_id, reply_text)
+
+        elif platform == "linkedin":
+            from app.integrations.platforms.linkedin import LinkedInPlatform
+            person_urn = getattr(conn, "account_id", "") or ""
+            li = LinkedInPlatform(access_token=access_token, person_urn=person_urn)
+            return li.reply(comment_id, reply_text)
+
+        elif platform == "reddit":
+            from app.integrations.platforms.reddit import RedditPlatform
+            from app.core.config import settings
+            rd = RedditPlatform(
+                access_token=access_token,
+                client_id=settings.REDDIT_CLIENT_ID,
+                client_secret=settings.REDDIT_CLIENT_SECRET,
+            )
+            return rd.reply(comment_id, reply_text)
+
+        elif platform == "bluesky":
+            from app.integrations.platforms.bluesky import BlueskyPlatform
+            bs = BlueskyPlatform(access_token=access_token)
+            return bs.reply(comment_id, reply_text)
+
+        elif platform == "threads":
+            from app.integrations.platforms.threads import ThreadsPlatform
+            th = ThreadsPlatform(access_token=access_token)
+            return th.reply(comment_id, reply_text)
+
+        elif platform == "telegram":
+            from app.integrations.platforms.telegram import TelegramPlatform
+            from app.core.config import settings
+            tg = TelegramPlatform(
+                access_token=access_token,
+                channel_id=settings.TELEGRAM_CHANNEL_ID,
+            )
+            return tg.reply(comment_id, reply_text)
+
+        elif platform in ("pinterest", "snapchat"):
+            return {"success": False, "error": f"{platform.title()} API does not support comment replies."}
+
+        elif platform == "tiktok":
+            return {"success": False, "error": "TikTok API does not support automated comment replies."}
+
+        elif platform == "instagram":
+            return {"success": False, "error": "Instagram comment reply requires Page-level token and specific Graph API permissions. Not yet wired."}
+
+        elif platform == "youtube":
+            return {"success": False, "error": "YouTube comment reply requires Data API commentThreads scope. Not yet wired."}
+
+        else:
+            return {"success": False, "error": f"Reply dispatch not implemented for {platform}"}
+
+    except Exception as e:
+        logger.error("Failed to dispatch reply to %s: %s", platform, e)
+        return {"success": False, "error": str(e)}
+
+
 @router.post("/{engagement_id}/action")
 async def action_engagement(
     engagement_id: str,
@@ -285,7 +403,7 @@ async def action_engagement(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Approve, reject, or edit an engagement reply."""
+    """Approve, reject, or edit an engagement reply. Dispatches to platform API on approve."""
     engagement = db.query(EngagementReply).filter(
         EngagementReply.id == engagement_id,
         EngagementReply.user_id == current_user.id
@@ -299,10 +417,20 @@ async def action_engagement(
         engagement.approved_at = datetime.now()
         engagement.approved_by = current_user.id
         
-        # In production, send the reply via platform API
-        # For now, mark as sent
-        engagement.status = EngagementStatus.SENT
-        engagement.sent_at = datetime.now()
+        # Dispatch the reply to the platform
+        reply_text = engagement.ai_reply_text or ""
+        send_result = await _dispatch_reply_to_platform(
+            db, current_user, engagement.platform,
+            engagement.platform_comment_id, reply_text,
+        )
+        if send_result.get("success"):
+            engagement.status = EngagementStatus.SENT
+            engagement.sent_at = datetime.now()
+        else:
+            engagement.status = EngagementStatus.APPROVED  # Keep as approved, not sent
+            engagement.risk_factors = (engagement.risk_factors or []) + [
+                f"Send failed: {send_result.get('error', 'unknown')}"
+            ]
         
     elif action.action == "reject":
         engagement.status = EngagementStatus.REJECTED
@@ -317,9 +445,18 @@ async def action_engagement(
         engagement.approved_at = datetime.now()
         engagement.approved_by = current_user.id
         
-        # Send edited reply
-        engagement.status = EngagementStatus.SENT
-        engagement.sent_at = datetime.now()
+        # Dispatch the edited reply to the platform
+        send_result = await _dispatch_reply_to_platform(
+            db, current_user, engagement.platform,
+            engagement.platform_comment_id, action.edited_text,
+        )
+        if send_result.get("success"):
+            engagement.status = EngagementStatus.SENT
+            engagement.sent_at = datetime.now()
+        else:
+            engagement.risk_factors = (engagement.risk_factors or []) + [
+                f"Send failed: {send_result.get('error', 'unknown')}"
+            ]
     
     else:
         raise HTTPException(status_code=400, detail="Invalid action")

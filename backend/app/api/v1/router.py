@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, webapps, platforms, content, analytics, analytics_export,
     integrations, engagement, ab_testing, cost_tracking, autonomous, admin,
+    remix, tools, leads, groups, blog, oauth, billing, events,
     remix, tools, leads, groups, blog, billing,
     amarktai_status, dashboard, settings, contact,
     stats, changelog, notifications,
@@ -35,6 +36,7 @@ api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(remix.router, prefix="/remix", tags=["tools"])
 api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
 
+# SEO Blog Generator
 # Blog (SEO blog post generator)
 api_router.include_router(blog.router, prefix="/blog", tags=["blog"])
 
@@ -54,6 +56,14 @@ api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
 # Contact form (public, no auth, rate limited)
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
 
+# OAuth2 flows for social platform connections
+api_router.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
+
+# Billing / Stripe subscriptions
+api_router.include_router(billing.router, prefix="/billing", tags=["billing"])
+
+# Real-time SSE events
+api_router.include_router(events.router, prefix="/events", tags=["events"])
 # Public stats (no auth)
 api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
 

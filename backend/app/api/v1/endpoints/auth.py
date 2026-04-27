@@ -160,6 +160,30 @@ def register(request: Request, body: RegisterRequest, db: Session = Depends(get_
             detail="Failed to create account.",
         )
 
+    token = create_access_token(user.id)
+
+    # Send welcome email (non-blocking, failure does not block registration)
+    try:
+        from app.services.email_service import send_welcome
+        send_welcome(user.email, user.name)
+    except Exception:
+        pass
+
+    # Notify AmarktAI Network of new signup (non-blocking)
+    try:
+        import asyncio
+        from app.services.integration import send_event
+        asyncio.get_event_loop().create_task(
+            send_event("user.signup", {"user_id": user.id})
+        )
+    except Exception:
+        pass
+
+    return TokenResponse(
+        access_token=token,
+        user_id=user.id,
+        email=user.email,
+        name=user.name,
     # Send verification email
     verify_token = create_access_token(user.id, expires_delta=timedelta(hours=24))
     verify_url = f"{_settings.FRONTEND_URL}/verify-email?token={verify_token}"

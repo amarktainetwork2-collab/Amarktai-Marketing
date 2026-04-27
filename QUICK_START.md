@@ -10,7 +10,7 @@ Get the platform running locally in under 10 minutes.
 |-------------|----------------|
 | Node.js     | 18+            |
 | Python      | 3.11+          |
-| MySQL       | 8.0+           |
+| PostgreSQL  | 15+            |
 | Redis       | 7.0+           |
 
 ---
@@ -42,8 +42,8 @@ cp .env.example .env
 Edit `.env` with your values:
 
 ```env
-# Database — MySQL only, PyMySQL driver
-DATABASE_URL=mysql+pymysql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:3306/amarktai
+# Database — PostgreSQL
+DATABASE_URL=postgresql://amarktai_user:CHANGE_THIS_PASSWORD@localhost:5432/amarktai
 
 # Security
 JWT_SECRET=your-long-random-secret-here        # openssl rand -hex 32
@@ -68,13 +68,12 @@ ADMIN_EMAIL=admin@yourdomain.com
 CORS_ORIGINS=http://localhost:5173
 ```
 
-### Create the MySQL database
+### Create the PostgreSQL database
 
 ```sql
-CREATE DATABASE amarktai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'amarktai_user'@'localhost' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
-GRANT ALL PRIVILEGES ON amarktai.* TO 'amarktai_user'@'localhost';
-FLUSH PRIVILEGES;
+CREATE DATABASE amarktai;
+CREATE USER amarktai_user WITH ENCRYPTED PASSWORD 'CHANGE_THIS_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE amarktai TO amarktai_user;
 ```
 
 ### Run database migrations
@@ -140,7 +139,7 @@ VITE_API_URL=http://localhost:8000
 | Backend API     | http://localhost:8000/docs         |
 | Backend health  | `curl http://localhost:8000/health` |
 | Redis           | `redis-cli ping` → `PONG`          |
-| MySQL           | `mysql -u amarktai_user -p amarktai` |
+| PostgreSQL      | `psql -U amarktai_user -d amarktai`  |
 
 ---
 

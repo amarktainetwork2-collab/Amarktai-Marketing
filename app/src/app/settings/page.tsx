@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bell, Clock, Shield, User, CreditCard, Sparkles, Key, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Clock, Shield, User, CreditCard, Sparkles, Key, ExternalLink, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -15,32 +15,169 @@ const cardStyle = {
   border: '1px solid rgba(255,255,255,0.10)',
 };
 
+// ─── API helpers ─────────────────────────────────────────────────────────────
+
+async function settingsFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = localStorage.getItem('amarktai_token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`/api/v1/settings${path}`, { ...init, headers });
+  if (!res.ok) throw new Error(`Settings API ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+interface SettingsData {
+  timezone: string;
+  language: string;
+  notification_email: boolean;
+  notification_digest: boolean;
+  auto_post_enabled: boolean;
+  auto_reply_enabled: boolean;
+  plan_tier: string;
+}
+
+interface BillingData {
+  plan_tier: string;
+  quota_used: number;
+  quota_limit: number;
+  quota_remaining: number;
+}
+
+// ─── Plan display helpers ────────────────────────────────────────────────────
+
+const PLAN_DISPLAY: Record<string, { label: string; price: string }> = {
+  free: { label: 'Free', price: '$0/month' },
+  pro: { label: 'Pro', price: '$29/month' },
+  business: { label: 'Business', price: '$99/month' },
+  enterprise: { label: 'Enterprise', price: 'Custom' },
+};
+
 export default function SettingsPage() {
   const { user } = useAuth();
+
+  // ── Loading / fetched state ─────────────────────────────────────────────
+  const [loading, setLoading] = useState(true);
+  const [savingNotifications, setSavingNotifications] = useState(false);
+  const [savingPreferences, setSavingPreferences] = useState(false);
+  const [savingAutomation, setSavingAutomation] = useState(false);
+
+  // ── Notification state ──────────────────────────────────────────────────
   const [notifications, setNotifications] = useState({
     emailDaily: true,
     emailWeekly: true,
-    pushApproval: true,
-    pushPosted: false,
   });
 
+  // ── Preferences state ───────────────────────────────────────────────────
   const [preferences, setPreferences] = useState({
     postingTime: '10:00',
     timezone: 'America/New_York',
     language: 'en',
   });
 
+  // ── Automation state ────────────────────────────────────────────────────
   const [autoPost, setAutoPost] = useState(false);
   const [autoReply, setAutoReply] = useState(false);
   const [organicMode, setOrganicMode] = useState(true);
 
-  const handleSaveNotifications = () => {
-    toast.success('Notification preferences saved');
+  // ── Billing state ───────────────────────────────────────────────────────
+  const [billing, setBilling] = useState<BillingData | null>(null);
+
+  // ── Fetch settings from backend on mount ────────────────────────────────
+  const fetchSettings = useCallback(async () => {
+    try {
+      const [settingsData, billingData] = await Promise.all([
+        settingsFetch<SettingsData>(''),
+        settingsFetch<BillingData>('/billing'),
+      ]);
+      setPreferences({
+        postingTime: '10:00',
+        timezone: settingsData.timezone || 'America/New_York',
+        language: settingsData.language || 'en',
+      });
+      setNotifications({
+        emailDaily: settingsData.notification_email ?? true,
+        emailWeekly: settingsData.notification_digest ?? true,
+      });
+      setAutoPost(settingsData.auto_post_enabled ?? false);
+      setAutoReply(settingsData.auto_reply_enabled ?? false);
+      setBilling(billingData);
+    } catch {
+      toast.error('Failed to load settings — using defaults');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+
+  // ── Save notifications ──────────────────────────────────────────────────
+  const handleSaveNotifications = async () => {
+    setSavingNotifications(true);
+    try {
+      await settingsFetch('', {
+        method: 'PUT',
+        body: JSON.stringify({
+          notification_email: notifications.emailDaily,
+          notification_digest: notifications.emailWeekly,
+        }),
+      });
+      toast.success('Notification preferences saved');
+    } catch {
+      toast.error('Failed to save notification preferences');
+    } finally {
+      setSavingNotifications(false);
+    }
   };
 
-  const handleSavePreferences = () => {
-    toast.success('Preferences saved');
+  // ── Save preferences ────────────────────────────────────────────────────
+  const handleSavePreferences = async () => {
+    setSavingPreferences(true);
+    try {
+      await settingsFetch('', {
+        method: 'PUT',
+        body: JSON.stringify({
+          timezone: preferences.timezone,
+          language: preferences.language,
+        }),
+      });
+      toast.success('Preferences saved');
+    } catch {
+      toast.error('Failed to save preferences');
+    } finally {
+      setSavingPreferences(false);
+    }
   };
+
+  // ── Save automation ─────────────────────────────────────────────────────
+  const handleSaveAutomation = async () => {
+    setSavingAutomation(true);
+    try {
+      await settingsFetch('', {
+        method: 'PUT',
+        body: JSON.stringify({
+          auto_post_enabled: autoPost,
+          auto_reply_enabled: autoReply,
+        }),
+      });
+      toast.success('Automation settings saved');
+    } catch {
+      toast.error('Failed to save automation settings');
+    } finally {
+      setSavingAutomation(false);
+    }
+  };
+
+  // ── Derived plan display ────────────────────────────────────────────────
+  const planTier = billing?.plan_tier ?? 'free';
+  const planInfo = PLAN_DISPLAY[planTier] ?? PLAN_DISPLAY.free;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -49,14 +186,14 @@ export default function SettingsPage() {
         <p className="text-slate-400">Manage your workspace, notifications, and preferences</p>
       </div>
 
-      {/* Plan Info */}
+      {/* Plan Info — live from billing API */}
       <Card style={{ background: 'linear-gradient(135deg, rgba(37,99,255,0.15) 0%, rgba(34,211,238,0.08) 100%)', border: '1px solid rgba(37,99,255,0.25)' }}>
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium" style={{ color: '#4F7DFF' }}>Current Plan</p>
-              <h3 className="text-2xl font-bold text-white">Pro</h3>
-              <p className="text-sm mt-1 text-slate-300">$29/month</p>
+              <h3 className="text-2xl font-bold text-white">{planInfo.label}</h3>
+              <p className="text-sm mt-1 text-slate-300">{planInfo.price}</p>
             </div>
             <Button
               variant="outline"
@@ -78,14 +215,18 @@ export default function SettingsPage() {
               Manage Subscription
             </Button>
           </div>
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(37,99,255,0.2)' }}>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>5 Web Apps</Badge>
-              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>6 Platforms</Badge>
-              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>12 posts/day</Badge>
-              <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Priority Support</Badge>
+          {billing && (
+            <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(37,99,255,0.2)' }}>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>
+                  {billing.quota_used} / {billing.quota_limit} posts used
+                </Badge>
+                <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>
+                  {billing.quota_remaining} remaining
+                </Badge>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -127,33 +268,13 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="space-y-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem' }}>
-            <h4 className="font-medium text-xs uppercase tracking-widest text-slate-500">Push Notifications</h4>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="push-approval" className="font-medium text-slate-200">Content Approval</Label>
-                <p className="text-sm text-slate-400">Notify when content is ready for approval</p>
-              </div>
-              <Switch
-                id="push-approval"
-                checked={notifications.pushApproval}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, pushApproval: checked })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="push-posted" className="font-medium text-slate-200">Content Posted</Label>
-                <p className="text-sm text-slate-400">Notify when content goes live</p>
-              </div>
-              <Switch
-                id="push-posted"
-                checked={notifications.pushPosted}
-                onCheckedChange={(checked) => setNotifications({ ...notifications, pushPosted: checked })}
-              />
-            </div>
-          </div>
-
-          <Button onClick={handleSaveNotifications} style={{ background: '#2563FF' }} className="text-white hover:opacity-90">
+          <Button
+            onClick={handleSaveNotifications}
+            disabled={savingNotifications}
+            style={{ background: '#2563FF' }}
+            className="text-white hover:opacity-90"
+          >
+            {savingNotifications ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Save Notification Settings
           </Button>
         </CardContent>
@@ -200,24 +321,18 @@ export default function SettingsPage() {
                 <option value="Europe/Paris">Paris (CET)</option>
                 <option value="Asia/Tokyo">Tokyo (JST)</option>
                 <option value="Australia/Sydney">Sydney (AEST)</option>
+                <option value="UTC">UTC</option>
               </select>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-200">Automation Schedule</Label>
-            <div className="p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-200">Daily at 2:00 AM</p>
-                  <p className="text-sm text-slate-400">Content is generated automatically</p>
-                </div>
-                <Badge variant="outline" style={{ borderColor: 'rgba(16,185,129,0.4)', color: '#10B981' }}>Active</Badge>
-              </div>
-            </div>
-          </div>
-
-          <Button onClick={handleSavePreferences} style={{ background: '#2563FF' }} className="text-white hover:opacity-90">
+          <Button
+            onClick={handleSavePreferences}
+            disabled={savingPreferences}
+            style={{ background: '#2563FF' }}
+            className="text-white hover:opacity-90"
+          >
+            {savingPreferences ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Save Preferences
           </Button>
         </CardContent>
@@ -237,14 +352,7 @@ export default function SettingsPage() {
               <p className="font-medium text-slate-200">Two-Factor Authentication</p>
               <p className="text-sm text-slate-400">Add an extra layer of security</p>
             </div>
-            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Enable</Button>
-          </div>
-          <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
-            <div>
-              <p className="font-medium text-slate-200">Change Password</p>
-              <p className="text-sm text-slate-400">Last changed 30 days ago</p>
-            </div>
-            <Button variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#CBD5E1' }}>Change</Button>
+            <Badge variant="outline" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#9AA3B8' }}>Coming Soon</Badge>
           </div>
         </CardContent>
       </Card>
@@ -323,10 +431,12 @@ export default function SettingsPage() {
             </div>
           )}
           <Button
-            onClick={() => toast.success('Automation settings saved')}
+            onClick={handleSaveAutomation}
+            disabled={savingAutomation}
             style={{ background: '#2563FF' }}
             className="text-white hover:opacity-90"
           >
+            {savingAutomation ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Save Automation Settings
           </Button>
         </CardContent>

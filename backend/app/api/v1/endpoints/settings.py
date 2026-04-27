@@ -26,6 +26,8 @@ class PreferencesUpdate(BaseModel):
     language: str | None = None
     notification_email: bool | None = None
     notification_digest: bool | None = None
+    auto_post_enabled: bool | None = None
+    auto_reply_enabled: bool | None = None
 
 
 class APIKeyUpdate(BaseModel):
@@ -72,11 +74,14 @@ async def get_settings(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Return current user preferences."""
+    prefs = current_user.notification_preferences or {}
     return {
         "timezone": getattr(current_user, "timezone", "UTC") or "UTC",
-        "language": getattr(current_user, "language", "en") or "en",
-        "notification_email": getattr(current_user, "notification_email", True),
-        "notification_digest": getattr(current_user, "notification_digest", True),
+        "language": getattr(current_user, "preferred_language", "en") or "en",
+        "notification_email": prefs.get("email", True),
+        "notification_digest": prefs.get("digest", True),
+        "auto_post_enabled": getattr(current_user, "auto_post_enabled", False) or False,
+        "auto_reply_enabled": getattr(current_user, "auto_reply_enabled", False) or False,
         "plan_tier": getattr(current_user, "plan", "free"),
     }
 
@@ -101,6 +106,11 @@ async def update_settings(
     if payload.notification_digest is not None:
         prefs["digest"] = payload.notification_digest
     current_user.notification_preferences = prefs
+    # Automation preferences
+    if payload.auto_post_enabled is not None:
+        current_user.auto_post_enabled = payload.auto_post_enabled
+    if payload.auto_reply_enabled is not None:
+        current_user.auto_reply_enabled = payload.auto_reply_enabled
     db.commit()
     db.refresh(current_user)
     return {"ok": True}

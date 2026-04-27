@@ -5,7 +5,6 @@ Contact form endpoint.
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -29,8 +28,8 @@ async def submit_contact(
     """
     Accept a contact form submission.
 
-    Stores the message in the DB (if available) and optionally forwards to
-    CONTACT_EMAIL via a configured email service.  No auth required.
+    Stores the message in the DB and sends email notifications via the
+    canonical email_service (Resend).  No auth required.
     """
     # Persist to DB
     try:
@@ -49,8 +48,14 @@ async def submit_contact(
             db.close()
     except Exception as exc:
         logger.error("Failed to store contact message in DB: %s", exc)
-        # Do not fail the request — continue to email fallback
 
+    # Send email notifications via canonical email service
+    try:
+        from app.services.email_service import send_contact_acknowledgement, send_contact_forward
+        send_contact_acknowledgement(str(payload.email), payload.name)
+        send_contact_forward(payload.name, str(payload.email), "Contact Form", payload.message)
+    except Exception as exc:
+        logger.warning("Failed to send contact emails: %s", exc)
     # Optional: forward to CONTACT_EMAIL
     contact_email = os.getenv("CONTACT_EMAIL", "")
     if contact_email:

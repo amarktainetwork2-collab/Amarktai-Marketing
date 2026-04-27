@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import logging as _logging
 import os
 
 class Settings(BaseSettings):
@@ -12,6 +13,7 @@ class Settings(BaseSettings):
     # Override via ADMIN_EMAIL env var to change the admin for a different deployment.
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
+    # Database (PostgreSQL is the canonical database for this project)
     # Database
     DATABASE_URL: str = "postgresql://amarktai:CHANGE_THIS_PASSWORD@localhost:5432/amarktai"
     
@@ -205,6 +207,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+# ── Security checks for production ───────────────────────────────────────────
 # ── Production-safety checks ─────────────────────────────────────────────────
 import logging as _logging
 _cfg_logger = _logging.getLogger(__name__)
@@ -213,6 +216,39 @@ _DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
 _DEFAULT_ENCRYPTION_KEY = "your-encryption-key-here-change-in-production"
 _is_production = settings.APP_ENVIRONMENT == "production"
 
+_security_logger = _logging.getLogger(__name__)
+
+if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
+    if _is_production:
+        _security_logger.critical(
+            "FATAL: JWT_SECRET is set to the insecure default value in PRODUCTION mode. "
+            "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+        )
+        raise SystemExit(
+            "Refusing to start: JWT_SECRET must be changed from the default value in production. "
+            "Run: openssl rand -hex 32"
+        )
+    else:
+        _security_logger.warning(
+            "JWT_SECRET is set to the default insecure value. "
+            "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+        )
+
+if settings.ENCRYPTION_KEY == _DEFAULT_ENCRYPTION_KEY:
+    if _is_production:
+        _security_logger.critical(
+            "FATAL: ENCRYPTION_KEY is set to the insecure default value in PRODUCTION mode. "
+            "Set ENCRYPTION_KEY in your .env file using: openssl rand -base64 32"
+        )
+        raise SystemExit(
+            "Refusing to start: ENCRYPTION_KEY must be changed from the default value in production. "
+            "Run: openssl rand -base64 32"
+        )
+    else:
+        _security_logger.warning(
+            "ENCRYPTION_KEY is set to the default insecure value. "
+            "Set ENCRYPTION_KEY in your .env file using: openssl rand -base64 32"
+        )
 if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
     if _is_production:
         raise RuntimeError(
