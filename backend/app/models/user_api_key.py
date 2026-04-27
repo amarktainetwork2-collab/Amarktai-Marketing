@@ -92,6 +92,10 @@ class UserIntegration(Base):
     auto_reply_enabled = Column(Boolean, default=False)
     low_risk_auto_reply = Column(Boolean, default=False)
 
+    # OAuth state management (PKCE / CSRF)
+    oauth_state = Column(String(255), nullable=True, index=True)
+    oauth_code_verifier = Column(String(255), nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

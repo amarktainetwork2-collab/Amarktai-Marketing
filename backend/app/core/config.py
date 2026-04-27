@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "amarktainetwork@gmail.com"
     
     # Database (PostgreSQL is the canonical database for this project)
+    # Database
     DATABASE_URL: str = "postgresql://amarktai:CHANGE_THIS_PASSWORD@localhost:5432/amarktai"
     
     # Redis
@@ -207,6 +208,10 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # ── Security checks for production ───────────────────────────────────────────
+# ── Production-safety checks ─────────────────────────────────────────────────
+import logging as _logging
+_cfg_logger = _logging.getLogger(__name__)
+
 _DEFAULT_JWT_SECRET = "change-me-in-production-use-openssl-rand-hex-32"
 _DEFAULT_ENCRYPTION_KEY = "your-encryption-key-here-change-in-production"
 _is_production = settings.APP_ENVIRONMENT == "production"
@@ -244,3 +249,32 @@ if settings.ENCRYPTION_KEY == _DEFAULT_ENCRYPTION_KEY:
             "ENCRYPTION_KEY is set to the default insecure value. "
             "Set ENCRYPTION_KEY in your .env file using: openssl rand -base64 32"
         )
+if settings.JWT_SECRET == _DEFAULT_JWT_SECRET:
+    if _is_production:
+        raise RuntimeError(
+            "FATAL: JWT_SECRET is set to the default insecure value in production. "
+            "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+        )
+    _cfg_logger.warning(
+        "JWT_SECRET is set to the default insecure value. "
+        "Set JWT_SECRET in your .env file using: openssl rand -hex 32"
+    )
+
+if settings.ENCRYPTION_KEY == _DEFAULT_ENCRYPTION_KEY:
+    if _is_production:
+        raise RuntimeError(
+            "FATAL: ENCRYPTION_KEY is set to the default insecure value in production. "
+            "Set ENCRYPTION_KEY in your .env file using: openssl rand -hex 32"
+        )
+    _cfg_logger.warning(
+        "ENCRYPTION_KEY is set to the default insecure value. "
+        "Set ENCRYPTION_KEY in your .env file using: openssl rand -hex 32"
+    )
+
+# Guard against default DB password in production
+_db_url = settings.DATABASE_URL or ""
+if _is_production and ("changeme" in _db_url.lower() or "CHANGE_THIS_PASSWORD" in _db_url):
+    raise RuntimeError(
+        "FATAL: DATABASE_URL contains a default password. "
+        "Set POSTGRES_PASSWORD in your .env file before deploying."
+    )

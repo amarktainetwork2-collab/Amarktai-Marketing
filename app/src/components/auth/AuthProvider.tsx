@@ -15,6 +15,8 @@ interface TokenResponse {
   user_id: string;
   email: string;
   name?: string | null;
+  is_admin?: boolean;
+  email_verified?: boolean;
 }
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
@@ -47,7 +49,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    const u: AuthUser = { id: data.user_id, email: data.email, name: data.name };
+    const u: AuthUser = { id: data.user_id, email: data.email, name: data.name, isAdmin: data.is_admin, emailVerified: data.email_verified };
     storeSession(data.access_token, u);
     setToken(data.access_token);
     setUser(u);
@@ -58,7 +60,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password, name: name || undefined }),
     });
-    const u: AuthUser = { id: data.user_id, email: data.email, name: data.name };
+    const u: AuthUser = { id: data.user_id, email: data.email, name: data.name, isAdmin: data.is_admin, emailVerified: data.email_verified };
     storeSession(data.access_token, u);
     setToken(data.access_token);
     setUser(u);

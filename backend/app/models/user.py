@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Enum, Integer, Float, Boolean, JSON, Text
+from sqlalchemy import Column, String, DateTime, Enum, Integer, Float, Boolean, JSON, Text, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -43,6 +43,14 @@ class User(Base):
     notification_email = Column(Boolean, default=True)
     notification_digest = Column(Boolean, default=True)
     settings_json = Column(Text, nullable=True)  # arbitrary JSON prefs
+
+    # Email verification & billing
+    email_verified = Column(Boolean, default=False)
+    stripe_customer_id = Column(String(255), nullable=True)
+
+    # Referral program
+    referral_code = Column(String(16), unique=True, nullable=True, index=True)
+    referred_by = Column(String(36), ForeignKey("users.id"), nullable=True)
 
     # Geolocation (captured via browser Geolocation API on login)
     geo_lat = Column(Float, nullable=True)

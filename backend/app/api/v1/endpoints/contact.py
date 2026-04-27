@@ -56,6 +56,27 @@ async def submit_contact(
         send_contact_forward(payload.name, str(payload.email), "Contact Form", payload.message)
     except Exception as exc:
         logger.warning("Failed to send contact emails: %s", exc)
+    # Optional: forward to CONTACT_EMAIL
+    contact_email = os.getenv("CONTACT_EMAIL", "")
+    if contact_email:
+        try:
+            import httpx
+            from app.core.config import settings
+            resend_key = getattr(settings, "RESEND_API_KEY", "")
+            if resend_key:
+                httpx.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {resend_key}"},
+                    json={
+                        "from": getattr(settings, "FROM_EMAIL", "noreply@amarktai.com"),
+                        "to": [contact_email],
+                        "subject": f"Contact Form: {payload.name}",
+                        "text": f"From: {payload.name} <{payload.email}>\n\n{payload.message}",
+                    },
+                    timeout=10,
+                )
+        except Exception as exc:
+            logger.warning("Failed to forward contact email: %s", exc)
 
     logger.info("Contact form submitted by %s <%s>", payload.name, payload.email)
     return {"ok": True}

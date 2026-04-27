@@ -5,6 +5,7 @@ import { Check, ArrowRight, Zap } from 'lucide-react';
 import PublicNav from '@/components/layout/PublicNav';
 import PublicFooter from '@/components/layout/PublicFooter';
 import ParticleBackground from '@/components/ui/ParticleBackground';
+import { getStoredToken } from '@/lib/auth';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -19,6 +20,7 @@ const stagger = {
 const PLANS = [
   {
     name: 'Starter',
+    planId: 'free',
     monthlyPrice: 29,
     annualPrice: 23,
     desc: 'For solo marketers getting started with AI-powered content.',
@@ -35,6 +37,7 @@ const PLANS = [
   },
   {
     name: 'Pro',
+    planId: 'pro',
     monthlyPrice: 79,
     annualPrice: 63,
     desc: 'For growing teams that need the full AI marketing toolkit.',
@@ -54,6 +57,7 @@ const PLANS = [
   },
   {
     name: 'Business',
+    planId: 'business',
     monthlyPrice: 199,
     annualPrice: 159,
     desc: 'For agencies and enterprises running marketing at scale.',
@@ -184,8 +188,25 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Link
-                  to="/register"
+                <button
+                  onClick={async () => {
+                    const token = getStoredToken();
+                    if (!token || plan.planId === 'free') {
+                      window.location.href = '/register';
+                      return;
+                    }
+                    try {
+                      const res = await fetch('/api/v1/billing/checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ plan: plan.planId }),
+                      });
+                      const data = await res.json();
+                      if (data.url) window.location.href = data.url;
+                    } catch {
+                      window.location.href = '/register';
+                    }
+                  }}
                   className={`w-full py-3 rounded-xl font-semibold text-center text-sm transition-all flex items-center justify-center gap-2 ${
                     plan.highlighted
                       ? 'bg-blue-600 hover:bg-blue-500 text-white'
@@ -194,7 +215,7 @@ export default function PricingPage() {
                 >
                   {plan.cta}
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </button>
               </motion.div>
             ))}
           </motion.div>

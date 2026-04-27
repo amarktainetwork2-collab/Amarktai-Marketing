@@ -17,7 +17,7 @@ from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, enforce_content_quota
 from app.db.base import get_db
 from app.models.content import Content as ContentModel, ContentStatus
 from app.models.user import User
@@ -139,7 +139,7 @@ async def generate_content(
     webapp_id: str,
     platform: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(enforce_content_quota),
 ):
     """Generate AI content (text + image/video). Falls back to templates if no AI key configured."""
     from app.models.webapp import WebApp
@@ -192,7 +192,7 @@ async def generate_content(
 @router.post("/generate-all")
 async def generate_all_content(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(enforce_content_quota),
 ):
     """Batch generate AI content for all active platforms + webapps."""
     from app.models.user_api_key import UserIntegration
